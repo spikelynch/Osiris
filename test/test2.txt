@@ -1,0 +1,2653 @@
+$VAR1 = {
+          'apps' => {
+                      'blobdump' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+      Program to output a selected blob out to a file
+  '
+                                  },
+                      'moc2isis' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Global Surveyor'
+                                                },
+                                    'brief' => '
+    Import PDS formatted MOC image cube into Isis format cube
+  '
+                                  },
+                      'fx' => {
+                              'category' => {
+                                            'categoryItem' => 'Math and Statistics'
+                                          },
+                              'brief' => '
+    Generalized arithmetic operations using multiple cube files
+  '
+                            },
+                      'voy2isis' => {
+                                    'category' => {
+                                                  'missionItem' => 'Voyager'
+                                                },
+                                    'brief' => '
+    Import PDS formatted Voyager EDR into Isis format cube
+  '
+                                  },
+                      'median' => {
+                                  'category' => {
+                                                'categoryItem' => 'Filters'
+                                              },
+                                  'brief' => '
+    Set pixels to median of surrounding pixel values
+  '
+                                },
+                      'qtie' => {
+                                'category' => {
+                                              'categoryItem' => [
+                                                                'Control Networks',
+                                                                'Display'
+                                                              ]
+                                            },
+                                'brief' => '
+    Update camera pointing (SPICE) on a single cube
+  '
+                              },
+                      'blend' => {
+                                 'category' => {
+                                               'categoryItem' => 'Mosaicking'
+                                             },
+                                 'brief' => '
+    Blends a list of Level2 cubes together along the overlapping areas.
+  '
+                               },
+                      'ciss2isis' => {
+                                     'category' => {
+                                                   'missionItem' => 'Cassini'
+                                                 },
+                                     'brief' => '
+    Import a PDS Cassini ISS image file into Isis 
+  '
+                                   },
+                      'mocproc' => {
+                                   'category' => {
+                                                 'missionItem' => 'Mars Global Surveyor'
+                                               },
+                                   'brief' => '
+    Processes a MOC image through Levels 0, 1, and/or 2
+  '
+                                 },
+                      'isisui' => {
+                                  'category' => {
+                                                'categoryItem' => 'Scripting'
+                                              },
+                                  'brief' => '
+    Outputs the command line of any ISIS application
+  '
+                                },
+                      'maplab' => {
+                                  'category' => {
+                                                'categoryItem' => [
+                                                                  'Import and Export',
+                                                                  'Map Projection'
+                                                                ]
+                                              },
+                                  'brief' => '
+    Add Mapping group to the labels of a cube
+  '
+                                },
+                      'rotate' => {
+                                  'category' => {
+                                                'categoryItem' => 'Geometry'
+                                              },
+                                  'brief' => '
+    Rotates a cube any number of degrees
+  '
+                                },
+                      'hijitter' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                },
+                                    'brief' => '
+     Correct jitter in input cubes and output corrected undistorted cubes
+  '
+                                  },
+                      'lronaccal' => {
+                                     'category' => {
+                                                   'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                                 },
+                                     'brief' => '
+    Radiometrically calibrates a LROC NAC image
+  '
+                                   },
+                      'hicrop' => {
+                                  'category' => {
+                                                'categoryItem' => 'Trim and Mask'
+                                              },
+                                  'brief' => '
+    This program extracts a sub-area from a HiRise cube. 
+  '
+                                },
+                      'butterworth' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Fourier Domain'
+                                                   },
+                                       'brief' => 'Apply Butterworth filter for cube in fft frequency domain'
+                                     },
+                      'photemplate' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Radiometric and Photometric Correction'
+                                                   },
+                                       'brief' => ' 
+    Create a PVL template for photometric correction
+  '
+                                     },
+                      'getkey' => {
+                                  'category' => {
+                                                'categoryItem' => 'Scripting'
+                                              },
+                                  'brief' => '
+    Outputs the value of a requested keyword
+  '
+                                },
+                      'ctxevenodd' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+    Remove even/odd detector striping from MRO Ctx images
+  '
+                                    },
+                      'divfilter' => {
+                                     'oldName' => {
+                                                  'item' => 'boxfilter'
+                                                },
+                                     'category' => {
+                                                   'categoryItem' => 'Filters'
+                                                 },
+                                     'brief' => '
+    Apply a spatial high pass filter to a cube (divide)
+  '
+                                   },
+                      'mirror' => {
+                                  'category' => {
+                                                'categoryItem' => 'Geometry'
+                                              },
+                                  'brief' => '
+    Flip a cube from left-to-right
+  '
+                                },
+                      'apollopaninit' => {
+                                         'category' => {
+                                                       'categoryItem' => 'Import and Export'
+                                                     },
+                                         'brief' => '
+    Imports a complete (stitched) apollo panaramic image JP2 image
+  '
+                                       },
+                      'nocam2map' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Map Projection'
+                                                 },
+                                     'brief' => '
+    Map project a cube without a camera model
+  '
+                                   },
+                      'mdisedrinfo' => {
+                                       'category' => {
+                                                     'missionItem' => 'Messenger'
+                                                   },
+                                       'brief' => '
+    Computes MESSENGER/MDIS EDR geometric keyword values 
+  '
+                                     },
+                      'svfilter' => {
+                                    'oldName' => {
+                                                 'item' => 'boxfilter'
+                                               },
+                                    'category' => {
+                                                  'categoryItem' => 'Filters'
+                                                },
+                                    'brief' => '
+    Apply a variance or standard deviation filter to a cube
+  '
+                                  },
+                      'voyramp' => {
+                                   'category' => {
+                                                 'missionItem' => 'Voyager'
+                                               },
+                                   'brief' => '
+    Corrects Voyager 1 Io images from plasma torus irradiation
+  '
+                                 },
+                      'dempack' => {
+                                   'category' => {
+                                                 'categoryItem' => 'System'
+                                               },
+                                   'brief' => '
+    Creates an XML representation of DEM installation packs
+  '
+                                 },
+                      'apollo2isis' => {
+                                       'category' => {
+                                                     'missionItem' => 'Apollo'
+                                                   },
+                                       'brief' => '
+    Import Apollo Image
+  '
+                                     },
+                      'reduce' => {
+                                  'category' => {
+                                                'categoryItem' => 'Geometry'
+                                              },
+                                  'brief' => '
+    Reduce the pixel dimensions of an image
+  '
+                                },
+                      'hinoise' => {
+                                   'category' => {
+                                                 'missionItem' => 'Mars Reconnaissance Orbiter'
+                                               },
+                                   'brief' => '
+    Perform NoiseFilter processing in the Pipeline Enviornment.
+  '
+                                 },
+                      'clemhirescal' => {
+                                        'category' => {
+                                                      'missionItem' => 'Clementine'
+                                                    },
+                                        'brief' => '
+      Calibrate Clementine Hires images
+  '
+                                      },
+                      'qmos' => {
+                                'category' => {
+                                              'categoryItem' => 'Display'
+                                            },
+                                'brief' => '
+    Display and analyze cube footprints
+  '
+                              },
+                      'isis2std' => {
+                                    'oldName' => {
+                                                 'item' => [
+                                                           'dform',
+                                                           'isis2tif',
+                                                           'isis2jpg',
+                                                           'isis2gisworld'
+                                                         ]
+                                               },
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+    Exports a cube to a PNG, BMP, GIF, TIFF, JPEG, or JPEG 2000
+  '
+                                  },
+                      'vims2isis' => {
+                                     'category' => {
+                                                   'missionItem' => 'Cassini'
+                                                 },
+                                     'brief' => '
+        Converts Vims images to Isis 3 format
+    '
+                                   },
+                      'kernfilter' => {
+                                      'category' => {
+                                                    'categoryItem' => 'Filters'
+                                                  },
+                                      'brief' => '
+    Filter a cube through a kernel
+  '
+                                    },
+                      'fft' => {
+                               'category' => {
+                                             'categoryItem' => 'Fourier Domain'
+                                           },
+                               'brief' => '
+    Apply a Fourier Transform on a cube
+  '
+                             },
+                      'cubeavg' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Math and Statistics'
+                                               },
+                                   'brief' => 'Averages all bands from the input cube'
+                                 },
+                      'campt' => {
+                                 'oldName' => {
+                                              'item' => [
+                                                        'levpt',
+                                                        'lev1pt',
+                                                        'photostat'
+                                                      ]
+                                            },
+                                 'category' => {
+                                               'categoryItem' => 'Cameras'
+                                             },
+                                 'brief' => '
+    Computes geometric and photometric information at a given pixel location
+  '
+                               },
+                      'histeq' => {
+                                  'category' => {
+                                                'categoryItem' => 'Math and Statistics'
+                                              },
+                                  'brief' => '
+  Apply histogram equalization to a cube.
+  '
+                                },
+                      'slither' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Geometry'
+                                               },
+                                   'brief' => '
+      Computes a transformation to shift entire lines or samples
+  '
+                                 },
+                      'vik2isis' => {
+                                    'category' => {
+                                                  'missionItem' => 'Viking'
+                                                },
+                                    'brief' => '
+    Import PDS formatted Viking EDR into Isis format cube
+  '
+                                  },
+                      'interestcube' => {
+                                        'category' => {
+                                                      'categoryItem' => 'Filters'
+                                                    },
+                                        'brief' => '
+    Used to test Interest Operators
+  '
+                                      },
+                      'voycal' => {
+                                  'category' => {
+                                                'missionItem' => 'Voyager'
+                                              },
+                                  'brief' => '
+    Radiometric correction of Voyager 1 and 2 planetary images
+  '
+                                },
+                      'marci2isis' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+      Import an MRO MARCI image to an Isis cube
+    '
+                                    },
+                      'rolo2isis' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Import and Export'
+                                                 },
+                                     'brief' => 'Import isis2 rolo image into isis3 '
+                                   },
+                      'hiequal' => {
+                                   'category' => {
+                                                 'missionItem' => 'Mars Reconnaissance Orbiter'
+                                               },
+                                   'brief' => '
+      Tonematches a set of HiRISE cubes prior to mosaicking
+  '
+                                 },
+                      'dawnvir2isis' => {
+                                        'category' => {
+                                                      'missionItem' => 'Dawn'
+                                                    },
+                                        'brief' => '
+       Import PDS formatted Dawn VIR EDR or RDR image cube into ISIS format cube 
+  '
+                                      },
+                      'mocnoise50' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Global Surveyor'
+                                                  },
+                                      'brief' => '
+    Removes noise from MOC narrow angle images
+  '
+                                    },
+                      'lo2isis' => {
+                                   'category' => {
+                                                 'missionItem' => 'Lunar Orbiter'
+                                               },
+                                   'brief' => '
+    Import an Isis 2 Lunar Orbiter image file into Isis 3.
+  '
+                                 },
+                      'cnetbin2pvl' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Control Networks'
+                                                   },
+                                       'brief' => '
+    Converts an Isis3 control network file from binary into pvl format.
+  '
+                                     },
+                      'crop' => {
+                                'oldName' => {
+                                             'item' => [
+                                                       'dsk2dsk',
+                                                       'sfrom'
+                                                     ]
+                                           },
+                                'category' => {
+                                              'categoryItem' => 'Trim and Mask'
+                                            },
+                                'brief' => '
+    This program extracts a sub-area from a cube 
+  '
+                              },
+                      'cam2cam' => {
+                                   'oldName' => {
+                                                'item' => 'lev1tolev1'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Cameras'
+                                               },
+                                   'brief' => '
+    Convert camera image to a different camera image
+  '
+                                 },
+                      'mdis2isis' => {
+                                     'category' => {
+                                                   'missionItem' => 'Messenger'
+                                                 },
+                                     'brief' => '
+    Import MESSENGER/MIDS EDR/RDR products into ISIS cubes
+  '
+                                   },
+                      'clemnirnoise' => {
+                                        'category' => {
+                                                      'missionItem' => 'Clementine'
+                                                    },
+                                        'brief' => '
+    identifiy and remove NIR noise pattern
+  '
+                                      },
+                      'pds2hideal' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+      Reimport an exported hirise PDS product to an Isis 3 Ideal camera.
+  '
+                                    },
+                      'ddd2isis' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+    Import msss ddd file into Isis format
+  '
+                                  },
+                      'mapmos' => {
+                                  'oldName' => {
+                                               'item' => 'mosaic'
+                                             },
+                                  'category' => {
+                                                'categoryItem' => 'Mosaicking'
+                                              },
+                                  'brief' => '
+    Create a mosaic using map projected cubes
+  '
+                                },
+                      'edrget' => {
+                                  'category' => {
+                                                'categoryItem' => 'Import and Export'
+                                              },
+                                  'brief' => '
+    Download network file using FTP or HTTP protocol.
+  '
+                                },
+                      'messspkgen' => {
+                                      'category' => {
+                                                    'categoryItem' => 'System'
+                                                  },
+                                      'brief' => '
+    Generates MESSENGER SPKs
+  '
+                                    },
+                      'demprep' => {
+                                   'category' => {
+                                                 'categoryItem' => 'System'
+                                               },
+                                   'brief' => '
+    This program prepares DEMs for use as shape models. It is not valid to run this program on anything but a DEM.
+  '
+                                 },
+                      'sharpen' => {
+                                   'oldName' => {
+                                                'item' => 'boxfilter'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Filters'
+                                               },
+                                   'brief' => '
+    Sharpen the features in a cube
+  '
+                                 },
+                      'skymap' => {
+                                  'category' => {
+                                                'categoryItem' => [
+                                                                  'Map Projection',
+                                                                  'Cameras'
+                                                                ]
+                                              },
+                                  'brief' => '
+    Convert camera image to a skymap projection
+  '
+                                },
+                      'mappt' => {
+                                 'category' => {
+                                               'categoryItem' => 'Map Projection'
+                                             },
+                                 'brief' => '
+    Outputs latitude/longitude at line/sample or reverse
+  '
+                               },
+                      'hicubenorm' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+    Normalize columns in a HiRise cube by performing a lowpass/highpass filter
+  '
+                                    },
+                      'grid' => {
+                                'category' => {
+                                              'categoryItem' => [
+                                                                'Utility',
+                                                                'Map Projection'
+                                                              ]
+                                            },
+                                'brief' => '
+    Add a graticule or rectangular grid to the input image
+  '
+                              },
+                      'autoseed' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Control Networks'
+                                                },
+                                    'brief' => '
+    Creates a control network for a list of images
+  '
+                                  },
+                      'poly' => {
+                                'category' => {
+                                              'categoryItem' => 'Math and Statistics'
+                                            },
+                                'brief' => '
+    Perform polynomial algebra on cube
+  '
+                              },
+                      'getsn' => {
+                                 'category' => {
+                                               'categoryItem' => 'Control Networks'
+                                             },
+                                 'brief' => 'Prints Image Serial Number'
+                               },
+                      'vdcomp' => {
+                                  'category' => {
+                                                'missionItem' => [
+                                                                 'Viking',
+                                                                 'Voyager'
+                                                               ]
+                                              },
+                                  'brief' => '
+    Uncompresses Voyager and Viking PDS files
+  '
+                                },
+                      'mar10nonoise' => {
+                                        'category' => {
+                                                      'missionItem' => 'Mariner'
+                                                    },
+                                        'brief' => '
+    Noise removal from Mariner10 images
+  '
+                                      },
+                      'camtrim' => {
+                                   'category' => {
+                                                 'categoryItem' => [
+                                                                   'Trim and Mask',
+                                                                   'Cameras'
+                                                                 ]
+                                               },
+                                   'brief' => '
+    Trims pixels outside of lat/lon range
+  '
+                                 },
+                      'gradient' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Filters'
+                                                },
+                                    'brief' => '
+    Apply Sobel or Roberts gradient to a cube
+  '
+                                  },
+                      'bit2bit' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => '
+    Change the bit-type of pixel data
+  '
+                                 },
+                      'deltack' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Control Networks'
+                                               },
+                                   'brief' => '
+    Update camera pointing for a single image
+  '
+                                 },
+                      'vikcal' => {
+                                  'category' => {
+                                                'missionItem' => 'Viking'
+                                              },
+                                  'brief' => '
+    Radiometric correction of VIKING Planetary images
+  '
+                                },
+                      'mode' => {
+                                'category' => {
+                                              'categoryItem' => 'Filters'
+                                            },
+                                'brief' => '
+    Set pixels to mode of surrounding pixel values
+  '
+                              },
+                      'stretch' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => '
+    Remaps pixel values in a cube
+  '
+                                 },
+                      'percent' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Scripting'
+                                               },
+                                   'brief' => '
+    Obtains the DN value at a percent in a histogram
+  '
+                                 },
+                      'mocgap' => {
+                                  'category' => {
+                                                'missionItem' => 'Mars Global Surveyor'
+                                              },
+                                  'brief' => '
+    Fix data gap in MOC images
+  '
+                                },
+                      'hiccdstitch' => {
+                                       'category' => {
+                                                     'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                   },
+                                       'brief' => '
+    Stitch together multiple HiRISE CCD images
+  '
+                                     },
+                      'apollocal' => {
+                                     'category' => {
+                                                   'missionItem' => 'Apollo'
+                                                 },
+                                     'brief' => '
+    Radiometric correction of Apollo Planetary images
+  '
+                                   },
+                      'cneteditor' => {
+                                      'category' => {
+                                                    'categoryItem' => [
+                                                                      'Control Networks',
+                                                                      'Display'
+                                                                    ]
+                                                  },
+                                      'brief' => '
+    Interactive control network editor
+  '
+                                    },
+                      'spechighpass' => {
+                                        'oldName' => {
+                                                     'item' => 'boxfilter'
+                                                   },
+                                        'category' => {
+                                                      'categoryItem' => 'Filters'
+                                                    },
+                                        'brief' => '
+    Apply a spectral high pass filter to a cube
+  '
+                                      },
+                      'cnetextract' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Control Networks'
+                                                   },
+                                       'brief' => '
+    Extracts portions of an existing Control Network 
+  '
+                                     },
+                      'hideal2pds' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+      Export an Isis3 mosaicked ideal cube from a HiRISE image to a PDS product 
+      containing related spice data. 
+  '
+                                    },
+                      'maptrim' => {
+                                   'oldName' => {
+                                                'item' => 'trimsinu'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => [
+                                                                   'Map Projection',
+                                                                   'Trim and Mask'
+                                                                 ]
+                                               },
+                                   'brief' => '
+    Trim edges of a map projected image
+  '
+                                 },
+                      'mat2cnet' => {
+                                    'category' => {
+                                                  'categoryItem' => [
+                                                                    'Control Networks',
+                                                                    'Import and Export'
+                                                                  ]
+                                                },
+                                    'brief' => '
+    Converts an ISIS2 match point file to an ISIS3 control network file.
+  '
+                                  },
+                      'viknopepper' => {
+                                       'category' => {
+                                                     'missionItem' => 'Viking'
+                                                   },
+                                       'brief' => '
+    Pepper noise Clean-up of Viking Orbiter Level 1 images
+  '
+                                     },
+                      'thmnoseam' => {
+                                     'category' => {
+                                                   'missionItem' => 'Mars Odyssey'
+                                                 },
+                                     'brief' => '
+    Smooths the transitions between framelets.
+  '
+                                   },
+                      'mroctx2isis' => {
+                                       'category' => {
+                                                     'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                   },
+                                       'brief' => '
+      Import an MRO CTX image as an Isis cube
+    '
+                                     },
+                      'isis2pds' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+    Convert from cube to pds format
+  '
+                                  },
+                      'gauss' => {
+                                 'category' => {
+                                               'categoryItem' => 'Filters'
+                                             },
+                                 'brief' => '
+    Filter a cube through a kernel using Gaussian weight
+  '
+                               },
+                      'mdisproc' => {
+                                    'category' => {
+                                                  'missionItem' => 'Messenger'
+                                                },
+                                    'brief' => '
+    Runs a raw Messenger cube through ingestion and calibration
+  '
+                                  },
+                      'hical' => {
+                                 'category' => {
+                                               'missionItem' => 'Mars Reconnaissance Orbiter'
+                                             },
+                                 'brief' => '
+    Performs radiometric calibration of HiRISE channel images
+  '
+                               },
+                      'hidestripe' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+    Corrects a known striping pattern in HiRISE images.
+  '
+                                    },
+                      'spicefit' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Cameras'
+                                                },
+                                    'brief' => '
+    Fit a function to camera pointing
+  '
+                                  },
+                      'errors' => {
+                                  'category' => {
+                                                'categoryItem' => 'Utility'
+                                              },
+                                  'brief' => '
+    Parses errors from a SessionLog file
+    '
+                                },
+                      'hicalproc' => {
+                                     'category' => {
+                                                   'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                 },
+                                     'brief' => '
+     Generate radiometrically (cosmetic) corrected HiRISE Channel products.
+  '
+                                   },
+                      'flip' => {
+                                'category' => {
+                                              'categoryItem' => 'Geometry'
+                                            },
+                                'brief' => '
+    Flip a cube from top-to-bottom
+  '
+                              },
+                      'isis2ascii' => {
+                                      'oldName' => {
+                                                   'item' => [
+                                                             'list',
+                                                             'cube2ascii'
+                                                           ]
+                                                 },
+                                      'category' => {
+                                                    'categoryItem' => 'Import and Export'
+                                                  },
+                                      'brief' => ' Export cube to an ascii file'
+                                    },
+                      'mrf2isis' => {
+                                    'category' => {
+                                                  'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                                },
+                                    'brief' => 'Import PDS formatted MiniRF level 1 or level 2 image cube into Isis format cube'
+                                  },
+                      'tonematch' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Radiometric and Photometric Correction'
+                                                 },
+                                     'brief' => '
+    Matches the tone of two images
+  '
+                                   },
+                      'mrf2pds' => {
+                                   'category' => {
+                                                 'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                               },
+                                   'brief' => ' Export a Mini-RF isis cube to a pds image'
+                                 },
+                      'hsv2rgb' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Math and Statistics'
+                                               },
+                                   'brief' => '
+   Convert HSV to RGB 
+  '
+                                 },
+                      'makeflat' => {
+                                    'category' => {
+                                                  'categoryItem' => [
+                                                                    'Math and Statistics',
+                                                                    'Radiometric and Photometric Correction'
+                                                                  ]
+                                                },
+                                    'brief' => '
+    Create a flat-field image for line-scan instruments
+  '
+                                  },
+                      'mdisddr' => {
+                                   'category' => {
+                                                 'missionItem' => 'Messenger'
+                                               },
+                                   'brief' => '
+    Creates a MESSENGER DDR PDS product from an MDIS image
+  '
+                                 },
+                      'ratio' => {
+                                 'oldName' => {
+                                              'item' => [
+                                                        'ratio',
+                                                        'cosi'
+                                                      ]
+                                            },
+                                 'category' => {
+                                               'categoryItem' => 'Math and Statistics'
+                                             },
+                                 'brief' => '
+    Divide two cubes
+  '
+                               },
+                      'mar10clean' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mariner'
+                                                  },
+                                      'brief' => '
+    Clean-up application for Mariner10 images 
+  '
+                                    },
+                      'rgb2hsv' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Math and Statistics'
+                                               },
+                                   'brief' => '
+   Convert RGB to HSV 
+  '
+                                 },
+                      'himos' => {
+                                 'category' => {
+                                               'missionItem' => 'Mars Reconnaissance Orbiter'
+                                             },
+                                 'brief' => '
+    Produce an output mosaic of HiRISE CCD images from the same observation and filter.
+  '
+                               },
+                      'autoregtemplate' => {
+                                           'category' => {
+                                                         'categoryItem' => 'Registration and Pattern Matching'
+                                                       },
+                                           'brief' => '
+      Create auto registration group template
+  '
+                                         },
+                      'uncrop' => {
+                                  'oldName' => {
+                                               'item' => 'mosaic'
+                                             },
+                                  'category' => {
+                                                'categoryItem' => 'Trim and Mask'
+                                              },
+                                  'brief' => '
+    Puts a sub-cube back into its parent cube
+  '
+                                },
+                      'pointreg' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Control Networks'
+                                                },
+                                    'brief' => '
+    Automatically register control measures to their point\'s reference
+  '
+                                  },
+                      'segment' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => ' Divides a cube object into multiple output cubes in the line direction. '
+                                 },
+                      'cnetdiff' => {
+                                    'category' => {
+                                                  'categoryItem' => 'System'
+                                                },
+                                    'brief' => 'Compare two control networks'
+                                  },
+                      'cropspecial' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Trim and Mask'
+                                                   },
+                                       'brief' => '
+    Crops specified special pixels from a cube
+  '
+                                     },
+                      'mar102isis' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mariner'
+                                                  },
+                                      'brief' => '
+    Convert Mariner10 images to Isis cubes.
+  '
+                                    },
+                      'pds2isis' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => 'Import PDS or ISIS2 image into ISIS3 cube format'
+                                  },
+                      'clemuvviscal' => {
+                                        'category' => {
+                                                      'missionItem' => 'Clementine'
+                                                    },
+                                        'brief' => '
+    Radiometric correction of Clementine UV/VIS camera images
+  '
+                                      },
+                      'phocube' => {
+                                   'oldName' => {
+                                                'item' => [
+                                                          'lev1geoplane',
+                                                          'levgeoplane',
+                                                          'geoback'
+                                                        ]
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => [
+                                                                   'Radiometric and Photometric Correction',
+                                                                   'Cameras'
+                                                                 ]
+                                               },
+                                   'brief' => '
+    Creates photometric and geometric information bands for an image cube
+  '
+                                 },
+                      'handmos' => {
+                                   'oldName' => {
+                                                'item' => 'mosaic'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Mosaicking'
+                                               },
+                                   'brief' => '
+    Hand place a cube into a mosaic
+  '
+                                 },
+                      'trimfilter' => {
+                                      'oldName' => {
+                                                   'item' => 'boxfilter'
+                                                 },
+                                      'category' => {
+                                                    'categoryItem' => [
+                                                                      'Filters',
+                                                                      'Trim and Mask'
+                                                                    ]
+                                                  },
+                                      'brief' => '
+    Apply a trim filter to a cube
+  '
+                                    },
+                      'cosi' => {
+                                'category' => {
+                                              'categoryItem' => 'Radiometric and Photometric Correction'
+                                            },
+                                'brief' => '
+    Apply simple photometric model
+  '
+                              },
+                      'gaussstretch' => {
+                                        'category' => {
+                                                      'categoryItem' => 'Math and Statistics'
+                                                    },
+                                        'brief' => '
+    Apply a Gaussian Stretch to a cube.
+  '
+                                      },
+                      'deriv' => {
+                                 'category' => {
+                                               'categoryItem' => 'Filters'
+                                             },
+                                 'brief' => '
+    Apply horizontal or vertical derivative
+  '
+                               },
+                      'fits2isis' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Import and Export'
+                                                 },
+                                     'brief' => '
+    Import fits files into Isis format
+  '
+                                   },
+                      'marcical' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                },
+                                    'brief' => '
+    This program calibrates MARCI images
+  '
+                                  },
+                      'highpass' => {
+                                    'oldName' => {
+                                                 'item' => 'boxfilter'
+                                               },
+                                    'category' => {
+                                                  'categoryItem' => 'Filters'
+                                                },
+                                    'brief' => '
+    Apply a spatial high pass filter to a cube
+  '
+                                  },
+                      'hirdrgen' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                },
+                                    'brief' => '
+      Converts HiRISE RDR cubes into PDS standard format
+  '
+                                  },
+                      'mdiscal' => {
+                                   'category' => {
+                                                 'missionItem' => 'Messenger'
+                                               },
+                                   'brief' => '
+    Calibrates  MESSENGER/MIDS EDR/RDR products
+  '
+                                 },
+                      'histmatch' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Math and Statistics'
+                                                 },
+                                     'brief' => '
+    Match histograms of 2 cubes
+  '
+                                   },
+                      'specpix' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => '
+    Replace user specified pixels with Isis special pixel values
+  '
+                                 },
+                      'map2cam' => {
+                                   'oldName' => {
+                                                'item' => [
+                                                          'lev2tolev1',
+                                                          'base2l1',
+                                                          'base'
+                                                        ]
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Map Projection'
+                                               },
+                                   'brief' => '
+    Convert map projected image to a raw camera image
+  '
+                                 },
+                      'lrowac2isis' => {
+                                       'category' => {
+                                                     'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                                   },
+                                       'brief' => '
+    Import LRO WAC EDR images into Isis cube format
+  '
+                                     },
+                      'pvldiff' => {
+                                   'category' => {
+                                                 'categoryItem' => 'System'
+                                               },
+                                   'brief' => 'Compare two pvl files'
+                                 },
+                      'mapgrid' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Map Projection'
+                                               },
+                                   'brief' => '
+    Produces a user defined cartographic graticule (latitude/longitude grid) in
+    GML form.
+  '
+                                 },
+                      'mosrange' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Map Projection'
+                                                },
+                                    'brief' => '
+    Compute the lat/lon range of a set camera images for mosaicking
+  '
+                                  },
+                      'copylabel' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Utility'
+                                                 },
+                                     'brief' => '
+    Copys labels and blobs from one cube into another cube.
+  '
+                                   },
+                      'viknonoodle' => {
+                                       'category' => {
+                                                     'missionItem' => 'Viking'
+                                                   },
+                                       'brief' => '
+    Remove periodic noise from a Viking image
+  '
+                                     },
+                      'camrange' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Cameras'
+                                                },
+                                    'brief' => '
+    Compute the lat/lon range of a camera image
+  '
+                                  },
+                      'decorstretch' => {
+                                        'category' => {
+                                                      'categoryItem' => 'Math and Statistics'
+                                                    },
+                                        'brief' => '
+    Apply a Decorrelation Stretch to a cube
+  '
+                                      },
+                      'smtk' => {
+                                'category' => {
+                                              'categoryItem' => 'Registration and Pattern Matching'
+                                            },
+                                'brief' => '
+    Generate a digital elevation map (DEM) from two images using the Stereo 
+    Matcher ToolKit (SMTK)
+  '
+                              },
+                      'cnetpvl2bin' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Control Networks'
+                                                   },
+                                       'brief' => '
+    Converts an Isis3 control network file from pvl format into binary.
+  '
+                                     },
+                      'explode' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => '
+    Extracts each band of a cube into a separate one band file
+  '
+                                 },
+                      'seedgrid' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Control Networks'
+                                                },
+                                    'brief' => '
+    Creates a control network for a Lat/Lon range
+  '
+                                  },
+                      'cnettable' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Control Networks'
+                                                 },
+                                     'brief' => '
+    Application to get Excel compatible statistics  
+  '
+                                   },
+                      'spiceserver' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Cameras'
+                                                   },
+                                       'brief' => '
+    Spiceinit Server
+  '
+                                     },
+                      'cubediff' => {
+                                    'category' => {
+                                                  'categoryItem' => [
+                                                                    'Utility',
+                                                                    'System'
+                                                                  ]
+                                                },
+                                    'brief' => '
+    Compare two cubes for differences
+  '
+                                  },
+                      'cnetadd' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Control Networks'
+                                               },
+                                   'brief' => '
+    Adds Level 1 or Level 2 images to an existing Isis3 Control Net file.
+  '
+                                 },
+                      'vicar2isis' => {
+                                      'category' => {
+                                                    'categoryItem' => 'Import and Export'
+                                                  },
+                                      'brief' => '
+    Import Vicar image file into Isis format
+  '
+                                    },
+                      'thmvistrim' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Odyssey'
+                                                  },
+                                      'brief' => '
+    Trims data from framelets on Themis Vis images
+  '
+                                    },
+                      'findrx' => {
+                                  'category' => {
+                                                'categoryItem' => 'Geometry'
+                                              },
+                                  'brief' => '
+    Find and refine reseau points in a cube
+  '
+                                },
+                      'speclowpass' => {
+                                       'oldName' => {
+                                                    'item' => 'boxfilter'
+                                                  },
+                                       'category' => {
+                                                     'categoryItem' => 'Filters'
+                                                   },
+                                       'brief' => '
+    Apply spectral low pass filter to a cube
+  '
+                                     },
+                      'trim' => {
+                                'category' => {
+                                              'categoryItem' => 'Trim and Mask'
+                                            },
+                                'brief' => '
+    Trim edges of input cube
+  '
+                              },
+                      'isis2raw' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+    Exports a cube to raw format
+  '
+                                  },
+                      'kuwahara' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Filters'
+                                                },
+                                    'brief' => '
+    Filter a cube, smoothing but preserving edges
+  '
+                                  },
+                      'apollowarp' => {
+                                      'category' => {
+                                                    'missionItem' => 'Apollo'
+                                                  },
+                                      'brief' => '
+      Warp an image to another using control points
+  '
+                                    },
+                      'mical' => {
+                                 'category' => {
+                                               'missionItem' => 'Mars Exploration Rover'
+                                             },
+                                 'brief' => '
+     Radiometrically calibrates a Mars Exploration Rover (MER) 
+     Microscopic Imager(MI) image
+  '
+                               },
+                      'thmproc' => {
+                                   'category' => {
+                                                 'missionItem' => 'Mars Odyssey'
+                                               },
+                                   'brief' => '
+    Runs a Themis cube through the processing for levels 0 and/or 2
+  '
+                                 },
+                      'cubeatt' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => '
+      Cube attribute editor
+  '
+                                 },
+                      'catlab' => {
+                                  'oldName' => {
+                                               'item' => 'labels'
+                                             },
+                                  'category' => {
+                                                'categoryItem' => 'Utility'
+                                              },
+                                  'brief' => '
+    Outputs the label from a cube
+  '
+                                },
+                      'thmbasemap1' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Utility'
+                                                   },
+                                       'brief' => '
+    Mars Odyssey Themis RDR image cleanup 
+  '
+                                     },
+                      'vikclean' => {
+                                    'category' => {
+                                                  'missionItem' => 'Viking'
+                                                },
+                                    'brief' => '
+    Clean-up of Viking Orbiter Level 1 images
+  '
+                                  },
+                      'algebra' => {
+                                   'oldName' => {
+                                                'item' => [
+                                                          'add',
+                                                          'mad',
+                                                          'b16mad',
+                                                          'mult'
+                                                        ]
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Math and Statistics'
+                                               },
+                                   'brief' => '
+    Performs algebra on either one or two cubes
+  '
+                                 },
+                      'crism2isis' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => 'Import MRO CRISM PDS image cube into Isis format cube'
+                                    },
+                      'translate' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Geometry'
+                                                 },
+                                     'brief' => '
+    Translate an image by given sample and line translation values
+  '
+                                   },
+                      'photrim' => {
+                                   'oldName' => {
+                                                'item' => 'trimangle'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => [
+                                                                   'Trim and Mask',
+                                                                   'Cameras'
+                                                                 ]
+                                               },
+                                   'brief' => '
+    Trims pixels outside of phase, incidence, and emission angles
+  '
+                                 },
+                      'pca' => {
+                               'category' => {
+                                             'categoryItem' => 'Math and Statistics'
+                                           },
+                               'brief' => '
+    Apply Principal Component Analysis on a cube
+  '
+                             },
+                      'footprintinit' => {
+                                         'category' => {
+                                                       'categoryItem' => 'Control Networks'
+                                                     },
+                                         'brief' => '
+    Creates a lat/lon polygon and writes it to the image
+  '
+                                       },
+                      'desmear' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Radiometric and Photometric Correction'
+                                               },
+                                   'brief' => '
+    Remove frame transfer smear
+  '
+                                 },
+                      'mapsize' => {
+                                   'oldName' => {
+                                                'item' => 'size'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Map Projection'
+                                               },
+                                   'brief' => '
+    Compute size or scale of map
+  '
+                                 },
+                      'specadd' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => '
+      Adds special pixels from a match cube to an input cube
+  '
+                                 },
+                      'dawnfc2isis' => {
+                                       'category' => {
+                                                     'missionItem' => 'Dawn'
+                                                   },
+                                       'brief' => 'Import PDS formatted Dawn FC EDR or RDR image cube into Isis format cube'
+                                     },
+                      'tabledump' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Import and Export'
+                                                 },
+                                     'brief' => '
+      Program to output a selected table to a file
+  '
+                                   },
+                      'noproj' => {
+                                  'oldName' => {
+                                               'item' => 'noproj'
+                                             },
+                                  'category' => {
+                                                'categoryItem' => 'Cameras'
+                                              },
+                                  'brief' => '
+    Removes camera distortions in a raw level 1 cube creating an ideal version of the cube.
+  '
+                                },
+                      'hidtmgen' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+    Generate PDS products from a DTM and four orthographic images.
+  '
+                                  },
+                      'cathist' => {
+                                   'oldName' => {
+                                                'item' => 'labels'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => '
+    Outputs the history of a cube
+  '
+                                 },
+                      'hist' => {
+                                'oldName' => {
+                                             'item' => 'histplane'
+                                           },
+                                'category' => {
+                                              'categoryItem' => 'Math and Statistics'
+                                            },
+                                'brief' => '
+    Generates a histogram table of cube in text format
+  '
+                              },
+                      'footprintmerge' => {
+                                          'category' => {
+                                                        'categoryItem' => 'Geometry'
+                                                      },
+                                          'brief' => '
+    Find footprint islands, given a list of cubes
+  '
+                                        },
+                      'gllssical' => {
+                                     'oldName' => {
+                                                  'item' => 'ssical'
+                                                },
+                                     'category' => {
+                                                   'missionItem' => 'Galileo'
+                                                 },
+                                     'brief' => '
+    Perform Radiometric correction on GALILEO-SSI Imaging
+  '
+                                   },
+                      'cubeit' => {
+                                  'category' => {
+                                                'categoryItem' => 'Utility'
+                                              },
+                                  'brief' => '
+    Stacks cubes in individual files into one cube
+  '
+                                },
+                      'cnetcheck' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Control Networks'
+                                                 },
+                                     'brief' => '
+    Checks the validity of a control network
+  '
+                                   },
+                      'automos' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Mosaicking'
+                                               },
+                                   'brief' => '
+    Create a mosaic using a list of map projected cubes
+  '
+                                 },
+                      'clem2isis' => {
+                                     'category' => {
+                                                   'missionItem' => 'Clementine'
+                                                 },
+                                     'brief' => '
+    Convert Clementine data to Isis cube
+  '
+                                   },
+                      'mask' => {
+                                'category' => {
+                                              'categoryItem' => 'Trim and Mask'
+                                            },
+                                'brief' => '
+    Set pixels to NULL using a mask cube
+  '
+                              },
+                      'sigmastretch' => {
+                                        'category' => {
+                                                      'categoryItem' => 'Math and Statistics'
+                                                    },
+                                        'brief' => '
+    Apply a Sigma Stretch to a cube.
+  '
+                                      },
+                      'stats' => {
+                                 'oldName' => {
+                                              'item' => [
+                                                        'average',
+                                                        'avg_sd',
+                                                        'bandstats'
+                                                      ]
+                                            },
+                                 'category' => {
+                                               'categoryItem' => 'Math and Statistics'
+                                             },
+                                 'brief' => '
+    Generates statistics about a cube
+  '
+                               },
+                      'raw2isis' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+    Import raw cube into Isis format
+  '
+                                  },
+                      'csspckgen' => {
+                                     'category' => {
+                                                   'categoryItem' => 'System'
+                                                 },
+                                     'brief' => '
+    Creates a new Cassini PCK SPICE DB file for the latest date-versioned PCKs
+  '
+                                   },
+                      'cnethist' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Math and Statistics'
+                                                },
+                                    'brief' => '
+    Generates a histogram table and plot of the r^2 Residuals of input netfiles
+  '
+                                  },
+                      'mar10cal' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mariner'
+                                                },
+                                    'brief' => '
+    Radiometrically calibrates a Mariner10 image
+  '
+                                  },
+                      'thm2isis' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Odyssey'
+                                                },
+                                    'brief' => '
+    Import a Themis IR/VIS RDR or EDR
+  '
+                                  },
+                      'lrowac2pds' => {
+                                      'category' => {
+                                                    'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+    Import LRO WAC EDR images into Isis cube format
+  '
+                                    },
+                      'isiscomplete' => {
+                                        'category' => {
+                                                      'categoryItem' => 'Scripting'
+                                                    },
+                                        'brief' => '
+    Outputs the completion command for any Isis application
+  '
+                                      },
+                      'cnetwinnow' => {
+                                      'category' => {
+                                                    'categoryItem' => 'Control Networks'
+                                                  },
+                                      'brief' => '
+    Sets problem measures to ignored based on an examination of the residual histogram.
+  '
+                                    },
+                      'lopdsgen' => {
+                                    'category' => {
+                                                  'missionItem' => 'Lunar Orbiter'
+                                                },
+                                    'brief' => '
+    Convert from Isis 3 Lunar Orbiter cubes to the PDS format
+  '
+                                  },
+                      'lineeq' => {
+                                  'category' => {
+                                                'categoryItem' => 'Radiometric and Photometric Correction'
+                                              },
+                                  'brief' => '
+      This program will normalize a cube based on line averages.
+  '
+                                },
+                      'bandtrim' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Trim and Mask'
+                                                },
+                                    'brief' => '
+    Propagates a NULL in any band to all other bands
+  '
+                                  },
+                      'lronac2isis' => {
+                                       'category' => {
+                                                     'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                                   },
+                                       'brief' => '
+      Import an LROC NAC image as an Isis cube
+    '
+                                     },
+                      'dstripe' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Filters'
+                                               },
+                                   'brief' => '
+    Remove horizontal or vertical stripes/noise from a cube
+  '
+                                 },
+                      'pad' => {
+                               'category' => {
+                                             'categoryItem' => 'Utility'
+                                           },
+                               'brief' => '
+    Add NULL padding around a cube
+  '
+                             },
+                      'isis2fits' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Import and Export'
+                                                 },
+                                     'brief' => '
+    Exports a cube to fits format
+  '
+                                   },
+                      'warp' => {
+                                'oldName' => {
+                                             'item' => [
+                                                       'random',
+                                                       'warp2'
+                                                     ]
+                                           },
+                                'category' => {
+                                              'categoryItem' => 'Geometry'
+                                            },
+                                'brief' => '
+      Warp an image using a Control Network
+  '
+                              },
+                      'specdivfilter' => {
+                                         'oldName' => {
+                                                      'item' => 'boxfilter'
+                                                    },
+                                         'category' => {
+                                                       'categoryItem' => 'Filters'
+                                                     },
+                                         'brief' => '
+    Apply a spectral division filter
+  '
+                                       },
+                      'std2isis' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+    Imports a cube from PNG, JPEG, JP2, BMP or TIFF format
+  '
+                                  },
+                      'phoempglobal' => {
+                                        'category' => {
+                                                      'categoryItem' => 'Radiometric and Photometric Correction'
+                                                    },
+                                        'brief' => '
+    Fit empirical photometric functions to Hapke
+  '
+                                      },
+                      'cnetmerge' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Control Networks'
+                                                 },
+                                     'brief' => '
+    Merges multiple Control Networks into one
+  '
+                                   },
+                      'higlob' => {
+                                  'category' => {
+                                                'missionItem' => 'Mars Reconnaissance Orbiter'
+                                              },
+                                  'brief' => '
+    Combines HiRISE image data with all pixel data in the blobs
+  '
+                                },
+                      'circle' => {
+                                  'category' => {
+                                                'categoryItem' => 'Trim and Mask'
+                                              },
+                                  'brief' => '
+    Trims data outside of a circle
+  '
+                                },
+                      'slpmap' => {
+                                  'category' => {
+                                                'categoryItem' => 'Topography'
+                                              },
+                                  'brief' => '
+    Creates cubes that have slope data or aspect data
+  '
+                                },
+                      'equalizer' => {
+                                     'oldName' => {
+                                                  'item' => [
+                                                            'b4equal',
+                                                            'equalizer'
+                                                          ]
+                                                },
+                                     'category' => {
+                                                   'categoryItem' => 'Mosaicking'
+                                                 },
+                                     'brief' => '
+      Tone matches map projected cubes
+  '
+                                   },
+                      'cnetstats' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Control Networks'
+                                                 },
+                                     'brief' => '
+   The application cnetstats has the ability to generate statistics and apply 
+   filters on a Control Network and outputs results in a specified output file 
+   in CSV format. 
+  '
+                                   },
+                      'marciflip' => {
+                                     'category' => {
+                                                   'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                 },
+                                     'brief' => '
+      Flip the framelets on an MRO MARCI image
+    '
+                                   },
+                      'moccal' => {
+                                  'category' => {
+                                                'missionItem' => 'Mars Global Surveyor'
+                                              },
+                                  'brief' => '
+    Radiometrically calibrates a MOC image
+  '
+                                },
+                      'gllssi2isis' => {
+                                       'category' => {
+                                                     'missionItem' => 'Galileo'
+                                                   },
+                                       'brief' => '
+    Import a Galileo solid state imager (SSI) image EDR into Isis cube format
+  '
+                                     },
+                      'mar10restore' => {
+                                        'category' => {
+                                                      'missionItem' => 'Mariner'
+                                                    },
+                                        'brief' => '
+   Restoration of Mariner10 compress images
+  '
+                                      },
+                      'mdis2pds' => {
+                                    'category' => {
+                                                  'missionItem' => 'Messenger'
+                                                },
+                                    'brief' => '
+    Exports a Messenger cube back into PDS format
+  '
+                                  },
+                      'cubenorm' => {
+                                    'category' => {
+                                                  'categoryItem' => [
+                                                                    'Math and Statistics',
+                                                                    'Radiometric and Photometric Correction'
+                                                                  ]
+                                                },
+                                    'brief' => '
+    Normalize columns or lines in a cube
+  '
+                                  },
+                      'photomet' => {
+                                    'oldName' => {
+                                                 'item' => 'photomet'
+                                               },
+                                    'category' => {
+                                                  'categoryItem' => [
+                                                                    'Radiometric and Photometric Correction',
+                                                                    'Cameras'
+                                                                  ]
+                                                },
+                                    'brief' => '
+    Perform photometric corrections on a cube
+  '
+                                  },
+                      'clemnircal' => {
+                                      'category' => {
+                                                    'missionItem' => 'Clementine'
+                                                  },
+                                      'brief' => '
+    Performs radiometric corrections on Clementine NIR images
+  '
+                                    },
+                      'mocevenodd' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Global Surveyor'
+                                                  },
+                                      'brief' => '
+    Remove even/odd detector striping
+  '
+                                    },
+                      'remrx' => {
+                                 'category' => {
+                                               'categoryItem' => 'Geometry'
+                                             },
+                                 'brief' => '
+    Removes Reseaus from an image
+  '
+                               },
+                      'hifurrows' => {
+                                     'category' => {
+                                                   'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                 },
+                                     'brief' => '
+    Null furrowed pixels 
+  '
+                                   },
+                      'mocuncompress' => {
+                                         'category' => {
+                                                       'missionItem' => 'Mars Global Surveyor'
+                                                     },
+                                         'brief' => '
+    Uncompresses moc EDR data files
+  '
+                                       },
+                      'lrowacpho' => {
+                                     'category' => {
+                                                   'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                                 },
+                                     'brief' => '
+    Apply Hillier or Exponential photometric correction to multiband cubes
+  '
+                                   },
+                      'maptemplate' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Map Projection'
+                                                   },
+                                       'brief' => '
+      Create mapping group template for a projection
+  '
+                                     },
+                      'histat' => {
+                                  'category' => {
+                                                'missionItem' => 'Mars Reconnaissance Orbiter'
+                                              },
+                                  'brief' => '
+    Generates statistics about a HiRISE cube and ancillary data
+  '
+                                },
+                      'overlapstats' => {
+                                        'category' => {
+                                                      'categoryItem' => 'Control Networks'
+                                                    },
+                                        'brief' => 'Calculates the statistics of overlapping cube regions'
+                                      },
+                      'shadowtau' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Radiometric and Photometric Correction'
+                                                 },
+                                     'brief' => '
+   Estimate optical depth (tau) using information from shadow measurements 
+  '
+                                   },
+                      'hi2isis' => {
+                                   'category' => {
+                                                 'missionItem' => 'Mars Reconnaissance Orbiter'
+                                               },
+                                   'brief' => '
+    Import HiRISE EDR images into Isis cube format
+  '
+                                 },
+                      'clemnirclean' => {
+                                        'category' => {
+                                                      'missionItem' => 'Clementine'
+                                                    },
+                                        'brief' => '
+    Clean-up of Clementine NIR Images
+  '
+                                      },
+                      'cnetedit' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Control Networks'
+                                                },
+                                    'brief' => '
+    Edit control networks
+  '
+                                  },
+                      'hirdr2isis' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => 'Import PDS formatted HiRISE RDR image cube into Isis format cube'
+                                    },
+                      'thmdriftcor' => {
+                                       'category' => {
+                                                     'missionItem' => 'Mars Odyssey'
+                                                   },
+                                       'brief' => '
+    Apply thermal drift correction to THEMIS images
+  '
+                                     },
+                      'ifft' => {
+                                'category' => {
+                                              'categoryItem' => 'Fourier Domain'
+                                            },
+                                'brief' => '
+    Apply an Inverse Fourier Transform on a magnitude/phase pair of cubes
+  '
+                              },
+                      'fillgap' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Math and Statistics'
+                                               },
+                                   'brief' => '
+    Compute interpolations to replace special pixels.
+  '
+                                 },
+                      'mvstats' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Math and Statistics'
+                                               },
+                                   'brief' => '
+    Generate multivariate Statistics for a cube
+  '
+                                 },
+                      'greyscale' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Utility'
+                                                 },
+                                     'brief' => 'Generate a grey scale cube'
+                                   },
+                      'ctxcal' => {
+                                  'category' => {
+                                                'missionItem' => 'Mars Reconnaissance Orbiter'
+                                              },
+                                  'brief' => '
+    Radiometrically calibrates a CTX image
+  '
+                                },
+                      'fakecube' => {
+                                    'category' => {
+                                                  'categoryItem' => 'System'
+                                                },
+                                    'brief' => '
+    Create geometric testing cubes
+  '
+                                  },
+                      'cnet2mat' => {
+                                    'category' => {
+                                                  'categoryItem' => [
+                                                                    'Control Networks',
+                                                                    'Import and Export'
+                                                                  ]
+                                                },
+                                    'brief' => '
+    Converts an Isis3 control network file to an ISIS2 match point file.
+  '
+                                  },
+                      'findimageoverlaps' => {
+                                             'category' => {
+                                                           'categoryItem' => 'Control Networks'
+                                                         },
+                                             'brief' => '
+    Uses the input image footprints to find their intersections and writes these
+    intersections to a file for used in other programs such as autoseed.
+  '
+                                           },
+                      'map2map' => {
+                                   'oldName' => {
+                                                'item' => [
+                                                          'nuproj',
+                                                          'newmap',
+                                                          'lev2tolev2'
+                                                        ]
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Map Projection'
+                                               },
+                                   'brief' => '
+    Modify a cube\'s map projection
+  '
+                                 },
+                      'hicubeit' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                },
+                                    'brief' => '
+    Stack slithered HiRISE red, bg, and ir cubes
+  '
+                                  },
+                      'mer2isis' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Exploration Rover'
+                                                },
+                                    'brief' => '
+        Import a Mer PDS image to Isis cube format
+    '
+                                  },
+                      'vims2map' => {
+                                    'oldName' => {
+                                                 'item' => [
+                                                           'lev1tolev2',
+                                                           'plansinu',
+                                                           'planorth'
+                                                         ]
+                                               },
+                                    'category' => {
+                                                  'missionItem' => 'Cassini'
+                                                },
+                                    'brief' => '
+    Convert vims image to a map projection
+  '
+                                  },
+                      'makecube' => {
+                                    'oldName' => {
+                                                 'item' => 'zero'
+                                               },
+                                    'category' => {
+                                                  'categoryItem' => 'Utility'
+                                                },
+                                    'brief' => 'Generate a cube with a constant value'
+                                  },
+                      'thmvisflat' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Odyssey'
+                                                  },
+                                      'brief' => '
+    This program applies a flat field correction to Themis VIS Images
+  '
+                                    },
+                      'vikfixtrx' => {
+                                     'category' => {
+                                                   'missionItem' => 'Viking'
+                                                 },
+                                     'brief' => '
+    Fix null tracks in a Viking image plane
+  '
+                                   },
+                      'vimscal' => {
+                                   'category' => {
+                                                 'missionItem' => 'Cassini'
+                                               },
+                                   'brief' => '
+    Radiometric correction of Cassini VIMS camera images. 
+  '
+                                 },
+                      'hisharpen' => {
+                                     'category' => {
+                                                   'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                 },
+                                     'brief' => '
+HiSharpen uses a linear frequency domain filter to remove the minor
+blur caused by the optical system of the HiRISE camera.
+    '
+                                   },
+                      'shade' => {
+                                 'category' => {
+                                               'categoryItem' => 'Radiometric and Photometric Correction'
+                                             },
+                                 'brief' => '
+    Create shaded-relief cube from topographic cube
+  '
+                               },
+                      'caminfo' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Cameras'
+                                               },
+                                   'brief' => '
+    Outputs a PVL file that contains camera information. 
+  '
+                                 },
+                      'viknobutter' => {
+                                       'category' => {
+                                                     'missionItem' => 'Viking'
+                                                   },
+                                       'brief' => '
+    Final step of Viking Orbiter Level 1 image clean-up
+  '
+                                     },
+                      'hicolormos' => {
+                                      'category' => {
+                                                    'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+    Create a color mosaic of a HiRISE cubes from an observation and update labels required by hirdrgen.
+  '
+                                    },
+                      'enlarge' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Geometry'
+                                               },
+                                   'brief' => '
+    Enlarge the pixel dimensions of an image
+  '
+                                 },
+                      'lowpass' => {
+                                   'oldName' => {
+                                                'item' => 'boxfilter'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Filters'
+                                               },
+                                   'brief' => '
+    Apply lowpass or blurring filter to a cube
+  '
+                                 },
+                      'jigsaw' => {
+                                  'category' => {
+                                                'categoryItem' => 'Control Networks'
+                                              },
+                                  'brief' => '
+    Improves camera pointing and a whole lot more!
+  '
+                                },
+                      'apollopanstitcher' => {
+                                             'category' => {
+                                                           'categoryItem' => 'Import and Export'
+                                                         },
+                                             'brief' => '
+    Stiches together the typically eight individual scans of an Apollo Panoramic Image
+  '
+                                           },
+                      'ascii2isis' => {
+                                      'category' => {
+                                                    'categoryItem' => 'Import and Export'
+                                                  },
+                                      'brief' => 'Import ascii file as a cube'
+                                    },
+                      'viknosalt' => {
+                                     'category' => {
+                                                   'missionItem' => 'Viking'
+                                                 },
+                                     'brief' => '
+    Initial Clean-up of Viking Orbiter Level 1 images
+  '
+                                   },
+                      'noisefilter' => {
+                                       'oldName' => {
+                                                    'item' => 'boxfilter'
+                                                  },
+                                       'category' => {
+                                                     'categoryItem' => 'Filters'
+                                                   },
+                                       'brief' => '
+    Apply a noise removal filter to a cube
+  '
+                                     },
+                      'findgaps' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Utility'
+                                                },
+                                    'brief' => '
+    Finds the gaps in a given Cube.
+  '
+                                  },
+                      'coreg' => {
+                                 'oldName' => {
+                                              'item' => [
+                                                        'coreg2',
+                                                        'coregpr',
+                                                        'coregpr2'
+                                                      ]
+                                            },
+                                 'category' => {
+                                               'categoryItem' => 'Registration and Pattern Matching'
+                                             },
+                                 'brief' => '
+    Subpixel registration of a pair of images
+  '
+                               },
+                      'spkwriter' => {
+                                     'category' => {
+                                                   'categoryItem' => [
+                                                                     'Import and Export',
+                                                                     'Geometry'
+                                                                   ]
+                                                 },
+                                     'brief' => '
+    Generate NAIF compatible SPICE SPK kernels from ISIS cubes
+  '
+                                   },
+                      'camstats' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Cameras'
+                                                },
+                                    'brief' => '
+    Generates and outputs camera statistics for a cube in raw camera geometry
+  '
+                                  },
+                      'outline' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Trim and Mask'
+                                               },
+                                   'brief' => '
+    Outlines contiguous regions in a cube
+  '
+                                 },
+                      'apollofindrx' => {
+                                        'category' => {
+                                                      'missionItem' => 'Apollo'
+                                                    },
+                                        'brief' => '
+    Find and refine reseau points in an Apollo cube
+  '
+                                      },
+                      'hifringe' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                },
+                                    'brief' => '
+    Gathers statistics on the first and last several samples of a channel
+  '
+                                  },
+                      'bandnorm' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Math and Statistics'
+                                                },
+                                    'brief' => '
+    Normalize bands in a cube
+  '
+                                  },
+                      'fplanemap' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Registration and Pattern Matching'
+                                                 },
+                                     'brief' => '
+       Produce focal plane coordinates from control net file
+  '
+                                   },
+                      'qview' => {
+                                 'category' => {
+                                               'categoryItem' => 'Display'
+                                             },
+                                 'brief' => '
+    Display and analyze cubes
+  '
+                               },
+                      'minmax' => {
+                                  'category' => {
+                                                'categoryItem' => 'Filters'
+                                              },
+                                  'brief' => '
+    Apply a minimum or maximum filter to a cube
+  '
+                                },
+                      'kaguyatc2isis' => {
+                                         'category' => {
+                                                       'missionItem' => 'Kaguya'
+                                                     },
+                                         'brief' => 'Import PDS formatted Kaguya Terrain Camera level 2 image cube into Isis format cube'
+                                       },
+                      'lronac2pds' => {
+                                      'category' => {
+                                                    'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                                  },
+                                      'brief' => '
+    Convert from cube to pds format
+  '
+                                    },
+                      'cubefunc' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Math and Statistics'
+                                                },
+                                    'brief' => '
+    This program will apply a chosen function to the input cube
+  '
+                                  },
+                      'apolloremrx' => {
+                                       'category' => {
+                                                     'missionItem' => 'Apollo'
+                                                   },
+                                       'brief' => '
+    Removes Reseaus from an Apollo image
+  '
+                                     },
+                      'cisscal' => {
+                                   'category' => {
+                                                 'missionItem' => 'Cassini'
+                                               },
+                                   'brief' => '
+    Radiometric correction of  Cassini ISS camera images. 
+  '
+                                 },
+                      'editlab' => {
+                                   'oldName' => {
+                                                'item' => 'labels'
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => 'Utility'
+                                               },
+                                   'brief' => 'Modifies cube labels'
+                                 },
+                      'hrsc2isis' => {
+                                     'oldName' => {
+                                                  'item' => [
+                                                            'mex2isis.pl',
+                                                            'readpfx'
+                                                          ]
+                                                },
+                                     'category' => {
+                                                   'missionItem' => 'Mars Express'
+                                                 },
+                                     'brief' => 'Import HRSC image'
+                                   },
+                      'cnetsplit' => {
+                                     'category' => {
+                                                   'categoryItem' => 'Control Networks'
+                                                 },
+                                     'brief' => '
+    The application cnetsplit splits the input control network into user 
+    specified number of control networks.
+  '
+                                   },
+                      'cnetref' => {
+                                   'category' => {
+                                                 'categoryItem' => 'Control Networks'
+                                               },
+                                   'brief' => '
+    The application cnetref finds the best reference for a Control 
+    Point based on criteria like Emission Angle or Incidence Angle or 
+    Resolution or Interest 
+  '
+                                 },
+                      'table2cube' => {
+                                      'category' => {
+                                                    'categoryItem' => 'Import and Export'
+                                                  },
+                                      'brief' => '
+    Converts a table to a cube
+  '
+                                    },
+                      'appjit' => {
+                                  'category' => {
+                                                'categoryItem' => 'Cameras'
+                                              },
+                                  'brief' => '
+    Apply sample/line jitter offsets to the camera pointing of an observation
+    set
+  '
+                                },
+                      'catoriglab' => {
+                                      'category' => {
+                                                    'categoryItem' => 'Utility'
+                                                  },
+                                      'brief' => '
+    Outputs the original labels of a cube
+  '
+                                    },
+                      'ckwriter' => {
+                                    'category' => {
+                                                  'categoryItem' => [
+                                                                    'Import and Export',
+                                                                    'Geometry'
+                                                                  ]
+                                                },
+                                    'brief' => '
+    Generate NAIF compatible SPICE CK kernels from ISIS cubes
+  '
+                                  },
+                      'spiceinit' => {
+                                     'oldName' => {
+                                                  'item' => [
+                                                            'levinit',
+                                                            'naiflab',
+                                                            'spicelab'
+                                                          ]
+                                                },
+                                     'category' => {
+                                                   'categoryItem' => 'Cameras'
+                                                 },
+                                     'brief' => '
+    Determine SPICE kernels for a camera cube
+  '
+                                   },
+                      'isis2gml' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Import and Export'
+                                                },
+                                    'brief' => '
+    output a GML polygon from an ISIS cube
+  '
+                                  },
+                      'histitch' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                },
+                                    'brief' => '
+    Merge a HiRISE channel pair to make a single image
+  '
+                                  },
+                      'lrowaccal' => {
+                                     'category' => {
+                                                   'missionItem' => 'Lunar Reconnaissance Orbiter'
+                                                 },
+                                     'brief' => '
+    This program calibrates WAC images
+  '
+                                   },
+                      'prtloganalyzer' => {
+                                          'category' => {
+                                                        'categoryItem' => 'System'
+                                                      },
+                                          'brief' => '
+    Analyze program execution efficiency in ISIS print.prt logs
+  '
+                                        },
+                      'cnetnewradii' => {
+                                        'category' => {
+                                                      'categoryItem' => 'Control Networks'
+                                                    },
+                                        'brief' => '
+    Generate new radii from DEM for a ControlNet
+  '
+                                      },
+                      'cam2map' => {
+                                   'oldName' => {
+                                                'item' => [
+                                                          'lev1tolev2',
+                                                          'plansinu',
+                                                          'planorth'
+                                                        ]
+                                              },
+                                   'category' => {
+                                                 'categoryItem' => [
+                                                                   'Map Projection',
+                                                                   'Cameras'
+                                                                 ]
+                                               },
+                                   'brief' => '
+    Convert camera image to a map projection
+  '
+                                 },
+                      'messckgen' => {
+                                     'category' => {
+                                                   'categoryItem' => 'System'
+                                                 },
+                                     'brief' => '
+    Generates MESSENGER CKs
+  '
+                                   },
+                      'qnet' => {
+                                'category' => {
+                                              'categoryItem' => [
+                                                                'Control Networks',
+                                                                'Display'
+                                                              ]
+                                            },
+                                'brief' => '
+    Create and edit control networks
+  '
+                              },
+                      'phoemplocal' => {
+                                       'category' => {
+                                                     'categoryItem' => 'Radiometric and Photometric Correction'
+                                                   },
+                                       'brief' => '
+    Fit empirical photometric functions to Hapke
+  '
+                                     },
+                      'noseam' => {
+                                  'category' => {
+                                                'categoryItem' => 'Mosaicking'
+                                              },
+                                  'brief' => 'Creates a mosaic with little to no seams using a list of map projected
+      cubes'
+                                },
+                      'phohillier' => {
+                                      'category' => {
+                                                    'categoryItem' => [
+                                                                      'Radiometric and Photometric Correction',
+                                                                      'Cameras'
+                                                                    ]
+                                                  },
+                                      'brief' => '
+    Apply Hillier photometric correction to multiband cubes
+  '
+                                    },
+                      'hicalbeta' => {
+                                     'category' => {
+                                                   'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                 },
+                                     'brief' => '
+    Performs radiometric calibration of HiRISE channel images
+  '
+                                   },
+                      'skypt' => {
+                                 'category' => {
+                                               'categoryItem' => 'Cameras'
+                                             },
+                                 'brief' => '
+    Converts between sample/line and ra/ dec positions
+  '
+                               },
+                      'kerneldbgen' => {
+                                       'category' => {
+                                                     'categoryItem' => 'System'
+                                                   },
+                                       'brief' => '
+    Creates a database of kernels
+  '
+                                     },
+                      'skyrange' => {
+                                    'category' => {
+                                                  'categoryItem' => 'Cameras'
+                                                },
+                                    'brief' => '
+    Compute the ra/dec range of a camera image
+  '
+                                  },
+                      'hijitreg' => {
+                                    'category' => {
+                                                  'missionItem' => 'Mars Reconnaissance Orbiter'
+                                                },
+                                    'brief' => '
+       Characterize HiRISE image jitter with co-registration
+  '
+                                  }
+                    }
+        };
