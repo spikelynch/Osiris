@@ -1,0 +1,28 @@
+  
+
+<div id="page">
+
+      <div id="content">
+        <div id="header">
+          <h1>Isis</h1>
+        </div>
+
+<div>
+
+<h2><% browseby.ucfirst %>: <% class %></h2>
+
+<table id="applist">
+
+<% FOREACH app IN apps.keys.sort %>
+
+<tr>
+	<td class="appname"><a href="/app/<% app %>"><% app %></a></td>
+	<td class="appdesc"><% apps.$app %></td>
+</tr>
+
+<% END %>
+
+</table>
+
+<p><a href="/">Back</a></p>
+</div>

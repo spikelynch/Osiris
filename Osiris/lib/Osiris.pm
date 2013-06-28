@@ -1,7 +1,7 @@
 package Osiris;
 
 use Dancer ':syntax';
-use XML::Twig;
+use XML::Simple;
 
 
 =head NAME
@@ -17,7 +17,7 @@ Dancer interface to the Isis planetary imaging toolkit
 
 our $VERSION = '0.1';
 
-my $conf = read_config();
+my $conf = config;
 
 my $apps = {};
 
@@ -28,41 +28,31 @@ my $browse = {
 
 load_apps();
 
+
 # Index: a list of app categories and missions
 
 get '/' => sub {
-    template 'index' => { toc => $browse };
+    template 'index' => {
+    	categories => $browse->{category},
+    	missions => $browse->{mission}
+    };
 };
 
-# Category: a list of all applications in a category
+# Browse: a list of applications for a category or mission
 
-get '/cat/:cat' => sub {
-	my $cat = params('cat');
-	if( $browse->{category}{$cat} ) {
+get '/browse/:by/:class' => sub {
+	my $by = param('by');
+	my $class = param('class');
+	if( my $apps = $browse->{$by}{$class} ) {
 		template 'browse' => {
-			apps => $browse->{category}{$cat},
-			category => $cat,
+			browseby => $by,
+			class => $class,
+			apps => $apps
 		};
 	} else {
 		template 'index' => { toc => $browse }
 	}
 };
-
-# Missions: a list of all applications in a mission
-
-get '/mission/:mission' => sub {
-	my $mission = params('mission');
-	if( $browse->{mission}{$mission} ) {
-		template 'browse' => {
-			apps => $browse->{mission}{$mission},
-			mission => params('mission'),
-		};
-	} else {
-		template 'index' => { toc => $browse }		
-	}
-};
-
-
 
 #get '/apps/search/:str' => sub {
 #	template 'search';
