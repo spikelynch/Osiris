@@ -21,8 +21,8 @@ sub new {
 
 =item form()
 
-Returns an HTML form built from this app's <groups> tag.
-
+Returns this app's form as a data structure which can be used to
+fill out the web form in views/app.tt. 
 =cut
 
 sub form {
@@ -32,122 +32,8 @@ sub form {
 		$self->parse_api;
 	}
 	
+	return $self->{api};
 	
-	warn("entering form for $self->{name}");
-
-	my $html = "<form name=\"$self->{name}\">\n";
-	
-	for my $group ( @{$self->{api}{groups}} ) {
-		$html .= $self->form_group($group);
-	}
-	
-	$html .= "</form>";
-	
-	return $html;
-}
-
-
-=item form_group($group)
-
-HTML version of a <group> element
-
-=cut
-
-sub form_group {
-	my ( $self, $group ) = @_;
-	
-	warn("<div> for group $group->{name}");
-	
-	my $html =<<EOHTML;
-<div id="grp_$group->{name}">
-EOHTML
-	
-	for my $parameter ( @{$group->{parameters}} ) {
-		$html .= $self->form_parameter($parameter);
-	}
-	
-	$html .= "</div>";
-	return $html;
-	
-}
-
-
-=item form_parameter($parm)
-
-Render a single parameter field
-
-=cut
-
-sub form_parameter {
-	my ( $self, $parameter ) = @_;
-	
-	warn("Parameter $parameter->{name}");
-	
-	my $input;
-	
-	if( $parameter->{list} ) {
-		$input = $self->form_list($parameter);
-	} else {
-		$input = $self->form_text($parameter);
-	}
-	
-	return<<EOHTML;
-<div class="parameter">
-<span class="label">$parameter->{name}</span>
-$input<br />
-<span class="brief">$parameter->{brief}
-</div>
-EOHTML
-}
-
-
-
-=item form_text($parameter)
-
-Text input item
-
-=cut
-
-sub form_text {
-	my ( $self, $parameter ) = @_;
-	
-	return <<EOHTML;
-<input class="isisform"
-	   name="$parameter->{name}"
-	   type="text"
-	   size="40"
-	   value="$parameter->{default}[0]" />
-EOHTML
-
-}
-
-
-=item form_list($parameter)
-
-Drop-down list input item
-
-=cut
-
-sub form_list {
-	my ( $self, $parameter ) = @_;
-	
-	my @options = ();
-	
-	for my $item ( @{$parameter->{list}} ) {
-		my $selected = '';
-		if( $item->{value} eq $parameter->{default}[0] ) {
-			$selected = ' selected';
-		} 
-		push @options, <<EOHTML;
-<option value="$item->{value}"$selected>$_->{value} ($_->{brief})</option>
-EOHTML
-	}
-	
-	my $html = "<select name=\"$parameter->{name}\">\n";
-	$html .= join("\n", @options);
-	$html .= "</select>\n";
-	
-	return $html;
 }
 
 
