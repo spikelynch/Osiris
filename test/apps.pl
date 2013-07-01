@@ -2,7 +2,7 @@
 
 use strict;
 
-use XML::Simple;
+use XML::Twig;
 use Data::Dumper;
 
 my $DIR = '/home/mike/Isis/isis/bin/xml/';
@@ -17,14 +17,23 @@ my $dh;
 
 opendir($dh, $DIR) || die("Couldn't open $DIR $!");
 
+my $elts = {};
+
+my $tw = XML::Twig->new(
+    twig_handlers => {
+        
+
+
+);
+
+
+
 for my $file ( sort readdir($dh) ) {
- #   next unless $file =~ /hicrop/;
     next if $file =~ /^\./;
     next if $file =~ /^application/;
     
-    my $xml = XMLin("$DIR$file", %options) || die ("Parse error on $file");
 
-#    print Dumper({$file => $xml}) . "\n\n";
+    
     $count++;
 }
 
