@@ -14,7 +14,142 @@ sub new {
 	$self->{app} = $params{app};
 	$self->{dir} = $params{dir};	
 	$self->{brief} = $params{brief};
+	
+	return $self;
 }
+
+
+=item form()
+
+Returns an HTML form built from this app's <groups> tag.
+
+=cut
+
+sub form {
+	my ( $self ) = @_;
+	
+	if( !$self->{api} ) {
+		$self->parse_api;
+	}
+	
+	
+	warn("entering form for $self->{name}");
+
+	my $html = "<form name=\"$self->{name}\">\n";
+	
+	for my $group ( @{$self->{api}{groups}} ) {
+		$html .= $self->form_group($group);
+	}
+	
+	$html .= "</form>";
+	
+	return $html;
+}
+
+
+=item form_group($group)
+
+HTML version of a <group> element
+
+=cut
+
+sub form_group {
+	my ( $self, $group ) = @_;
+	
+	warn("<div> for group $group->{name}");
+	
+	my $html =<<EOHTML;
+<div id="grp_$group->{name}">
+EOHTML
+	
+	for my $parameter ( @{$group->{parameters}} ) {
+		$html .= $self->form_parameter($parameter);
+	}
+	
+	$html .= "</div>";
+	return $html;
+	
+}
+
+
+=item form_parameter($parm)
+
+Render a single parameter field
+
+=cut
+
+sub form_parameter {
+	my ( $self, $parameter ) = @_;
+	
+	warn("Parameter $parameter->{name}");
+	
+	my $input;
+	
+	if( $parameter->{list} ) {
+		$input = $self->form_list($parameter);
+	} else {
+		$input = $self->form_text($parameter);
+	}
+	
+	return<<EOHTML;
+<div class="parameter">
+<span class="label">$parameter->{name}</span>
+$input<br />
+<span class="brief">$parameter->{brief}
+</div>
+EOHTML
+}
+
+
+
+=item form_text($parameter)
+
+Text input item
+
+=cut
+
+sub form_text {
+	my ( $self, $parameter ) = @_;
+	
+	return <<EOHTML;
+<input class="isisform"
+	   name="$parameter->{name}"
+	   type="text"
+	   size="40"
+	   value="$parameter->{default}[0]" />
+EOHTML
+
+}
+
+
+=item form_list($parameter)
+
+Drop-down list input item
+
+=cut
+
+sub form_list {
+	my ( $self, $parameter ) = @_;
+	
+	my @options = ();
+	
+	for my $item ( @{$parameter->{list}} ) {
+		my $selected = '';
+		if( $item->{value} eq $parameter->{default}[0] ) {
+			$selected = ' selected';
+		} 
+		push @options, <<EOHTML;
+<option value="$item->{value}"$selected>$_->{value} ($_->{brief})</option>
+EOHTML
+	}
+	
+	my $html = "<select name=\"$parameter->{name}\">\n";
+	$html .= join("\n", @options);
+	$html .= "</select>\n";
+	
+	return $html;
+}
+
 
 
 =item parse_api()
@@ -35,7 +170,7 @@ sub parse_api {
 		twig_handlers => {
 			brief => 		sub { $self->xml_field($_) 		},
 			description => 	sub { $self->xml_field($_) 		},
-			category => 	sub { $self->xml_categories($_) },
+			category => 	sub { $self->xml_category($_) },
 			group =>        sub { $self->xml_group($_)		}
 		}
 	);
@@ -61,6 +196,27 @@ sub xml_field {
 	$self->{api}{$tag} = $elt->inner_xml;
 }
 
+=item xml_category($elt)
+
+Parses the <category> element
+
+=cut
+
+sub xml_category {
+	my ( $self, $elt ) = @_;
+	
+	$self->{categories} = {};
+	$self->{missions} = {};
+	
+	for my $celt ( $elt->children ) {
+		my $cat = $celt->text;
+		if( $celt->tag eq 'categoryItem' ) {
+			$self->{categories}{$cat} = 1
+		} else {
+			$self->{missions}{$cat} = 1;
+		}
+	}
+}
 
 =item xml_group($elt)
 
@@ -181,15 +337,15 @@ sub xml_list {
 	for my $oelt ( $elt->children('option')  ) {
 		my $option = {
 			value => $oelt->att('value'),
-			brief => $oelt->child_text('brief')
+			brief => $oelt->first_child_text('brief')
 		};
-		if( my $delt = $oelt->child('description') ) {
+		if( my $delt = $oelt->first_child('description') ) {
 			$option->{description} = $delt->inner_xml;
 		}
-		if( my $exelt = $oelt->child('exclusions') ) {
+		if( my $exelt = $oelt->first_child('exclusions') ) {
 			$option->{exclusions} = [ $exelt->children_text ];
 		}
-		if( my $inelt = $oelt->child('inclusions') ) {
+		if( my $inelt = $oelt->first_child('inclusions') ) {
 			$option->{inclusions} = [ $inelt->children_text ];
 		}
 		push @$options, $option;
@@ -215,7 +371,7 @@ sub xml_helpers {
 		};
 		$helper->{function} = $helt->child_text('function');
 		$helper->{brief}    = $helt->child_text('brief');
-		if( my $delt = $helt->child('description') ) {
+		if( my $delt = $helt->first_child('description') ) {
 			$helper->{description} = $delt->inner_xml;
 		}
 		push @$helpers, $helper;

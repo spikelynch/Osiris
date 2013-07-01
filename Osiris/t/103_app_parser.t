@@ -1,8 +1,12 @@
-use Test::More;
+#!/usr/bin/perl
+
+use Test::More tests => 2;
 
 use strict;
+use Data::Dumper;
 
-use Osiris;
+use lib 'lib';
+
 use Osiris::App;
 
 my $APPDIR = '/home/mike/Isis/isis/bin/xml/';
@@ -10,35 +14,35 @@ my $APPTOC = 'applicationTOC.xml';
 my $APPCATS = 'applicationCategories.xml';
 my $HTMLDIR = '/home/mike/workspace/DC18C Osiris/test/html/';
 
-my ( $toc, $cats ) = Osiris::load_toc(
-	appdir => $APPDIR,
-	apptoc => $APPTOC
-);
+opendir(my $dh, $APPDIR) || die("Couldn't open appdir");
 
-
-for my $appname ( sort keys %$toc ) {
+for my $appfile ( sort readdir($dh) ) {
+	next unless $appfile =~ /^([a-zA-Z0-2]+)\.xml$/;
+	my $appname = $1;
+	next if $appfile eq $APPTOC || $appfile eq $APPCATS;
+	
 	my $app = Osiris::App->new(
-		dir => $appdir,
+		dir => $APPDIR,
 		app => $appname
 	);
 	
 	my $api = $app->parse_api;
 	
-	ok($api, "Parsed app $appname");
+	ok($api, "Parsed app XML $appname");
 
-	print Dumper({$appname => $api});	
+	print Dumper({app => $app});
+
+	my $html = $app->form;
 	
-}
-#	my $html = $app->form;
-#	
-#	ok($html, "Got app's HTML form");
-#	
-#	my $htmlfile = $HTMLDIR . $appname . ".html";
-#
-#	if( ok(open(HTML, ">$htmlfile"), "Writing to $htmlfile" ) {
-#		print HTML, $html;
-#		close HTML;
-#	} else {
-#		diag("Couldn't open $htmlfile $!");
-#	}
+	ok($html, "Got app's HTML form");
+	
+	my $htmlfile = $HTMLDIR . $appname . ".html";
+
+	if( ok(open(HTML, ">$htmlfile"), "Writing to $htmlfile") ) {
+		print HTML $html;
+		close HTML;
+	} else {
+		diag("Couldn't open $htmlfile $!");
+	}
+	die;
 }

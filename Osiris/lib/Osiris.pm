@@ -21,7 +21,6 @@ our $VERSION = '0.1';
 
 my $conf = config;
 
-
 my ( $toc, $cats ) = load_toc(%$conf);
 
 
@@ -50,14 +49,31 @@ get '/browse/:by/:class' => sub {
 	}
 };
 
+get '/app/:name' => sub {
+	my $name = param('name');
+	if( $toc->{$name} ) {
+		my $app = Osiris::App->new(
+			dir => $conf->{appdir},
+			app => $name,
+			brief => $toc->{$name}
+		);
+		template 'app' => {
+			app => $name,
+			brief => $toc->{$name},
+			form => $app->form
+		};
+	} else {
+		send_error("Not found", 404);
+	}
+};
+
+
+
 #get '/apps/search/:str' => sub {
 #	template 'search';
 #};
 #
 #
-#get '/app/:name' => sub {
-#	template 
-#};
 #
 #
 
@@ -71,13 +87,18 @@ get '/browse/:by/:class' => sub {
 sub load_toc {
 	my %params = @_;
 	
+	if( !$params{appdir} || !$params{apptoc} ) {
+		die("Need appdir and apptoc");
+	}
 	
 	my $toc = join('/', $params{appdir}, $params{apptoc});	
 	
+	print "TOC = $toc";
+	
 	my $xml = XMLin($toc) || die ("Couldn't parse $toc");
 	
-	$apps = $xml->{application};
-	$browse = {
+	my $apps = $xml->{application};
+	my $browse = {
 		category => {},
 		mission => {}
 	};
@@ -101,7 +122,7 @@ sub load_toc {
 		}
 		$apps->{$app} = $desc;
 	}
-	return $apps;
+	return ( $apps, $browse );
 }
 
 
