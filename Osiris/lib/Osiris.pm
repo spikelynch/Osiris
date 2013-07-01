@@ -3,6 +3,8 @@ package Osiris;
 use Dancer ':syntax';
 use XML::Simple;
 
+use Osiris::App;
+
 
 =head NAME
 
@@ -19,22 +21,16 @@ our $VERSION = '0.1';
 
 my $conf = config;
 
-my $apps = {};
 
-my $browse = {
-	category => {},
-	mission => {}
-};
-
-load_apps();
+my ( $toc, $cats ) = load_toc(%$conf);
 
 
 # Index: a list of app categories and missions
 
 get '/' => sub {
     template 'index' => {
-    	categories => $browse->{category},
-    	missions => $browse->{mission}
+    	categories => $cats->{category},
+    	missions => $cats->{mission}
     };
 };
 
@@ -43,14 +39,14 @@ get '/' => sub {
 get '/browse/:by/:class' => sub {
 	my $by = param('by');
 	my $class = param('class');
-	if( my $apps = $browse->{$by}{$class} ) {
+	if( my $apps = $cats->{$by}{$class} ) {
 		template 'browse' => {
 			browseby => $by,
 			class => $class,
 			apps => $apps
 		};
 	} else {
-		template 'index' => { toc => $browse }
+		template 'index' => { toc => $cats }
 	}
 };
 
@@ -72,8 +68,11 @@ get '/browse/:by/:class' => sub {
 
 
 
-sub load_apps {
-	my $toc = join('/', $conf->{appdir}, $conf->{apptoc});	
+sub load_toc {
+	my %params = @_;
+	
+	
+	my $toc = join('/', $params{appdir}, $params{apptoc});	
 	
 	my $xml = XMLin($toc) || die ("Couldn't parse $toc");
 	
@@ -102,7 +101,7 @@ sub load_apps {
 		}
 		$apps->{$app} = $desc;
 	}
-	
+	return $apps;
 }
 
 
