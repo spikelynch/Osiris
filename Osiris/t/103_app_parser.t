@@ -15,8 +15,8 @@ my $APPCATS = 'applicationCategories.xml';
 my $HTMLDIR = '/home/mike/workspace/DC18C Osiris/test/html/';
 
 opendir(my $dh, $APPDIR) || die("Couldn't open appdir");
-
-for my $appfile ( sort readdir($dh) ) {
+# sort readdir($dh)
+for my $appfile ( 'cam2map.xml' ) {
 	next unless $appfile =~ /^([a-zA-Z0-2]+)\.xml$/;
 	my $appname = $1;
 	next if $appfile eq $APPTOC || $appfile eq $APPCATS;
@@ -30,19 +30,19 @@ for my $appfile ( sort readdir($dh) ) {
 	
 	ok($api, "Parsed app XML $appname");
 
-	print Dumper({app => $app});
 
-	my $html = $app->form;
+	my $form = $app->form;
 	
-	ok($html, "Got app's HTML form");
-	
-	my $htmlfile = $HTMLDIR . $appname . ".html";
+	ok($form, "Got app's form structure");
 
-	if( ok(open(HTML, ">$htmlfile"), "Writing to $htmlfile") ) {
-		print HTML $html;
-		close HTML;
-	} else {
-		diag("Couldn't open $htmlfile $!");
+	if( $appname eq 'cam2map' ) {
+		for my $group ( @$form ) {
+			print "Group $group->{name}\n";
+			for my $param ( @{$group->{parameters}} ) {
+				print "Param $param->{name}\n";
+				print Dumper({param => $param});
+				print "\n\n";
+			}
+		}
 	}
-	die;
 }

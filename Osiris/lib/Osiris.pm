@@ -58,9 +58,10 @@ get '/app/:name' => sub {
 			brief => $toc->{$name}
 		);
 		template 'app' => {
-			app => $name,
-			brief => $toc->{$name},
-			form => $app->form
+			app => $app->name,
+			brief => $app->brief,
+			form => $app->form,
+			description => $app->description,
 		};
 	} else {
 		send_error("Not found", 404);
@@ -92,8 +93,6 @@ sub load_toc {
 	}
 	
 	my $toc = join('/', $params{appdir}, $params{apptoc});	
-	
-	print "TOC = $toc";
 	
 	my $xml = XMLin($toc) || die ("Couldn't parse $toc");
 	

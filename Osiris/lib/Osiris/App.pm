@@ -2,6 +2,7 @@ package Osiris::App;
 
 use strict;
 
+use Dancer ":syntax";
 use XML::Twig;
 
 
@@ -19,6 +20,44 @@ sub new {
 }
 
 
+=item name()
+
+=cut
+
+sub name {
+	my ( $self ) = @_;
+	
+	return $self->{app};
+}
+
+
+=item brief() 
+
+=cut
+
+sub brief {
+	my ( $self ) = @_;
+	
+	return $self->{brief};
+}
+
+
+
+=item description() 
+
+=cut
+
+sub description {
+	my ( $self ) = @_;
+	
+	if( ! $self->{api} ) {
+		$self->parse_api;
+	}
+	return $self->{api}{description};
+}
+
+
+
 =item form()
 
 Returns this app's form as a data structure which can be used to
@@ -32,9 +71,10 @@ sub form {
 		$self->parse_api;
 	}
 	
-	return $self->{api};
+	return $self->{api}{groups};
 	
 }
+
 
 
 
@@ -65,6 +105,7 @@ sub parse_api {
 	
 	return $self->{api};
 }
+
 
 
 =item xml_field($elt)
@@ -173,6 +214,7 @@ sub xml_parameter {
 			
 			/list/ && do {
 				$parameter->{$_} = $self->xml_list($child);
+				$parameter->{is_list} = 1;
 				last SWITCH;
 			};
 			
@@ -180,6 +222,9 @@ sub xml_parameter {
 			
 			$parameter->{$_} = $child->text;
 		}
+	}
+	if( $parameter->{fileMode} eq 'input' ) {
+		$parameter->{is_file} = 1;
 	}
 	return $parameter;
 }

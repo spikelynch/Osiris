@@ -1,42 +1,41 @@
 <div id="page">
 
-<div id="content">
-  <div id="header">
-     <h1>Isis+Osiris</h1>
-  </div>
-
-  <div>
-
 <h2><% app %></h2>
-<p><% brief %></p>
-
-<% form %>
+<div id="description"><% description %></div>
 
 <form name="main" method="POST">
 
 <table class="form">
 <tbody>
 
-<% FOR group IN groups %>
+<% FOR group IN form %>
 
 <tr class="groupheader"><td colspan="2"><% group.name %></td><tr>
 
 <% FOR param IN group.parameters %>
 
 <tr class="param">
+<td class="paramlabel"><% param.name %></td>
 <td>
-	<span class="paramlabel"><% param.name %></span>
-	<span class="parambrief"><% param.brief %></span>
-</td>
-<td>
-	<% IF param.list %>
+	<% IF param.is_list %>
 		<% INCLUDE select_field %>
+	<% ELSIF param.is_file %>
+		<% INCLUDE file_field %>
 	<% ELSE %>
 		<% INCLUDE text_field %>
-	<span id="param<% param.name %>help">?</span>
 	<% END %>
 </td>
 </tr>
+
+<tr class="paramhelp">
+<td class="parambrief">
+	<span id="paramhelp<% param.name %>" class="paramhelpswitch"><% param.brief %></span>
+</td>
+<td class="paramdesc">
+<% param.description %>
+</td>
+</tr>
+<% END %>
 
 <% END %>
 
@@ -47,23 +46,35 @@
 
 </tbody>
 
+</table>
+
 </form>
 
-<% BLOCK text %>
-<input type="text" name="<% param.name %>" value="<% param.default %>" size="40" />
-<% END %>
-
-<% BLOCK select %>
-<select name="<% param.name %>">
-<% FOR option IN param.list %>
-	<option value="<% option.value %>"<% IF option.value == param.default %>selected<% END %> >
-		<% option.value %>: <% option.brief %>
-	</option>
-<% END %>
-</select>
-<% END %>
 
 <p><a href="/">Back</a></p>
 </div>
 
-</div>
+
+<script lang="javascript">
+load_app_transitions();
+</script>
+
+
+<% BLOCK text_field %>
+	<input type="text" name="<% param.name %>" value="<% param.default %>" size="40" />
+<% END %>
+
+<% BLOCK select_field %>
+	<select name="<% param.name %>">
+	<% FOR option IN param.list %>
+		<option value="<% option.value %>"<% IF option.value == param.default %>selected<% END %> >
+			<% option.value %>: <% option.brief %>
+		</option>
+	<% END %>
+	</select>
+<% END %>
+
+
+<% BLOCK file_field %>
+	<input type="file" name="<% param.name %>" size="40" />
+<% END %>
