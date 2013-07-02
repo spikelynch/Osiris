@@ -42,15 +42,18 @@ tr.paramhelp {
 }
 
 td.paramlabel {
-    width: 300px;
+    width: 150px;
     font-weight: bold;
 }
 
-span.paramhelpswitch {
-    color: #444;
+div.paramhelpswitch {
+    color: #004;
 }
 
 td.paramdesc {
     width: 600px;
-    display: none
+}
+
+div.paramdesc {
+    display:none
 }

@@ -176,6 +176,12 @@ sub xml_group {
 Top-level method for parsing parameters - the more complicated
 child elements are farmed out to their own methods.
 
+NOTE: in the ISIS schema, the tags default, greaterThan,
+lessThan and notEqual contain one or more <item> tags, within
+which are the actual values.  In the current release, there are
+no apps which have more than one <item> tag in any of these 
+elements, so this code just grabs the first item.
+
 =cut
 
 
@@ -198,7 +204,7 @@ sub xml_parameter {
 			};
 			
 			/default|greaterThan|lessThan|notEqual|exclusions|inclusions/ && do {
-				$parameter->{$_} = [ $child->children_text ];
+				$parameter->{$_} = $child->first_child_text; #see POD above
 				last SWITCH;
 			};
 			
@@ -223,8 +229,8 @@ sub xml_parameter {
 			$parameter->{$_} = $child->text;
 		}
 	}
-	if( $parameter->{fileMode} eq 'input' ) {
-		$parameter->{is_file} = 1;
+	if( exists $parameter->{fileMode} ) {
+		$parameter->{is_file} = $parameter->{fileMode};
 	}
 	return $parameter;
 }
@@ -244,8 +250,10 @@ sub xml_minimax {
 		inclusive => 0
 	};
 	
-	if( $elt->att('inclusive') =~ /yes|true/ ) {
-		$minimax->{inclusive} = 1;
+	if( my $inc = $elt->att('inclusive') ) {
+		if( $inc =~ /yes|true/ ) {
+			$minimax->{inclusive} = 1;
+		}
 	}
 	
 	return $minimax;

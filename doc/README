@@ -6,7 +6,7 @@ Basic web wrapper for Isis using Dancer.
 Components
 ----------
 
-A. - a searchable and browseable interface to all of the Isis commands
+A. - a searchable and browseable interface to all of the Isis commands  *
 
 B. - for each of the commands, a web page which allows the user to run the command
      based on the XML spec, including file uploads
