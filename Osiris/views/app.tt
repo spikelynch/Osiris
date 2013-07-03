@@ -3,7 +3,9 @@
 <h2><% app %></h2>
 <div id="description"><% description %></div>
 
-<form name="main" method="POST">
+<form name="main"
+      method="post"
+      enctype="multipart/form-data" >
 
 <table class="form">
 <tbody>
@@ -17,13 +19,8 @@
 <tr class="param">
 <td class="paramlabel"><% param.name %></td>
 <td>
-	<% IF param.is_list %>
-		<% INCLUDE select_field %>
-	<% ELSIF param.is_file == "input" %>
-		<% INCLUDE file_field %>
-	<% ELSE %>
-		<% INCLUDE text_field %>
-	<% END %>
+	<% INCLUDE $param.field_type %>
+
 </td>
 </tr>
 
@@ -63,7 +60,7 @@ load_app_transitions();
 	<input type="text" name="<% param.name %>" value="<% param.default %>" size="40" />
 <% END %>
 
-<% BLOCK select_field %>
+<% BLOCK list_field %>
 	<select name="<% param.name %>">
 	<% FOR option IN param.list %>
 		<option value="<% option.value %>"<% IF option.value == param.default %>selected<% END %> >
@@ -73,6 +70,13 @@ load_app_transitions();
 	</select>
 <% END %>
 
+<% BLOCK boolean_field %>
+	<% IF param.default == "false" %>
+		<input type="checkbox" name="<% param.name %> value="true" />
+	<% ELSE %>
+		<input type="checkbox" name="<% param.name %> value="true" checked />
+	<% END %>
+<% END %>
 
 <% BLOCK file_field %>
 	<input type="file" name="<% param.name %>" size="40" />

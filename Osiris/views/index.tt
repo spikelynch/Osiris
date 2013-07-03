@@ -13,7 +13,7 @@
 <tr><td id="categories">
 <h2>Categories</h2>
 <ul>
-<% FOREACH cat IN categories.keys.sort %>
+<% FOREACH cat IN browse.category.keys.sort %>
 	<li><a href="browse/category/<% cat %>"><% cat %></a></li> 
 <% END %>
 </ul>    
@@ -22,7 +22,7 @@
 <div id="missions">
 <h2>Missions</h2>
 <ul>
-<% FOREACH mission IN missions.keys.sort %>
+<% FOREACH mission IN browse.mission.keys.sort %>
 	<li><a href="browse/mission/<% mission %>"><% mission %></a></li> 
 <% END %>
 </ul>

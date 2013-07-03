@@ -4,7 +4,7 @@ use Dancer ':syntax';
 use XML::Simple;
 
 use Osiris::App;
-
+use Osiris::Job;
 
 =head NAME
 
@@ -24,16 +24,13 @@ my $conf = config;
 my ( $toc, $cats ) = load_toc(%$conf);
 
 
-# Index: a list of app categories and missions
+# /  a list of app categories and missions
 
 get '/' => sub {
-    template 'index' => {
-    	categories => $cats->{category},
-    	missions => $cats->{mission}
-    };
+    template 'index' => { browse => $cats };
 };
 
-# Browse: a list of applications for a category or mission
+# /browse -  a list of applications for a category or mission
 
 get '/browse/:by/:class' => sub {
 	my $by = param('by');
@@ -48,6 +45,10 @@ get '/browse/:by/:class' => sub {
 		template 'index' => { toc => $cats }
 	}
 };
+
+
+# /app - the web form for an app
+
 
 get '/app/:name' => sub {
 	my $name = param('name');
@@ -68,8 +69,59 @@ get '/app/:name' => sub {
 	}
 };
 
+# post /app - start a job.
+
+post '/app/:name' => sub {
+	my $name = param('name');
+
+	if( !$toc->{$name} ) {
+        send_error('Not found', 404);
+    }
+
+    my $files = {};
+    my $params = {};
+
+	my $app = Osiris::App->new(
+        dir => $conf->{appdir},
+        app => $name,
+        brief => $toc->{$name}
+		);
+
+    for my $p ( $app->param_fields ) {
+        $params->{$p} = param($p);
+    }
+
+    for my $u ( $app->upload_fields ) {
+        $files->{$u} = upload($u);
+    }
+
+    my $job = Osiris::Job->new(
+        dir => $conf->{workingdir},
+        app => $app,
+        parameters => $params,
+        files => $files
+    );
+
+    if( !$job ) {
+        template 'index' => {
+            browse => $cats,
+            error => "Something went wrong"
+        }
+    }
+    
+    if( $job->write ) {
+#        forward "/jobs/" . $job->{id};
+        template 'testjob' => { job => $job->xml };
+    } else {
+        send_error('System error', 500);
+    }
+};
 
 
+
+
+#
+#
 #get '/apps/search/:str' => sub {
 #	template 'search';
 #};

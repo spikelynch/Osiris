@@ -6,6 +6,19 @@ use Dancer ":syntax";
 use XML::Twig;
 
 
+=head NAME
+
+Osiris::App
+
+=head DESCRIPTION
+
+A class representing an Isis app.  Has the code for parsing the Isis
+XML specifying the App's API, for generating a job file, and
+(eventually) for generating the command line to be run.
+
+=cut
+
+
 sub new {
 	my ( $class, %params ) = @_;
 	
@@ -22,6 +35,8 @@ sub new {
 
 =item name()
 
+Return the app's name
+
 =cut
 
 sub name {
@@ -32,6 +47,8 @@ sub name {
 
 
 =item brief() 
+
+Return the app's brief description
 
 =cut
 
@@ -44,6 +61,8 @@ sub brief {
 
 
 =item description() 
+
+Return the app's full description, which may contain HTML
 
 =cut
 
@@ -75,6 +94,41 @@ sub form {
 	
 }
 
+=item param_fields
+
+Return a list of all the app's parameters which are not 
+file uploads.
+
+=cut
+ 
+sub param_fields {
+	my ( $self ) = @_;
+
+	if( !$self->{api} ) {
+		$self->parse_api;
+	}
+	
+	return @{$self->{param_fields}};
+}
+
+
+=item upload_fields
+
+Return a list of all of the app's file upload parameters
+
+=cut
+
+sub upload_fields {
+	my ( $self ) = @_;
+
+	if( !$self->{api} ) {
+		$self->parse_api;
+	}
+	
+	return @{$self->{upload_fields}};
+}
+
+
 
 
 
@@ -94,17 +148,17 @@ sub parse_api {
 	
 	my $tw = XML::Twig->new(
 		twig_handlers => {
-			brief => 		sub { $self->xml_field($_) 		},
-			description => 	sub { $self->xml_field($_) 		},
+			brief => 		sub { $self->xml_field($_)    },
+			description => 	sub { $self->xml_field($_) 	  },
 			category => 	sub { $self->xml_category($_) },
-			group =>        sub { $self->xml_group($_)		}
+			group =>        sub { $self->xml_group($_)	  }
 		}
 	);
 	
 	$tw->parsefile($xml_file);
 	
 	return $self->{api};
-}
+} 
 
 
 
@@ -164,7 +218,13 @@ sub xml_group {
 	};
 	
 	for my $pelt ( $elt->children('parameter') ) {
-		push @{$group->{parameters}}, $self->xml_parameter($pelt);
+		my $param = $self->xml_parameter($pelt);
+		push @{$group->{parameters}}, $param;
+		if( $param->{field_type} eq 'file_field' ) {
+			push @{$self->{upload_fields}}, $param->{name};
+		} else {
+			push @{$self->{param_fields}}, $param->{name};
+		}
 	}
 	
 	push @{$self->{api}{groups}}, $group;
@@ -231,6 +291,18 @@ sub xml_parameter {
 	}
 	if( exists $parameter->{fileMode} ) {
 		$parameter->{is_file} = $parameter->{fileMode};
+		if( $parameter->{fileMode} eq 'input' ) {
+			$parameter->{field_type} = 'file_field';
+		} else {
+			$parameter->{field_type} = 'text_field';
+		}
+	} elsif( $parameter->{is_list} ) {
+		$parameter->{field_type} = 'list_field';
+	} elsif( $parameter->{type} eq 'boolean' ) {
+		$parameter->{field_type} = 'boolean_field';
+		$parameter->{default} = $self->xml_fix_boolean(raw => $parameter->{default});
+	} else {
+		$parameter->{field_type} = 'text_field';
 	}
 	return $parameter;
 }
@@ -255,7 +327,6 @@ sub xml_minimax {
 			$minimax->{inclusive} = 1;
 		}
 	}
-	
 	return $minimax;
 }
 
@@ -319,7 +390,24 @@ sub xml_helpers {
 	return $helpers;
 }
 	
+=item xml_fix_boolean(raw => $bool)
 	
+Standardise the boolean values found in the XML to either
+'true' or 'false'
+
+=cut
+
+sub xml_fix_boolean {
+	my ( $self, %params ) = @_;
+	
+	my $raw = $params{raw};
+	
+	if( $raw =~ /true|yes/i ) {
+		return 'true';
+	} else {
+		return 'false';
+	}
+}
 
 
 1;

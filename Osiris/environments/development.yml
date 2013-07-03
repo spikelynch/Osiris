@@ -31,3 +31,4 @@ auto_reload: 0
 appdir: 	/home/mike/Isis/isis/bin/xml/
 apptoc: 	applicationTOC.xml
 appcats: 	applicationCategories.xml
+workingdir: /home/mike/workspace/DC18C Osiris/working
