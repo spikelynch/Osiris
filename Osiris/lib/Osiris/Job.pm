@@ -39,11 +39,11 @@ the following values:
 
 =over 4
 
-=item new(app, dir, files, parameters)
+=item new(id, status, app, dir, files, parameters)
 
-Creates a new job object given the parameters and upload files from
-an App's form.  This needs to also generate a unique ID - for now
-all jobs are called 'job'.
+This is only used from Osiris::User, which maintains the user's
+job list.
+
 
 =cut
 
@@ -56,14 +56,39 @@ sub new {
 	my $self = {};
 	bless $self, $class;
 	
-    $self->{id} = $params{id};
-	$self->{app} = $params{app};
 	$self->{dir} = $params{dir};
-    $self->{files} = $params{files};
-    $self->{parameters} = $params{parameters};
-	
+    $self->{id} = $params{id};
+    $self->{user} = $params{user};
+    $self->{status} = $params{status};
+
+    if( $params{app} ) {
+        # job is being created via the web app
+        $self->{app} = $params{app};
+        $self->{files} = $params{files};
+        $self->{parameters} = $params{parameters};
+	} else {
+        # job already exists, load it from XML
+        # $self->_load_xml();
+    }
 	return $self;
 }
+
+=item status([ status => $status ])
+
+get/set the job's status
+
+=cut
+
+sub status {
+    my ( $self, %params ) = @_;
+
+    if( $params{status} ) {
+        $self->{status} = $params{status};
+    }
+
+    return $self->{status};
+}
+
 
 
 

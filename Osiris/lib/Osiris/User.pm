@@ -72,6 +72,7 @@ sub create_job {
     my $id = $self->_new_jobid;
 
     my $job = Osiris::Job->new(
+        user => $self,
         dir => $self->{dir},
         app => $params{app},
         id => $id,
@@ -81,8 +82,10 @@ sub create_job {
 
     if( $job ) {
         if( $job->write ) {
-            $self->{joblist}{$id} = 'new';
-            $self->_save_joblist();
+            $self->{jobs}{$id} = $job;
+            $job->status(status => 'new');
+            debug("going to save joblist");
+            $self->_save_joblist;
             return $job;
         } else {
             error("Couldn't write job");
@@ -105,7 +108,7 @@ Returns a new, unique job ID
 sub _new_jobid {
     my ( $self ) = @_;
 
-    my @ids = reverse sort keys %{$self->{joblist}};
+    my @ids = reverse sort keys %{$self->{jobs}};
     
     if( @ids ) {
         return $ids[0] + 1;
@@ -113,6 +116,7 @@ sub _new_jobid {
         return 1;
     }
 }
+
 
 
 =item _joblistfile
@@ -181,13 +185,17 @@ sub _save_joblist {
     my $joblistfile = $self->_joblistfile;
     
     open(JOBS, ">$joblistfile") || do {
-        error("Couldqn't write to joblist file $joblistfile $!");
+        error("Couldn't write to joblist file $joblistfile $!");
         return undef;
     };
 
     for my $id ( sort keys %{$self->{jobs}} ) {
-        print JOBS join(' ', $id, $self->{jobs}{$id}->status) . "\n";
+        debug("writing joblist entry for $id");
+        my $line = join(' ', $id, $self->{jobs}{$id}->status) . "\n";
+        debug(">>$line");
+        print JOBS $line;
     }
+    close JOBS;
     return 1;
 }
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<job app="<% app %>">
+    <metadata>
+    </metadata>
+    <files>
+    <% FOR file IN files %>
+        <file name="<% file.name %>"><% file.value %></file>
+    <% END %>
+    </files>
+    <parameters>
+    <% FOR param IN parameters %>
+        <parameter name="<% param.name %>"><% param.value %></parameter>
+    <% END %>
+    </parameters>
+</job>
+
+
+
+

@@ -1,0 +1,13 @@
+<div id="page">
+
+<h2><% app %></h2>
+
+<p>Job file created!</p>
+
+<pre>
+<% job %>
+</pre>
+
+
+<p><a href="/">Back</a></p>
+</div>
