@@ -196,7 +196,7 @@ sub xmlfile {
     my ( $self ) = @_;
 
     if( $self->{id} ) {
-        $self->{xmlfile} = $self->{dir} . '/' . $self->{id} . '.xml';
+        $self->{xmlfile} = $self->{dir} . '/job_' . $self->{id} . '.xml';
         return $self->{xmlfile};
     } else {
         error("Job does not yet have an id");
