@@ -5,6 +5,7 @@ use XML::Simple;
 
 use Osiris::App;
 use Osiris::Job;
+use Osiris::User;
 
 =head NAME
 
@@ -23,26 +24,59 @@ my $conf = config;
 
 my ( $toc, $cats ) = load_toc(%$conf);
 
+my $fakeuser = $conf->{fakeuser};
+
+# login stuff snarfed from Dancer::Cookbook and hit with a hammer
+
+hook 'before' => sub {
+    if (! session('user') && request->path_info !~ m{^/login}) {
+        var requested_path => request->path_info;
+        request->path_info('/login');
+    }
+};
+
+get '/login' => sub {
+    template 'login', { path => vars->{requested_path} };
+};
+
+post '/login' => sub {
+    
+    # Validate the username and password they supplied
+    if (params->{user} eq $fakeuser && params->{pass} eq $fakeuser ) {
+        debug("Logged in as $fakeuser");
+        session user => params->{user};
+        redirect params->{path} || '/';
+    } else {
+        redirect '/login?failed=1';
+    }
+};
+
 
 # /  a list of app categories and missions
 
 get '/' => sub {
-    template 'index' => { browse => $cats };
+    my $user = get_user();
+    template 'index' => { user => $user->{id}, browse => $cats };
 };
 
 # /browse -  a list of applications for a category or mission
 
 get '/browse/:by/:class' => sub {
+    my $user = get_user();
 	my $by = param('by');
 	my $class = param('class');
 	if( my $apps = $cats->{$by}{$class} ) {
 		template 'browse' => {
+            user => $user->{id}, 
 			browseby => $by,
 			class => $class,
 			apps => $apps
 		};
 	} else {
-		template 'index' => { toc => $cats }
+		template 'index' => {
+            user => $user->{id}, 
+            toc => $cats
+        }
 	}
 };
 
@@ -51,6 +85,7 @@ get '/browse/:by/:class' => sub {
 
 
 get '/app/:name' => sub {
+    my $user = get_user();
 	my $name = param('name');
 	if( $toc->{$name} ) {
 		my $app = Osiris::App->new(
@@ -59,6 +94,7 @@ get '/app/:name' => sub {
 			brief => $toc->{$name}
 		);
 		template 'app' => {
+            user => $user->{id}, 
             javascripts => [ 'app' ],
 			app => $app->name,
 			brief => $app->brief,
@@ -73,6 +109,7 @@ get '/app/:name' => sub {
 # post /app - start a job.
 
 post '/app/:name' => sub {
+    my $user = get_user();
 	my $name = param('name');
 
 	if( !$toc->{$name} ) {
@@ -96,32 +133,32 @@ post '/app/:name' => sub {
         $files->{$u} = upload($u);
     }
 
-    my $job = Osiris::Job->new(
-        dir => $conf->{workingdir},
+    # my $job = Osiris::Job->new(
+    #     dir => $conf->{workingdir},
+    #     app => $app,
+    #     parameters => $params,
+    #     files => $files
+    # );
+
+    my $job = $user->create_job(
         app => $app,
         parameters => $params,
         files => $files
     );
 
-#    my $job = $user->create_job(
-#        app => $app,
-#        parameters => $params,
-#        files => $files
-#    );
-
     
     if( !$job ) {
-        template 'index' => {
-            browse => $cats,
-            error => "Something went wrong"
+        debug("in error clause");
+        template 'error' => {
+            user => $user->{id}, 
+            error => "Couldn't create Osiris::Job"
         }
-    }
-    
-    if( $job->write ) {
-#        forward "/jobs/" . $job->{id};
-        template 'testjob' => { job => $job->xml };
     } else {
-        send_error('System error', 500);
+        debug("Got job = $job");
+        template 'testjob' => {
+            user => $user->{id}, 
+            job => $job->xml
+        };
     }
 };
 
@@ -137,6 +174,15 @@ post '/app/:name' => sub {
 #
 #
 #
+
+
+
+sub get_user {
+    return Osiris::User->new(
+        id => session->{user},
+        basedir => $conf->{workingdir}
+        );
+}
 
 
 
