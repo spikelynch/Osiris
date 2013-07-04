@@ -52,12 +52,13 @@
 
 
 <script lang="javascript">
-load_app_transitions();
+setup_help_transitions();
+setup_guards();
 </script>
 
 
 <% BLOCK text_field %>
-	<input type="text" name="<% param.name %>" value="<% param.default %>" size="40" />
+	<input type="text" name="<% param.name %>" value="<% param.default %>" size="12" />
 <% END %>
 
 <% BLOCK list_field %>
@@ -78,6 +79,10 @@ load_app_transitions();
 	<% END %>
 <% END %>
 
-<% BLOCK file_field %>
+<% BLOCK input_file_field %>
 	<input type="file" name="<% param.name %>" size="40" />
+<% END %>
+
+<% BLOCK output_file_field %>
+	<input type="text" name="<% param.name %>" size="40" /> <% param.extension %>
 <% END %>

@@ -1,10 +1,14 @@
 // transition helpers
 
 
-function load_app_transitions() {
+function setup_help_transitions() {
     $(".paramhelp").on("click", toggle_description);
 }
 
+
+function setup_guards(guards) {
+    
+}
 
 
 function toggle_description(event) {

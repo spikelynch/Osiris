@@ -54,11 +54,12 @@ get '/app/:name' => sub {
 	my $name = param('name');
 	if( $toc->{$name} ) {
 		my $app = Osiris::App->new(
-			dir => $conf->{appdir},
+			dir => $conf->{isisdir},
 			app => $name,
 			brief => $toc->{$name}
 		);
 		template 'app' => {
+            javascripts => [ 'app' ],
 			app => $app->name,
 			brief => $app->brief,
 			form => $app->form,
@@ -82,7 +83,7 @@ post '/app/:name' => sub {
     my $params = {};
 
 	my $app = Osiris::App->new(
-        dir => $conf->{appdir},
+        dir => $conf->{isisdir},
         app => $name,
         brief => $toc->{$name}
 		);
@@ -101,6 +102,12 @@ post '/app/:name' => sub {
         parameters => $params,
         files => $files
     );
+
+#    my $job = $user->create_job(
+#        app => $app,
+#        parameters => $params,
+#        files => $files
+#    );
 
     if( !$job ) {
         template 'index' => {
@@ -140,11 +147,11 @@ post '/app/:name' => sub {
 sub load_toc {
 	my %params = @_;
 	
-	if( !$params{appdir} || !$params{apptoc} ) {
-		die("Need appdir and apptoc");
+	if( !$params{isisdir} || !$params{isistoc} ) {
+		die("Need isisdir and isistoc");
 	}
 	
-	my $toc = join('/', $params{appdir}, $params{apptoc});	
+	my $toc = join('/', $params{isisdir}, $params{isistoc});	
 	
 	my $xml = XMLin($toc) || die ("Couldn't parse $toc");
 	

@@ -33,6 +33,7 @@ sub new {
 }
 
 
+
 =item name()
 
 Return the app's name
@@ -94,6 +95,8 @@ sub form {
 	
 }
 
+
+
 =item param_fields
 
 Return a list of all the app's parameters which are not 
@@ -148,9 +151,9 @@ sub parse_api {
 	
 	my $tw = XML::Twig->new(
 		twig_handlers => {
-			brief => 		sub { $self->xml_field($_)    },
-			description => 	sub { $self->xml_field($_) 	  },
-			category => 	sub { $self->xml_category($_) },
+			'application/brief' => sub { $self->xml_field($_)    },
+			'application/description' => sub { $self->xml_field($_) 	  },
+			'application/category' => 	sub { $self->xml_category($_) },
 			group =>        sub { $self->xml_group($_)	  }
 		}
 	);
@@ -220,7 +223,7 @@ sub xml_group {
 	for my $pelt ( $elt->children('parameter') ) {
 		my $param = $self->xml_parameter($pelt);
 		push @{$group->{parameters}}, $param;
-		if( $param->{field_type} eq 'file_field' ) {
+		if( $param->{field_type} eq 'input_file_field' ) {
 			push @{$self->{upload_fields}}, $param->{name};
 		} else {
 			push @{$self->{param_fields}}, $param->{name};
@@ -264,7 +267,7 @@ sub xml_parameter {
 			};
 			
 			/default|greaterThan|lessThan|notEqual|exclusions|inclusions/ && do {
-				$parameter->{$_} = $child->first_child_text; #see POD above
+				$parameter->{$_} = $child->first_child_trimmed_text; #see POD above
 				last SWITCH;
 			};
 			
@@ -286,21 +289,24 @@ sub xml_parameter {
 			
 			# default: copy the text of the element
 			
-			$parameter->{$_} = $child->text;
+			$parameter->{$_} = $child->trimmed_text;
 		}
 	}
 	if( exists $parameter->{fileMode} ) {
 		$parameter->{is_file} = $parameter->{fileMode};
 		if( $parameter->{fileMode} eq 'input' ) {
-			$parameter->{field_type} = 'file_field';
+			$parameter->{field_type} = 'input_file_field';
 		} else {
-			$parameter->{field_type} = 'text_field';
+			$parameter->{field_type} = 'output_file_field';
+            $parameter->{extension} = substr($parameter->{filter}, 1);
 		}
 	} elsif( $parameter->{is_list} ) {
 		$parameter->{field_type} = 'list_field';
 	} elsif( $parameter->{type} eq 'boolean' ) {
 		$parameter->{field_type} = 'boolean_field';
-		$parameter->{default} = $self->xml_fix_boolean(raw => $parameter->{default});
+		$parameter->{default} = $self->xml_fix_boolean(
+            raw => $parameter->{default}
+            );
 	} else {
 		$parameter->{field_type} = 'text_field';
 	}
