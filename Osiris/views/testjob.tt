@@ -1,5 +1,3 @@
-<div id="page">
-
 <h2><% app %></h2>
 
 <p>Job file created!</p>
@@ -10,4 +8,3 @@
 
 
 <p><a href="/">Back</a></p>
-</div>

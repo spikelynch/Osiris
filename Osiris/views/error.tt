@@ -1,7 +1,4 @@
-<div id="page">
 
-<h2>DAMNIT</h2>
+<h2>Damnit!</h2>
 
 <p>Error: "<% error %>"</p>
-
-</div>

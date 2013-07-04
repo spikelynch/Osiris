@@ -1,5 +1,4 @@
-<div id="page">
-
+<h2>Log in</h2>
 <form name="login" method="post">
 
 <table>
@@ -19,5 +18,3 @@
 <input type="hidden" name="path" value="<% path %>" />
 
 </form>
-
-</div>

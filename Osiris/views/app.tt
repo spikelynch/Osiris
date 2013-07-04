@@ -1,6 +1,5 @@
-<div id="page">
-
 <h2><% app %></h2>
+<div id="brief"><% brief %></div>
 <div id="description"><% description %></div>
 
 <form name="main"
@@ -48,7 +47,6 @@
 
 
 <p><a href="/">Back</a></p>
-</div>
 
 
 <script lang="javascript">
