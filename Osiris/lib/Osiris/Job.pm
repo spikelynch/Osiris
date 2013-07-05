@@ -77,21 +77,6 @@ sub new {
 	return $self;
 }
 
-=item status([ status => $status ])
-
-get/set the job's status
-
-=cut
-
-sub status {
-    my ( $self, %params ) = @_;
-
-    if( $params{status} ) {
-        $self->{status} = $params{status};
-    }
-
-    return $self->{status};
-}
 
 
 

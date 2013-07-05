@@ -2,23 +2,37 @@
 
 use strict;
 use Data::Dumper;
-use FindBin;
-use Cwd qw/realpath/;
 
-use Dancer ":script";
+use Dancer ':script';
 
-use lib "$FindBin::Bin/../Osiris/lib";
+use lib 'lib';
 
 use Osiris::App;
 use Osiris::Job;
 use Osiris::User;
 
-my $appdir = realpath("$FindBin::Bin/..");
+my $basedir = "$FindBin::Bin/../working";
 
+opendir(my $dh, $basedir) || die ("Couldn't open $basedir: $!");
 
-Dancer::Config::setting('appdir', $appdir);
-Dancer::Config::load();
+for my $item ( sort readdir($dh) ) {
+    next if $item =~ /^\./;
 
-my $conf = config();
+    if( $item =~ /^[a-z]+$/ && -d "$basedir/$item" ) {
 
-print Dumper({conf => $conf});
+        my $user = Osiris::User->new(
+            basedir => $basedir,
+            id => $item
+            );
+
+        my $jobs = $user->jobs;
+
+        my @new = grep { $_->{status} eq 'new' } values %$jobs;
+
+        for my $job ( @new ) {
+            $job->load;
+            print "$user->{id}: ";
+            print join(' ', $job->command) . "\n";
+        }
+    }
+}

@@ -96,7 +96,7 @@ sub create_job {
     if( $job ) {
         if( $job->write ) {
             $self->{jobs}{$id} = $job;
-            $job->status(status => 'new');
+            $job->{status} = 'new';
             $self->_save_joblist;
             return $job;
         } else {
@@ -202,7 +202,7 @@ sub _save_joblist {
     };
 
     for my $id ( sort keys %{$self->{jobs}} ) {
-        my $line = join(' ', $id, $self->{jobs}{$id}->status) . "\n";
+        my $line = join(' ', $id, $self->{jobs}{$id}{status}) . "\n";
         print JOBS $line;
     }
     close JOBS;
