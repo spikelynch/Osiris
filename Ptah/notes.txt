@@ -1,0 +1,18 @@
+What Ptah has to do:
+
+* poll the working director for each user
+
+  - see if there are any new jobs:
+
+      - For new jobs, start a child process for each of them,
+        and flag that the job in question is in process
+
+* when a child process terminates, save the state to the
+  user's job list (either success or failure) and
+  do something to notify the user (send an email)
+
+
+Osiris::User
+
+ - this class maintains the list of jobs in a user's directory,
+   assigns new jobs a unique ID, and reads job files 
