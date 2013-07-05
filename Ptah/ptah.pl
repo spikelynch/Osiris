@@ -34,8 +34,9 @@ POE::Session->create(
 
 sub start_tasks {
     my ($kernel, $heap) = @_[KERNEL, HEAP];
+    print "start_tasks\n";
     while (keys(%{$heap->{task}}) < MAX_CONCURRENT_TASKS) {
-        my $next_task = shift @tasks;
+        my $next_task = get_task();
         last unless defined $next_task;
         print "Starting task for $next_task...\n";
         my $task = POE::Wheel::Run->new(
@@ -49,6 +50,15 @@ sub start_tasks {
         $kernel->sig_child($task->PID, "sig_child");
     }
 }
+
+my $i = 1;
+
+sub get_task {
+    my $task = "job$i";
+    $i++;
+    return $task;
+}
+
 
 # This function is not a POE function!  It is a plain sub that will be
 # run in a forked off child.  It uses POE::Filter::Reference so that

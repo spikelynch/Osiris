@@ -10,9 +10,9 @@ use Dancer ":script";
 use lib "$FindBin::Bin/../lib";
 
 use Osiris;
-#use Osiris::App;
-#use Osiris::Job;
-#use Osiris::User;
+use Osiris::App;
+use Osiris::Job;
+use Osiris::User;
 
 my $appdir = realpath("$FindBin::Bin/..");
 

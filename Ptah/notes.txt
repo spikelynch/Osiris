@@ -16,3 +16,11 @@ Osiris::User
 
  - this class maintains the list of jobs in a user's directory,
    assigns new jobs a unique ID, and reads job files 
+
+
+
+
+Start a session:
+  scan users
+  start child processes
+End and set a time to wait to trigger the next session
