@@ -57,12 +57,10 @@ my $app = Osiris::App->new(
 
 ok($app, "Initialised app");
 
-
-
 my $job = $user->create_job(
      app => $app,
      parameters => \%TEST_PARAMETERS,
-     files => \%TEST_FILES
+     uploads => \%TEST_FILES
     );
 
 ok($job, "Created a new job");
@@ -79,13 +77,13 @@ my $joblist = $user->_joblistfile;
 
 ok(-f $joblist, "User's job list file exists");
 
-my $jobs = {};
+my $jobsf = {};
 
 if ( open(JOBS, $joblist) ) {
     while( <JOBS> ) {
         chomp;
         if( /^(\d+)\s+([a-z]+)/ ) {
-            $jobs->{$1} = $2;
+            $jobsf->{$1} = $2;
         }
     }
     close(JOBS);
@@ -93,11 +91,40 @@ if ( open(JOBS, $joblist) ) {
     die("Couldn't open job list");
 }
 
-ok(keys %$jobs, "At least one job in job list");
+ok(keys %$jobsf, "At least one job in job list");
 
-ok(exists $jobs->{$job->{id}}, "Found this job's id in job list");
+ok(exists $jobsf->{$job->{id}}, "Found this job's id in job list");
 
-cmp_ok($jobs->{$job->{id}}, 'eq', 'new', "Job's status is 'new'");
+cmp_ok($jobsf->{$job->{id}}, 'eq', 'new', "Job's status is 'new'");
+
+my $id = $job->{id};
+
+$job = undef;
 
 
+$user = undef;
 
+$user = Osiris::User->new(
+    id => $conf->{fakeuser},
+    basedir => $conf->{workingdir},
+);
+
+ok($user, "Initialised user (again)");
+
+my $jobs = $user->jobs;
+
+ok($jobs, "Got joblist from user") || die;
+
+$job = $jobs->{$id};
+
+ok($job, "Got job $id from job list");
+
+$job->load_xml();
+
+my $command = $job->command;
+
+ok($command, "Got command arrayref");
+
+diag(join(' ', @$command));
+
+exec(@$command);

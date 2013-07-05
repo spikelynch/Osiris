@@ -116,8 +116,8 @@ post '/app/:name' => sub {
         send_error('Not found', 404);
     }
 
-    my $files = {};
     my $params = {};
+    my $uploads = {};
 
 	my $app = Osiris::App->new(
         dir => $conf->{isisdir},
@@ -130,7 +130,7 @@ post '/app/:name' => sub {
     }
 
     for my $u ( $app->upload_fields ) {
-        $files->{$u} = upload($u);
+        $uploads->{$u} = upload($u);
     }
 
     # my $job = Osiris::Job->new(
@@ -143,7 +143,7 @@ post '/app/:name' => sub {
     my $job = $user->create_job(
         app => $app,
         parameters => $params,
-        files => $files
+        uploads => $uploads
     );
 
     

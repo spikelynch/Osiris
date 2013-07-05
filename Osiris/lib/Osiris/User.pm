@@ -57,6 +57,20 @@ sub new {
     }
 }
 
+=item jobs
+
+Returns the job list as a hashref of Osiris::Job objects keyed by ID.
+The jobs will only know their status and id - to parse their XML file,
+call $job->load.
+
+=cut
+
+sub jobs {
+    my ( $self,  ) = @_;
+
+    return $self->{jobs};
+}
+
 
 =item create_job(app => $app, parameters => $p, files => $f)
 
@@ -73,18 +87,16 @@ sub create_job {
 
     my $job = Osiris::Job->new(
         user => $self,
-        dir => $self->{dir},
         app => $params{app},
         id => $id,
         parameters => $params{parameters},
-        files => $params{files}
+        uploads => $params{uploads}
     );
 
     if( $job ) {
         if( $job->write ) {
             $self->{jobs}{$id} = $job;
             $job->status(status => 'new');
-            debug("going to save joblist");
             $self->_save_joblist;
             return $job;
         } else {
@@ -190,9 +202,7 @@ sub _save_joblist {
     };
 
     for my $id ( sort keys %{$self->{jobs}} ) {
-        debug("writing joblist entry for $id");
         my $line = join(' ', $id, $self->{jobs}{$id}->status) . "\n";
-        debug(">>$line");
         print JOBS $line;
     }
     close JOBS;
