@@ -40,8 +40,8 @@ sub MAX_CONCURRENT_TASKS () { 3 }
 my $WORKING_DIR = '/home/mike/workspace/DC18C Osiris/working/michael/';
 
 my $isiscmd = {
-    FROM => '/home/mike/workspace/DC18C Osiris/working/michael/V03537002EDR.QUB',
-    TO => '/home/mike/workspace/DC18C Osiris/working/michael/V03537002.cub',
+    FROM => "$WORKING_DIR/V03537002EDR.QUB",
+    TO => "$WORKING_DIR/V03537002.cub",
     TIMEOFFSET => '0.0'
 };
 
@@ -104,7 +104,8 @@ sub start_tasks {
     print "Starting task " . join(' ', @$next_task) . "\n";
     my $task = POE::Wheel::Run->new(
         Program => sub {
-            print "In the subprocess\n";
+            print "In the subprocess: chdir...\n";
+            chdir $WORKING_DIR || die("Couldn't chdir to $WORKING_DIR");
             print "exec\n";
             exec(@$next_task);
         },
