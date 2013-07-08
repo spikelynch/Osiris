@@ -2,9 +2,8 @@ package Osiris::App;
 
 use strict;
 
-use Dancer ":syntax";
 use XML::Twig;
-
+use Log::Log4perl;
 
 =head NAME
 
@@ -28,7 +27,11 @@ sub new {
 	$self->{app} = $params{app};
 	$self->{dir} = $params{dir};	
 	$self->{brief} = $params{brief};
-	
+    
+
+    $self->{log} = Log::Log4perl->get_logger($class);
+
+
 	return $self;
 }
 
@@ -329,6 +332,7 @@ sub xml_minimax {
 	};
 	
 	if( my $inc = $elt->att('inclusive') ) {
+
 		if( $inc =~ /yes|true/ ) {
 			$minimax->{inclusive} = 1;
 		}

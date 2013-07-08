@@ -133,13 +133,6 @@ post '/app/:name' => sub {
         $uploads->{$u} = upload($u);
     }
 
-    # my $job = Osiris::Job->new(
-    #     dir => $conf->{workingdir},
-    #     app => $app,
-    #     parameters => $params,
-    #     files => $files
-    # );
-
     my $job = $user->create_job(
         app => $app,
         parameters => $params,

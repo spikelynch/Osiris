@@ -2,10 +2,11 @@ package Osiris::Job;
 
 use strict;
 
-use Dancer ":syntax";
 use File::Copy;
 use XML::Twig;
+
 use Data::Dumper;
+use Log::Log4perl;
 
 =head NAME
 
@@ -70,9 +71,8 @@ sub new {
         $self->{parameters} = $params{parameters};
 	}  
 
-    # otherwise, this is just holding the status etc.
-    # Call $job->load_xml to parse the XML file for an
-    # existing job
+	$self->{log} = Log::Log4perl->get_logger($class);
+
 
 	return $self;
 }
@@ -104,19 +104,34 @@ sub write {
             value => $self->{parameters}{$p}
         }
     }
+    $self->{log}->debug("Parameters = " . Dumper({p => $parameters}));
 
     $files = $self->copy_uploads || do { return undef };
 
-    $self->{xml} = template 'job' => {
-        app => $self->{app}{app},
-        parameters => $parameters,
-        files => $files
-    }, { layout => undef };
+    $self->{xml} =<<EOXML;
+<?xml version="1.0" encoding="UTF-8"?>
+<job app="$self->{app}">
+    <metadata>
+    </metadata>
+    <files>
+EOXML
+    for my $file ( @$files ) {
+        $self->{xml} .= "<file name=\"$file->{name}\">$file->{value}</file>\n";
+    }
+    $self->{xml} .= "</files>\n><parameters>\n";
+    for my $parameter ( @$parameters ) {
+        $self->{xml} .= "<parameter name=\"$parameter->{name}\">$parameter->{value}</parameter>\n";
+    }
+    $self->{xml} .= <<EOXML;
+    </parameters>
+</job>
+EOXML
+
 
     $self->{xmlfile} = $self->xmlfile;
 
     open(XML, ">$self->{xmlfile}") || do {
-        error("Couldn't write to $self->{xmlfile} $!");
+        $self->{log}->error("Couldn't write to $self->{xmlfile} $!");
         return undef;
     };
 
@@ -155,7 +170,7 @@ sub copy_uploads {
                 };
                 $self->{files}{$u} = $path;
             }  else {
-                error("Couldn't copy upload to $path");
+                $self->{log}->error("Couldn't copy upload to $path");
                 return undef;
             }
         } else {
@@ -163,14 +178,13 @@ sub copy_uploads {
             # ie in tests
             my $filename = $upload->{filename};
             my $path = join("/", $self->{dir}, $filename);
-            debug("&&& $u $path  ", $upload);
             if( copy($upload->{file}, $path) ) {
                 push @$files, { 
                     name => $u,
                     value => $path
                 };
             } else {
-                error("couldn't copy $upload->{file} to $path: $!");
+                $self->{log}->error("couldn't copy $upload->{file} to $path: $!");
                 return undef;
             }
         }
@@ -192,7 +206,7 @@ sub xmlfile {
         $self->{xmlfile} = $self->{dir} . '/job_' . $self->{id} . '.xml';
         return $self->{xmlfile};
     } else {
-        error("Job does not yet have an id");
+        $self->{log}->error("Job does not yet have an id");
         return undef;
     }
 }
@@ -247,7 +261,7 @@ sub load_xml {
     eval { $tw->parsefile($xmlfile) };
 
     if( $@ ) {
-        error("Parse $xmlfile failed $@");
+        $self->{log}->error("Parse $xmlfile failed $@");
         return undef;
     }
 
@@ -267,8 +281,14 @@ daemon) can pass to exec.
 sub command {
     my ( $self ) = @_;
 
-    my $command = [ $self->{app} ];
+    if( !$self->{app} ) {
+        $self->{log}->error(
+            "You have to load a job's XML before running command"
+            );
+        return undef;
+    }
 
+    my $command = [ $self->{app} ];
     for my $name ( sort keys %{$self->{files}} ) {
         push @$command, join('=', $name, $self->{files}{$name});
     }

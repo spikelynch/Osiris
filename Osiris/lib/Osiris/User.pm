@@ -2,8 +2,9 @@ package Osiris::User;
 
 use strict;
 
-use Dancer ":syntax";
 use XML::Twig;
+use Log::Log4perl;
+
 
 use Osiris::App;
 use Osiris::Job;
@@ -45,8 +46,11 @@ sub new {
 
     $self->{dir} = join('/', $self->{basedir}, $self->{id});
 
+    $self->{log} = Log::Log4perl->get_logger($class);
+
+
 	if( !-d $self->{dir} ) {
-        error("User $self->{id} has no working directory ($self->{dir}).");
+        $self->{log}->error("User $self->{id} has no working directory ($self->{dir}).");
         return undef;
     }
 
@@ -63,11 +67,17 @@ Returns the job list as a hashref of Osiris::Job objects keyed by ID.
 The jobs will only know their status and id - to parse their XML file,
 call $job->load.
 
+To force a reload, pass in reload => 1
+
 =cut
 
 sub jobs {
-    my ( $self,  ) = @_;
+    my ( $self,  %params ) = @_;
 
+    if( $params{reload} ) {
+        $self->_load_joblist;
+    }
+    
     return $self->{jobs};
 }
 
@@ -100,15 +110,37 @@ sub create_job {
             $self->_save_joblist;
             return $job;
         } else {
-            error("Couldn't write job");
+            $self->{log}->error("Couldn't write job");
             return undef;
         }
     } else {
-        error("Couldn't initialise job");
+        $self->{log}->error("Couldn't initialise job");
         return undef;
     }
 }
 
+
+=item set_job_status(job => $job, status => $s)
+
+
+
+=cut
+
+sub set_job_status {
+    my ( $self, %params ) = @_;
+    
+    my $id = $params{jobid};
+    my $status = $params{status};
+    
+    if( my $job = $self->{jobs}{$id} ) {
+        $self->{jobs}{$id}{status} = $status;
+        return $self->_save_joblist;
+    } else {
+        $self->{log}->error("Couldn't find job $id in user $self->{id}");
+        return undef;
+    }
+}
+        
 
 
 =item _new_jobid
@@ -159,7 +191,7 @@ sub _load_joblist {
    
     if( -f $joblistfile ) {
         open(JOBS, $joblistfile) || do {
-            error("Couldn't read joblist file $joblistfile $!");
+            $self->{log}->error("Couldn't read joblist file $joblistfile $!");
             return undef;
         };
 
@@ -176,7 +208,7 @@ sub _load_joblist {
                 if( $job ) {
                     $self->{jobs}{$id} = $job;
                 } else {
-                    error("Couldn't create job $id for user $self->{id}");
+                    $self->{log}->error("Couldn't create job $id for user $self->{id}");
                 }
             }
         }
@@ -197,7 +229,7 @@ sub _save_joblist {
     my $joblistfile = $self->_joblistfile;
     
     open(JOBS, ">$joblistfile") || do {
-        error("Couldn't write to joblist file $joblistfile $!");
+        $self->{log}->error("Couldn't write to joblist file $joblistfile $!");
         return undef;
     };
 
