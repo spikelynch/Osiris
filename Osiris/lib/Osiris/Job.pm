@@ -143,6 +143,20 @@ EOXML
 }
 
 
+=item set_status
+
+Writes this job's status to its user's job queue
+
+=cut
+
+sub set_status {
+    my ( $self, %params ) = @_;
+
+    my $status = $params{status} || die( "set_status needs a status");
+
+    return $self->{user}->set_job_status(id => $self->{id}, status => $status);
+}
+
 =item copy_uploads
 
 Copies the upload files into the user's working directory.

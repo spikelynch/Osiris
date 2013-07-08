@@ -120,16 +120,16 @@ sub create_job {
 }
 
 
-=item set_job_status(job => $job, status => $s)
+=item set_job_status(id => $id, status => $s)
 
-
+This sucks. FIXME and Job->set_status while you're at it.
 
 =cut
 
 sub set_job_status {
     my ( $self, %params ) = @_;
     
-    my $id = $params{jobid};
+    my $id = $params{id};
     my $status = $params{status};
     
     if( my $job = $self->{jobs}{$id} ) {
