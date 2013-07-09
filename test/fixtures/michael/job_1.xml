@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<job app="thm2isis">
+    <metadata>
+    </metadata>
+    <files>
+    
+        <file name="FROM">/home/mike/workspace/DC18C Osiris/working/michael/V03537002EDR.QUB</file>
+    
+    </files>
+    <parameters>
+    
+        <parameter name="TO">V0000</parameter>
+    
+        <parameter name="TIMEOFFSET">0.0</parameter>
+    
+    </parameters>
+</job>
+
+
+
+
