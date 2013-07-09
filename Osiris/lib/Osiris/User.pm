@@ -116,7 +116,7 @@ sub create_job {
         uploads => $params{uploads}
     );
 
-    if( $job ) {
+    if( $job ) {  
         if( $job->write ) {
             $self->{jobs}{$id} = $job;
             $job->{status} = 'new';
@@ -193,12 +193,19 @@ sub _load_joblist {
  
         while( <JOBS> ) {
             chomp;
-            if( /^(\d+)\s+([a-zA-Z]+)/ ) {
+            my ( $id, $date, $status, $app, $from, $to ) = split(',');
+            if( $id =~ /^(\d+)$/ ) {
                 my ( $id, $status ) = ( $1, $2 );
                 my $job = Osiris::Job->new(
                     user => $self,
                     id => $id,
-                    status => $status
+                    summary => {
+                        date => $date,
+                        status => $status,
+                        app => $app,
+                        from => $from,
+                        to => $to
+                    }
                     );
                 if( $job ) {
                     $self->{jobs}{$id} = $job;
@@ -234,8 +241,7 @@ sub _save_joblist {
     };
 
     for my $id ( sort keys %{$self->{jobs}} ) {
-        $self->{log}->debug("Job $self->{jobs}{$id} $id status = $self->{jobs}{$id}{status}");
-        my $line = join(' ', $id, $self->{jobs}{$id}{status}) . "\n";
+        my $line = join(',', $self->{jobs}{$id}->summary) . "\n";
         print JOBS $line;
     }
     $self->{log}->debug("Done.");

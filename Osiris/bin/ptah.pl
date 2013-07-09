@@ -4,8 +4,6 @@ use warnings;
 use strict;
 
 
-
-
 sub POE::Kernel::ASSERT_DEFAULT () { 1 };
 use POE qw(Wheel::Run);
 
@@ -98,7 +96,7 @@ sub initialise {
 sub scan_users {
     my ( $kernel, $heap, $state, $sender, @caller ) = 
         @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
-    $log->debug(">>>[scan_users]");
+    $log->debug("___[scan_users]");
     $log->debug("    state = $state");
     $log->debug("    sender = $sender");
     $log->debug("    caller = " . join(', ', @caller));
@@ -142,7 +140,7 @@ sub scan_jobs {
     my ( $kernel, $heap, $state, $sender, @caller ) = 
         @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
 
-    $log->debug(">>>[scan_jobs]");
+    $log->debug("___[scan_jobs]");
     $log->debug("    state = $state");
     $log->debug("    sender = $sender");
     $log->debug("    caller = " . join(', ', @caller));
@@ -182,7 +180,7 @@ sub run_jobs {
     my ( $kernel, $heap, $state, $sender, @caller ) = 
         @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
 
-    $log->debug(">>>[run_jobs]");
+    $log->debug("___[run_jobs]");
     $log->debug("    state = $state");
     $log->debug("    sender = $sender");
     $log->debug("    caller = " . join(', ', @caller));
@@ -200,13 +198,13 @@ sub run_jobs {
         my $command = $job->command;
         $log->debug("Marking job status 'processing'");
         $job->set_status(status => 'processing') || die("Couldn't set status");
-        $log->debug("Starting job: $command->[0]");
+        $log->debug("Starting job for user $job->{user}{id}");
         my $task = POE::Wheel::Run->new(
             Program => sub {
-                print "In the subprocess: chdir...\n";
+                $log->debug(">In subprocess");
                 my $dir = $job->working_dir;
                 chdir $dir || die("Couldn't chdir to $dir");
-                print "exec\n";
+                $log->debug(">" . join(' ', @$command));
                 exec(@$command);
             },
             StdoutEvent  => "task_result",
@@ -232,7 +230,7 @@ sub stop_ptah {
     my ( $kernel, $heap, $state, $sender ) = 
         @_[KERNEL, HEAP, STATE, SENDER];
 
-    $log->debug(">>>[_stop_ptah]");
+    $log->debug("___[_stop_ptah]");
     $log->debug("    state = $state");
     $log->debug("    sender = $sender");
     print "End.\n";

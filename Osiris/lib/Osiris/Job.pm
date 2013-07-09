@@ -4,6 +4,7 @@ use strict;
 
 use File::Copy;
 use XML::Twig;
+use POSIX qw(strftime);
 
 use Data::Dumper;
 use Log::Log4perl;
@@ -35,6 +36,9 @@ the following values:
 
 =back
 
+=cut
+
+my $TIME_FORMAT = "%d %b %Y %I:%M:%S %p";
 
 
 =head METHODS
@@ -64,12 +68,17 @@ sub new {
 
     $self->{dir} = $self->{user}{dir}; # FIXME JOBDIR
 
-    if( $params{app} ) {
+    if( my $s = $params{summary} ) {
+        # job is being created from the job list
+        for ( qw(created app status to from) ) {
+            $self->{$_} = $s->{$_};
+        }
+    } else{
         # job is being created via the web app
         $self->{app} = $params{app};
         $self->{uploads} = $params{uploads};
         $self->{parameters} = $params{parameters};
-	}  
+	} 
 
 	$self->{log} = Log::Log4perl->get_logger($class);
 
@@ -116,16 +125,22 @@ sub write {
         push @$parameters, {
             name => $p,
             value => $self->{parameters}{$p}
+        };
+        if( $p eq 'TO' ) {
+            $self->{to} = $self->{parameters}{$p};
         }
     }
-    $self->{log}->debug("Parameters = " . Dumper({p => $parameters}));
 
     $files = $self->copy_uploads || do { return undef };
 
+    $self->{created} = $self->timestamp;
+    
+
     $self->{xml} =<<EOXML;
 <?xml version="1.0" encoding="UTF-8"?>
-<job app="$self->{app}">
+<job app="$self->{app}{app}">
     <metadata>
+    <created>$self->{created}</created>
     </metadata>
     <files>
 EOXML
@@ -179,7 +194,7 @@ sub set_status {
 
     return $self->{user}->update_joblist(
         job => $self->{id},
-        status => $status
+        summary  => [ $self->summary ]
         );
 
 
@@ -211,6 +226,9 @@ sub copy_uploads {
                     value => $path
                 };
                 $self->{files}{$u} = $path;
+                if( $u eq 'FROM' ) {
+                    $self->{from} = $path;
+                }
             }  else {
                 $self->{log}->error("Couldn't copy upload to $path");
                 return undef;
@@ -233,6 +251,42 @@ sub copy_uploads {
     }
     return $files;
 }
+
+
+=item timestamp
+
+Returns a nicely-formatted timestamp
+
+=cut
+
+sub timestamp {
+    my ( $self ) = @_;
+
+    return strftime($TIME_FORMAT, localtime);
+}
+
+
+=item summary 
+
+Returns a list of ( id, created, status, app, from, to ) for this job.
+These are the fields stored in the jobs.txt file
+
+=cut
+
+sub summary {
+    my ( $self ) = @_;
+
+    return (
+        $self->{id},
+        $self->{created},
+        $self->{status},
+        $self->{app},
+        $self->{from}, 
+        $self->{to}
+        );
+}
+
+
 
 
 =item xmlfile

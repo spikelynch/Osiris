@@ -51,7 +51,8 @@ post '/login' => sub {
     }
 };
 
-
+###### Routes for browsing/searching apps
+#
 # /  a list of app categories and missions
 
 get '/' => sub {
@@ -106,6 +107,48 @@ get '/app/:name' => sub {
 	}
 };
 
+
+
+#
+#
+#get '/apps/search/:str' => sub {
+#	template 'search';
+#};
+#
+#
+#
+#
+
+
+
+
+###### Routes for starting jobs, looking at the job list and 
+#      accessing results
+
+# jobs - current user's job lisg
+
+get '/jobs' => sub {
+    my $user = get_user();
+    
+    my $jobhash = $user->jobs(reload => 1);
+
+    debug("Jobs for $user->{id}", $jobhash);
+
+    my $jobs = [];
+
+    if( $jobhash ) {
+        for my $id ( sort keys %$jobhash ) {
+            push @$jobs, $jobhash->{$id};
+        }
+    }
+
+    template jobs => { jobs => $jobs };
+
+};
+
+
+
+
 # post /app - start a job.
 
 post '/app/:name' => sub {
@@ -147,26 +190,18 @@ post '/app/:name' => sub {
             error => "Couldn't create Osiris::Job"
         }
     } else {
-        debug("Got job = $job");
-        template 'testjob' => {
-            user => $user->{id}, 
-            job => $job->xml
-        };
+        forward '/';
     }
 };
 
 
 
 
-#
-#
-#get '/apps/search/:str' => sub {
-#	template 'search';
-#};
-#
-#
-#
-#
+
+
+
+
+
 
 
 
