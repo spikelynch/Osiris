@@ -154,7 +154,10 @@ sub set_status {
 
     my $status = $params{status} || die( "set_status needs a status");
 
-    return $self->{user}->set_job_status(id => $self->{id}, status => $status);
+    $self->{status} = $status;
+
+    return $self->{user}->save_joblist();
+
 }
 
 =item copy_uploads

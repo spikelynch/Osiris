@@ -54,7 +54,7 @@ sub new {
         return undef;
     }
 
-    if( $self->_load_joblist ) {
+    if( $self->load_joblist ) {
         return $self;
     } else {
         return undef;
@@ -75,7 +75,7 @@ sub jobs {
     my ( $self,  %params ) = @_;
 
     if( $params{reload} ) {
-        $self->_load_joblist;
+        $self->load_joblist;
     }
     
     return $self->{jobs};
@@ -107,7 +107,7 @@ sub create_job {
         if( $job->write ) {
             $self->{jobs}{$id} = $job;
             $job->{status} = 'new';
-            $self->_save_joblist;
+            $self->save_joblist;
             return $job;
         } else {
             $self->{log}->error("Couldn't write job");
@@ -120,26 +120,6 @@ sub create_job {
 }
 
 
-=item set_job_status(id => $id, status => $s)
-
-This sucks. FIXME and Job->set_status while you're at it.
-
-=cut
-
-sub set_job_status {
-    my ( $self, %params ) = @_;
-    
-    my $id = $params{id};
-    my $status = $params{status};
-    
-    if( my $job = $self->{jobs}{$id} ) {
-        $self->{jobs}{$id}{status} = $status;
-        return $self->_save_joblist;
-    } else {
-        $self->{log}->error("Couldn't find job $id in user $self->{id}");
-        return undef;
-    }
-}
         
 
 
@@ -176,13 +156,13 @@ sub _joblistfile {
 }
 
 
-=item _load_joblist
+=item load_joblist
 
 Load the storable job list, if it exists
 
 =cut
 
-sub _load_joblist {
+sub load_joblist {
     my ( $self ) = @_;
 
     my $joblistfile = $self->_joblistfile;
@@ -217,26 +197,29 @@ sub _load_joblist {
 }
 
 
-=item _save_joblist
+=item save_joblist
 
 Saves the storable job list, if it exists
 
 =cut
 
-sub _save_joblist {
+sub save_joblist {
     my ( $self ) = @_;
 
     my $joblistfile = $self->_joblistfile;
     
+    $self->{log}->debug("Saving joblist for $self->{id}");
     open(JOBS, ">$joblistfile") || do {
         $self->{log}->error("Couldn't write to joblist file $joblistfile $!");
         return undef;
     };
 
     for my $id ( sort keys %{$self->{jobs}} ) {
+        $self->{log}->debug("Job $self->{jobs}{$id} $id status = $self->{jobs}{$id}{status}");
         my $line = join(' ', $id, $self->{jobs}{$id}{status}) . "\n";
         print JOBS $line;
     }
+    $self->{log}->debug("Done.");
     close JOBS;
     return 1;
 }

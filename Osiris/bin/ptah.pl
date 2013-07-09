@@ -99,66 +99,96 @@ sub initialise {
 
 
 sub scan_jobs {
-    my ( $kernel, $heap ) = @_[KERNEL, HEAP];
+    my ( $kernel, $heap, $state, $sender, @caller ) = 
+        @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
 
+
+    
     $log->debug("[scan_jobs]");
+    $log->debug("state = $state");
+    $log->debug("sender = $sender");
+    $log->debug("caller = " . join(', ', @caller));
     my $user = $heap->{user};  # scan_users
 
-    my $all_jobs = $user->jobs;
+    my $all_jobs = $user->jobs(reload => 1);
 
     my @new = grep { $_->{status} eq 'new' } values %$all_jobs;
+
+    $log->debug("New jobs = " . join(' ', map { $_->{id} } @new));
+
+    for my $newjob ( @new ) {
+        $log->debug("New job $newjob $newjob->{id} $newjob->{status}");
+    }
 
     push @{$heap->{jobs}}, @new;
 
     if( @{$heap->{jobs}} ) {
-        $kernel->yield('run_jobs');
-    } #else {
-      #  $kernel->yield('scan_user');
-    
+        $kernel->delay('run_jobs' => 5);
+    }# else {
+     # $kernel->delay('scan_user' => 5);
+    #}
 }
 
 
 
 
 sub run_jobs {
-  my ( $kernel, $heap ) = @_[KERNEL, HEAP];
-
-  $log->debug("[run_jobs]");
-  while ( keys(%{$heap->{running}}) < MAX_CONCURRENT_TASKS ) {
-
-    my $job = shift @{$heap->{jobs}};
-    last unless defined $job;
+    my ( $kernel, $heap ) = @_[KERNEL, HEAP];
     
-    $log->debug("Running job $job->{id}");
+    $log->debug("[run_jobs]");
 
-    $job->load_xml;
-    my $command = $job->command;
-    $log->debug("Marking job status 'processing'");
-    $job->set_status(status => 'processing') || die("Couldn't set status");
-    $log->debug("Starting job: $command->[0]");
-    my $task = POE::Wheel::Run->new(
-        Program => sub {
-            print "In the subprocess: chdir...\n";
-            chdir $WORKING_DIR || die("Couldn't chdir to $WORKING_DIR");
-            print "exec\n";
-            exec(@$command);
-        },
-        StdoutEvent  => "task_result",
-        StderrEvent  => "task_debug",
-        CloseEvent   => "task_done",
-    );
-    $log->debug("Launched task " . $task->ID . " with pid " . $task->PID);
-    $heap->{running}{$task->ID} = {
-        task => $task,
-        job => $job
-    };
-    $kernel->sig_child($task->PID, "sig_child");
-  }
-  $log->debug("end of run_jobs");
+    $log->debug("heap jobs = " . join(', ', $heap->{jobs}));
+    
+    $log->debug("running jobs " . scalar(keys %{$heap->{running}}));
+    while ( keys(%{$heap->{running}}) < MAX_CONCURRENT_TASKS ) {
+        
+        
+        
+        my $job = shift @{$heap->{jobs}};
+        last unless defined $job;
+        $log->debug("heap jobs 2 = " . join(', ', $heap->{jobs}));
+        
+        $log->debug("Running job $job->{id}");
+        
+        $job->load_xml;
+        my $command = $job->command;
+        $log->debug("Marking job status 'processing'");
+        $job->set_status(status => 'processing') || die("Couldn't set status");
+        $log->debug("Starting job: $command->[0]");
+        my $task = POE::Wheel::Run->new(
+            Program => sub {
+                print "In the subprocess: chdir...\n";
+                chdir $WORKING_DIR || die("Couldn't chdir to $WORKING_DIR");
+                print "exec\n";
+                exec(@$command);
+            },
+            StdoutEvent  => "task_result",
+            StderrEvent  => "task_debug",
+            CloseEvent   => "task_done",
+            );
+        $log->debug("Launched task " . $task->ID . " with pid " . $task->PID);
+        $heap->{running}{$task->ID} = {
+            task => $task,
+            job => $job
+        };
+        $heap->{pid_to_wid}{$task->PID} = $task->ID;
+        $kernel->sig_child($task->PID, "sig_child");
+    }
+    $log->debug("end of run_jobs");
 }
 
 
 sub stop_ptah {
+    my ( $kernel, $heap, $state, $sender, @caller ) = 
+        @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
+
+
+    
+    $log->debug("[scan_jobs]");
+    $log->debug("state = $state");
+    $log->debug("sender = $sender");
+    $log->debug("caller = " . join(', ', @caller));
+    
     print "End.\n";
 }
 
@@ -190,27 +220,30 @@ sub handle_task_debug {
 sub handle_task_done {
   my ($kernel, $heap, $task_id) = @_[KERNEL, HEAP, ARG0];
 
-  # print "handle_task_done called for $task_id\n";
-  # my $job = $heap->{running}{$task_id}{job};
-  # $log->debug("job = $job");
-  # $log->debug("Setting job $job->{id} status to 'done'");
-  # $job->set_status("done");
-  delete $heap->{running}{$task_id};
 
   $kernel->yield("scan_jobs");
 }
 
 # Detect the CHLD signal as each of our children exits.
 sub sig_child {
-  my ($heap, $sig, $pid, $exit_val) = @_[HEAP, ARG0, ARG1, ARG2];
+    my ($heap, $sig, $pid, $exit_val) = @_[HEAP, ARG0, ARG1, ARG2];
 
-  
+    $log->debug("sig_child caught for PID $pid");
 
-  my $details = delete $heap->{$pid};
+    my $wid = $heap->{pid_to_wid}{$pid};
 
-  print "$$: Child $pid exited\n";
+
+    if( !$wid ) {
+        $log->error("Child $pid has no corresponding wheel ID");
+    } else {
+        $log->debug("Wheel id =  $wid");
+        my $job = $heap->{running}{$wid}{job};
+        $log->debug("Job from POE heap = $job $job->{id}");
+        delete $heap->{running}{$wid};
+        $log->debug("Setting job $job->{id} status to 'done'");
+        $job->set_status(status => "done"); 
+    }
 }
-
 
 
 
