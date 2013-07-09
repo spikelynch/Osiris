@@ -79,6 +79,20 @@ sub new {
 
 
 
+=item working_dir
+
+Returns the directory in which this command should be executed - the
+user's working dir
+
+=cut
+
+sub working_dir {
+    my ( $self ) = @_;
+
+    return $self->{user}->working_dir;
+}
+
+
 
 
 =item write()
@@ -327,6 +341,7 @@ sub command {
 
     return $command;
 }
+
 
 
 1;

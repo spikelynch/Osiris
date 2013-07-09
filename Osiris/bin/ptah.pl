@@ -7,7 +7,7 @@ use strict;
 
 
 sub POE::Kernel::ASSERT_DEFAULT () { 1 };
-use POE qw(Wheel::Run Filter::Reference);
+use POE qw(Wheel::Run);
 
 use lib '/home/mike/workspace/DC18C Osiris/Osiris/lib';
 
@@ -44,20 +44,10 @@ sub MAX_CONCURRENT_TASKS () { 3 }
 
 my $WORKING_DIR = '/home/mike/workspace/DC18C Osiris/working/';
 
-my $isiscmd = {
-    FROM => "$WORKING_DIR/V03537002EDR.QUB",
-    TO => "$WORKING_DIR/V03537002.cub",
-    TIMEOFFSET => '0.0'
-};
 
 my $log = Log::Log4perl->get_logger('ptah');
 
 
-my @command = ( '/home/mike/Isis/isis/bin/thm2isis' );
-
-for my $option ( keys %$isiscmd ) {
-    push @command, "$option=$isiscmd->{$option}";
-}
 
 $log->debug("Resetting fixtures...\n");
 
@@ -70,6 +60,7 @@ test_fixtures();
 POE::Session->create(
   inline_states => {
     _start      => \&initialise,
+    scan_users  => \&scan_users,
     scan_jobs   => \&scan_jobs,
     run_jobs    => \&run_jobs,
     task_result => \&handle_task_result,
@@ -88,66 +79,121 @@ sub initialise {
 
     $log->debug("[initialise]");
 
-    $heap->{user} = Osiris::User->new(
-        id => 'michael',
-        basedir => $WORKING_DIR
-        );
     $heap->{jobs} = [];
-    $kernel->yield('scan_jobs');
+    $heap->{users} = [];
+    $kernel->yield('scan_users');
 }
 
+
+
+# scan_users
+
+# Event handler called when the job queue and user queues are both empty.
+# Scans the working directory for user dirs and initialises Osiris::User
+# objects for them.
+
+# If it finds nothing, it calls itself on a delay.
+
+
+sub scan_users {
+    my ( $kernel, $heap, $state, $sender, @caller ) = 
+        @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
+    $log->debug(">>>[scan_users]");
+    $log->debug("    state = $state");
+    $log->debug("    sender = $sender");
+    $log->debug("    caller = " . join(', ', @caller));
+
+    $log->debug("Scanning dir $WORKING_DIR");
+    opendir(my $dh, $WORKING_DIR) || do {
+        $log->fatal("Couldn't opendir $WORKING_DIR");
+        die;
+    };
+
+    $heap->{users} = [];
+    ITEM: for my $id ( readdir($dh ) ) {
+        $log->debug("Item $id");
+        next ITEM if $id =~ /^\./;
+        next ITEM if ! -d "$WORKING_DIR/$id";
+        my $user = Osiris::User->new(
+            id => $id,
+            basedir => $WORKING_DIR
+            );
+        $log->debug("Got user $id");
+        push @{$heap->{users}}, $user;
+    }
+    closedir($dh);
+
+    if( !@{$heap->{users}} ) {
+        $log->warn("No users found.");
+        $kernel->delay(scan_users => 10);
+    } else {
+        $kernel->yield('scan_jobs');
+    }
+}
+    
+
+# Event handler called when the job queue is empty.  It shifts the next
+# user off the user queue and scans their job list for new jobs.
+
+# If there is no next user, it calls scan_users.
 
 
 sub scan_jobs {
     my ( $kernel, $heap, $state, $sender, @caller ) = 
         @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
 
+    $log->debug(">>>[scan_jobs]");
+    $log->debug("    state = $state");
+    $log->debug("    sender = $sender");
+    $log->debug("    caller = " . join(', ', @caller));
 
-    
-    $log->debug("[scan_jobs]");
-    $log->debug("state = $state");
-    $log->debug("sender = $sender");
-    $log->debug("caller = " . join(', ', @caller));
-    my $user = $heap->{user};  # scan_users
+    my $user = shift @{$heap->{users}};
+    if( $user ) {
 
-    my $all_jobs = $user->jobs(reload => 1);
+        my $all_jobs = $user->jobs(reload => 1);
+        
+        my @new = grep { $_->{status} eq 'new' } values %$all_jobs;
 
-    my @new = grep { $_->{status} eq 'new' } values %$all_jobs;
+        $log->debug("New jobs = " . join(' ', map { $_->{id} } @new));
 
-    $log->debug("New jobs = " . join(' ', map { $_->{id} } @new));
+        for my $newjob ( @new ) {
+            $log->debug("New job $newjob $newjob->{id} $newjob->{status}");
+        }
 
-    for my $newjob ( @new ) {
-        $log->debug("New job $newjob $newjob->{id} $newjob->{status}");
+        push @{$heap->{jobs}}, @new;
+
+        $kernel->yield('run_jobs');
+    } else {
+        $kernel->delay('scan_users' => 5);
     }
-
-    push @{$heap->{jobs}}, @new;
-
-    if( @{$heap->{jobs}} ) {
-        $kernel->delay('run_jobs' => 5);
-    }# else {
-     # $kernel->delay('scan_user' => 5);
-    #}
 }
 
 
+# run_jobs
 
+# Pulls items off the job queue until either
+#
+# (a) MAX_CONCURRENT TASKS is reached, in which case it does nothing
+#    (when a running job is finished it will call run_jobs again)
+# (b) there are no more jobs, in which case it calls scan_jobs to get more
+#    jobs from the next user.
 
 sub run_jobs {
-    my ( $kernel, $heap ) = @_[KERNEL, HEAP];
-    
-    $log->debug("[run_jobs]");
+    my ( $kernel, $heap, $state, $sender, @caller ) = 
+        @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
 
-    $log->debug("heap jobs = " . join(', ', $heap->{jobs}));
+    $log->debug(">>>[run_jobs]");
+    $log->debug("    state = $state");
+    $log->debug("    sender = $sender");
+    $log->debug("    caller = " . join(', ', @caller));
     
+    $log->debug("heap jobs = " . join(', ', $heap->{jobs}));
     $log->debug("running jobs " . scalar(keys %{$heap->{running}}));
-    while ( keys(%{$heap->{running}}) < MAX_CONCURRENT_TASKS ) {
-        
-        
-        
+    CAPACITY: while ( keys(%{$heap->{running}}) < MAX_CONCURRENT_TASKS ) {
+       
         my $job = shift @{$heap->{jobs}};
-        last unless defined $job;
-        $log->debug("heap jobs 2 = " . join(', ', $heap->{jobs}));
-        
+        last CAPACITY unless defined $job;
+
         $log->debug("Running job $job->{id}");
         
         $job->load_xml;
@@ -158,7 +204,8 @@ sub run_jobs {
         my $task = POE::Wheel::Run->new(
             Program => sub {
                 print "In the subprocess: chdir...\n";
-                chdir $WORKING_DIR || die("Couldn't chdir to $WORKING_DIR");
+                my $dir = $job->working_dir;
+                chdir $dir || die("Couldn't chdir to $dir");
                 print "exec\n";
                 exec(@$command);
             },
@@ -175,6 +222,9 @@ sub run_jobs {
         $kernel->sig_child($task->PID, "sig_child");
     }
     $log->debug("end of run_jobs");
+    if( !@{$heap->{jobs}} ) {
+        $kernel->delay('scan_jobs' => 5);
+    }
 }
 
 
@@ -182,13 +232,9 @@ sub stop_ptah {
     my ( $kernel, $heap, $state, $sender ) = 
         @_[KERNEL, HEAP, STATE, SENDER];
 
-    $log->debug("_stop_ptah");
-    
-    $log->debug("[scan_jobs]");
-    $log->debug("state = $state");
-    $log->debug("sender = $sender");
-#    $log->debug("caller = " . join(', ', @caller));
-    
+    $log->debug(">>>[_stop_ptah]");
+    $log->debug("    state = $state");
+    $log->debug("    sender = $sender");
     print "End.\n";
 }
 
@@ -201,6 +247,7 @@ sub stop_ptah {
 # Handle information returned from the task.  Since we're using
 # POE::Filter::Reference, the $result is however it was created in the
 # child process.  In this sample, it's a hash reference.
+
 sub handle_task_result {
     my ( $output, $wid ) = @_[ARG0, ARG1];
     print ">>>stdout $wid>>> $output\n";

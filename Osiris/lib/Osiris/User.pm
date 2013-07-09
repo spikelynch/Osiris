@@ -61,6 +61,19 @@ sub new {
     }
 }
 
+
+=item working_dir 
+
+Return this user's working dir (basedir/user_id)
+
+=cut
+
+sub working_dir {
+    my ( $self ) = @_;
+    
+    return $self->{dir};
+}
+
 =item jobs
 
 Returns the job list as a hashref of Osiris::Job objects keyed by ID.
