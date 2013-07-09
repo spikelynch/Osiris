@@ -7,12 +7,14 @@ use Data::Dumper;
 use FindBin;
 use Cwd qw/realpath/;
 use Dancer ":script";
+use Log::Log4perl;
 
 use lib "$FindBin::Bin/../lib";
 
 use Osiris;
 use Osiris::App;
 use Osiris::Job;
+use Osiris::Test;
 
 use_ok 'Osiris::User';
 
@@ -79,10 +81,12 @@ ok(-f $joblist, "User's job list file exists");
 
 my $jobsf = {};
 
+# hack: the joblist is now XML
+
 if ( open(JOBS, $joblist) ) {
     while( <JOBS> ) {
         chomp;
-        if( /^(\d+)\s+([a-z]+)/ ) {
+        if( /id="(\d+)".*status="([a-z]+)"/ ) {
             $jobsf->{$1} = $2;
         }
     }
