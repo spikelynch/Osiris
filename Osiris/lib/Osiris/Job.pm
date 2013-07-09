@@ -145,7 +145,9 @@ EOXML
 
 =item set_status
 
-Writes this job's status to its user's job queue
+Writes this job's status to its user's job queue.  Note that this updates
+the status for this object, but refers to the job by ID when saving the
+joblist - trying to cover all bases.
 
 =cut
 
@@ -156,7 +158,16 @@ sub set_status {
 
     $self->{status} = $status;
 
-    return $self->{user}->save_joblist();
+    $self->{log}->debug("Job $self $self->{id} status set to $status");
+    
+#    $self->{user}->save_joblist;
+
+
+    return $self->{user}->update_joblist(
+        job => $self->{id},
+        status => $status
+        );
+
 
 }
 

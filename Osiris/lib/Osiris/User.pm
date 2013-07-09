@@ -54,7 +54,7 @@ sub new {
         return undef;
     }
 
-    if( $self->load_joblist ) {
+    if( $self->_load_joblist ) {
         return $self;
     } else {
         return undef;
@@ -75,7 +75,7 @@ sub jobs {
     my ( $self,  %params ) = @_;
 
     if( $params{reload} ) {
-        $self->load_joblist;
+        $self->_load_joblist;
     }
     
     return $self->{jobs};
@@ -107,7 +107,7 @@ sub create_job {
         if( $job->write ) {
             $self->{jobs}{$id} = $job;
             $job->{status} = 'new';
-            $self->save_joblist;
+            $self->_save_joblist;
             return $job;
         } else {
             $self->{log}->error("Couldn't write job");
@@ -156,17 +156,19 @@ sub _joblistfile {
 }
 
 
-=item load_joblist
+=item _load_joblist
 
 Load the storable job list, if it exists
 
 =cut
 
-sub load_joblist {
+sub _load_joblist {
     my ( $self ) = @_;
 
     my $joblistfile = $self->_joblistfile;
-    
+ 
+    $self->{log}->debug("Reading joblist for user $self->{id}");
+   
     $self->{jobs} = {};
    
     if( -f $joblistfile ) {
@@ -187,6 +189,7 @@ sub load_joblist {
                     );
                 if( $job ) {
                     $self->{jobs}{$id} = $job;
+                    $self->{log}->debug("Job $id = $job");
                 } else {
                     $self->{log}->error("Couldn't create job $id for user $self->{id}");
                 }
@@ -197,13 +200,16 @@ sub load_joblist {
 }
 
 
-=item save_joblist
+
+
+
+=item _save_joblist
 
 Saves the storable job list, if it exists
 
 =cut
 
-sub save_joblist {
+sub _save_joblist {
     my ( $self ) = @_;
 
     my $joblistfile = $self->_joblistfile;
@@ -223,6 +229,57 @@ sub save_joblist {
     close JOBS;
     return 1;
 }
+
+
+=item update_joblist( job => $job, status => $status )
+
+Public version of _save_joblist.  This looks the job up by id, rather
+than just updating the job object, because the job list may have been
+reloaded on the user betweentimes.
+
+The job can be passed as an ID or an Osiris::Job.  
+
+=cut
+
+
+
+
+sub update_joblist {
+    my ( $self, %params ) = @_;
+
+    my $job = $params{job};
+    my $status = $params{status};
+
+    if( !$job ) {
+        $self->{log}->error("update_joblist needs a job");
+        return undef;
+    }
+
+    if( !$status ) {
+        $self->{log}->error("update_joblist needs a status");
+        return undef;
+    }
+    my $id;
+
+    if( ref($job) ) {
+        $job->{status} = $status;
+        $id = $job->{id} || do {
+            $self->{log}->error("No job id!");
+            return undef;
+        };
+    } else {
+        $id = $job;
+    }
+
+    if( my $j = $self->{jobs}{$id} ) {
+        $j->{status} = $status;
+        return $self->_save_joblist;
+    }
+    $self->{log}->error("Job $id not found");
+    return undef;
+}
+
+
 
 
 1;

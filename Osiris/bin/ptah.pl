@@ -179,15 +179,15 @@ sub run_jobs {
 
 
 sub stop_ptah {
-    my ( $kernel, $heap, $state, $sender, @caller ) = 
-        @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
+    my ( $kernel, $heap, $state, $sender ) = 
+        @_[KERNEL, HEAP, STATE, SENDER];
 
-
+    $log->debug("_stop_ptah");
     
     $log->debug("[scan_jobs]");
     $log->debug("state = $state");
     $log->debug("sender = $sender");
-    $log->debug("caller = " . join(', ', @caller));
+#    $log->debug("caller = " . join(', ', @caller));
     
     print "End.\n";
 }
