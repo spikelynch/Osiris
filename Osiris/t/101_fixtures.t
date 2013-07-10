@@ -13,4 +13,3 @@ use Osiris::Test qw(test_fixtures);
 
 ok( test_fixtures(), "Copied fixtures");
 
-l

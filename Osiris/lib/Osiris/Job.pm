@@ -201,7 +201,7 @@ sub set_status {
 
     return $self->{user}->update_joblist(
         job => $self->{id},
-        summary  => [ $self->summary ]
+        status => $self->{status}
         );
 
 
@@ -391,13 +391,13 @@ sub command {
     my ( $self ) = @_;
 
     if( !$self->{app} ) {
-        $self->{log}->error(
-            "You have to load a job's XML before running command"
-            );
-        return undef;
+        if( !$self->load_xml ) {
+            $self->{log}->error("Load XML failed");
+            return undef;
+        }
     }
 
-    my $command = [ $self->{app} ];
+    my $command = [ $self->{appname} ];
     for my $name ( sort keys %{$self->{files}} ) {
         push @$command, join('=', $name, $self->{files}{$name});
     }
@@ -406,6 +406,8 @@ sub command {
         push @$command, join('=', $name, $self->{parameters}{$name});
     }
 
+    $self->{log}->debug("Command = " . join(', ', @$command));
+    
     return $command;
 }
 

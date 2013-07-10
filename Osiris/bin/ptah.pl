@@ -14,7 +14,6 @@ use Log::Log4perl;
 
 Log::Log4perl::init('/home/mike/workspace/DC18C Osiris/Osiris/environments/log4perl.conf');
 
-use Osiris::Test qw(test_fixtures);
 use Osiris::User;
 use Osiris::Job;
 
@@ -47,10 +46,6 @@ my $log = Log::Log4perl->get_logger('ptah');
 
 
 
-$log->debug("Resetting fixtures...\n");
-
-test_fixtures();
-
 
 # Start the session that will manage all the children.  The _start and
 # next_task events are handled by the same function.
@@ -65,7 +60,7 @@ POE::Session->create(
     task_done   => \&handle_task_done,
     task_debug  => \&handle_task_debug,
     sig_child   => \&sig_child,
-    bail_out    => \&bail_out,
+    fatal       => \&fatal,
     _stop       => \&stop_ptah,
   }
 );
@@ -194,11 +189,15 @@ sub run_jobs {
 
         $log->debug("Running job $job->{id}");
         
-        $job->load_xml;
         my $command = $job->command;
+        if( !$command ) {
+            $heap->{error} = "Job->command returned nothing";
+            $kernel->yield('fatal');
+        }
         $log->debug("Marking job status 'processing'");
         $job->set_status(status => 'processing') || die("Couldn't set status");
         $log->debug("Starting job for user $job->{user}{id}");
+        $log->debug("Command string: " . join(' ', @$command));
         my $task = POE::Wheel::Run->new(
             Program => sub {
                 $log->debug(">In subprocess");
@@ -225,6 +224,18 @@ sub run_jobs {
     }
 }
 
+
+sub fatal {
+    my ( $kernel, $heap, $state, $sender, @caller ) = 
+        @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
+
+    $log->debug("___[fatal]");
+    $log->debug("    state = $state");
+    $log->debug("    sender = $sender");
+    $log->debug("    caller = " . join(', ', @caller));
+
+    $log->error("Fatal error: $heap->{error}");
+}
 
 sub stop_ptah {
     my ( $kernel, $heap, $state, $sender ) = 

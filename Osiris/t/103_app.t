@@ -35,14 +35,6 @@ for my $appfile ( 'cam2map.xml' ) {
 	
 	ok($form, "Got app's form structure");
 
-	if( $appname eq 'cam2map' ) {
-		for my $group ( @$form ) {
-			print "Group $group->{name}\n";
-			for my $param ( @{$group->{parameters}} ) {
-				print "Param $param->{name}\n";
-				print Dumper({param => $param});
-				print "\n\n";
-			}
-		}
-	}
 }
+
+diag("FIXME this isn't really much of a test script.");

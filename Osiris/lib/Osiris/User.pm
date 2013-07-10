@@ -288,6 +288,10 @@ reloaded on the user betweentimes.
 
 The job can be passed as an ID or an Osiris::Job.  
 
+This hasn't been changed drastically from when the joblist was a textfile
+with just id and status - so it can't be used to modify any of the other
+joblist fields.  But they shouldn't change anyway.
+
 =cut
 
 

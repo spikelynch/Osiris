@@ -181,16 +181,14 @@ post '/app/:name' => sub {
         parameters => $params,
         uploads => $uploads
     );
-
     
     if( !$job ) {
-        debug("in error clause");
         template 'error' => {
             user => $user->{id}, 
             error => "Couldn't create Osiris::Job"
         }
     } else {
-        forward '/';
+        forward '/jobs';
     }
 };
 
