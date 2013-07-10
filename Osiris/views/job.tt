@@ -1,19 +1,37 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<h2>Job <% job.id %></h2>
 
-<job app="<% app %>">
-    <metadata>
-    </metadata>
-    <files>
-    <% FOR file IN files %>
-        <file name="<% file.name %>"><% file.value %></file>
-    <% END %>
-    </files>
-    <parameters>
-    <% FOR param IN parameters %>
-        <parameter name="<% param.name %>"><% param.value %></parameter>
-    <% END %>
-    </parameters>
-</job>
+<table>
+<tbody>
+
+
+<tr>
+<td class="label">Command line</td>
+<td><pre><% job.command.join(' ') %></pre></td>
+</tr>
+
+<tr>
+<td class="label">Job status</td>
+<td><strong><% job.status %></strong></td>
+</tr>
+
+<tr>
+<td class="label">Started</td>
+<td><% job.created %></td>
+</tr>
+
+<tr>
+<td class="label">Completed</td>
+<td><% job.completed %></td>
+</tr>
+
+<tr>
+<td class="label">print.prt</td>
+<td><pre><% job.prt %></td>
+</tr>
+
+</table>
+
+<p><a href="/jobs">Back</a></p>
 
 
 

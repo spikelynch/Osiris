@@ -125,14 +125,12 @@ get '/app/:name' => sub {
 ###### Routes for starting jobs, looking at the job list and 
 #      accessing results
 
-# jobs - current user's job lisg
+# jobs - current user's job list
 
 get '/jobs' => sub {
     my $user = get_user();
     
     my $jobhash = $user->jobs(reload => 1);
-
-    debug("Jobs for $user->{id}", $jobhash);
 
     my $jobs = [];
 
@@ -146,6 +144,25 @@ get '/jobs' => sub {
 
 };
 
+
+
+# job/$id - details for a job
+
+get '/job/:id' => sub {
+    my $user = get_user();
+    
+    my $id = param('id');
+    my $jobhash = $user->jobs(reload => 1);
+
+    my $job = $jobhash->{$id};
+
+    if( ! $job ) {
+        forward '/jobs';
+    } else {
+        $job->load_xml;
+        template job => { job => $job };
+    }
+};
 
 
 
@@ -188,13 +205,11 @@ post '/app/:name' => sub {
             error => "Couldn't create Osiris::Job"
         }
     } else {
-        forward '/jobs';
+        template 'job' => {
+            job => $job 
+        }
     }
 };
-
-
-
-
 
 
 

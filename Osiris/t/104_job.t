@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 12;
+use Test::More tests => 13;
 
 use strict;
 use Data::Dumper;
@@ -14,7 +14,7 @@ use lib "$FindBin::Bin/../lib";
 use Osiris;
 use Osiris::App;
 use Osiris::Job;
-use Osiris::Test;
+use Osiris::Test qw(test_fixtures);
 
 use_ok 'Osiris::User';
 
@@ -28,6 +28,9 @@ Dancer::Config::setting('appdir', $appdir);
 Dancer::Config::load();
 
 my $conf = config();
+
+ok(test_fixtures, "Build test fixtures");
+
 
 my ( $apps, $browse ) = Osiris::load_toc(%$conf);
 

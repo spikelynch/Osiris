@@ -1,0 +1,42 @@
+<h2>Job list</h2>
+
+<form name="jobs"
+      method="post"  >
+
+<table class="joblist">
+<thead>
+<tr>
+        <th>Job ID</th><th>Created</th><th>Status</th>
+        <th>Command</th><th>Input</th><th>Output</th>
+</tr>
+</thead>
+<tbody>
+
+<% IF jobs.size < 1 %>
+
+<tr class="job"><td colspan="3">No jobs found</td></tr>
+
+<% ELSE %>
+ 
+<% FOR job IN jobs %>
+
+<tr class="job"<% job.status %>">
+    <td><% job.id %></td>
+    <td><% job.created %></td>
+    <td><a href="/job/<% job.id %>"><% job.status %></a></td>
+    <td><% job.app.app %></td>
+    <td><% job.from %></td>
+    <td><% job.to %></td>
+</tr>
+
+<% END %>
+<% END %>
+</tbody>
+
+</table>
+
+</form>
+
+
+<p><a href="/">Back</a></p>
+

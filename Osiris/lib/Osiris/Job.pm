@@ -406,8 +406,8 @@ sub command {
         push @$command, join('=', $name, $self->{parameters}{$name});
     }
 
-    $self->{log}->debug("Command = " . join(', ', @$command));
-    
+    $self->{command} = $command;
+    $self->{commandstr} = join(' ', @$command);
     return $command;
 }
 
