@@ -36,6 +36,10 @@ the following values:
 
 =back
 
+NOTE: in this class, 'app' refers to an Osiris::App object, and 
+'appname' refers to the object's name (the actual command line program's
+name.  When passing back a summary for the job, 'appname' is called 'app'.
+
 =cut
 
 my $TIME_FORMAT = "%d %b %Y %I:%M:%S %p";
@@ -70,12 +74,15 @@ sub new {
 
     if( my $s = $params{summary} ) {
         # job is being created from the job list
-        for ( qw(created app status to from) ) {
+        for ( qw(created status to from) ) {
             $self->{$_} = $s->{$_};
         }
+        $self->{appname} = $s->{app};
+
     } else{
         # job is being created via the web app
         $self->{app} = $params{app};
+        $self->{appname} = $params{app}->{app};
         $self->{uploads} = $params{uploads};
         $self->{parameters} = $params{parameters};
 	} 
@@ -243,6 +250,9 @@ sub copy_uploads {
                     name => $u,
                     value => $path
                 };
+                if( $u eq 'FROM' ) {
+                    $self->{from} = $filename;
+                }
             } else {
                 $self->{log}->error("couldn't copy $upload->{file} to $path: $!");
                 return undef;
@@ -276,14 +286,17 @@ These are the fields stored in the jobs.txt file
 sub summary {
     my ( $self ) = @_;
 
-    return (
-        $self->{id},
-        $self->{created},
-        $self->{status},
-        $self->{app},
-        $self->{from}, 
-        $self->{to}
-        );
+    my $s = {
+        id => $self->{id},
+        created => $self->{created},
+        status => $self->{status},
+        app => $self->{appname},
+        from => $self->{from}, 
+        to => $self->{to}
+        };
+    return $s;
+
+                 
 }
 
 
@@ -339,7 +352,7 @@ sub load_xml {
 
     my $tw = XML::Twig->new(
         twig_handlers => {
-            job => sub { $self->{app} = $_->att('app') },
+            job => sub { $self->{appname} = $_->att('app') },
             file => sub { 
                 $self->{files}{$_->att('name')} = $_->text;
             },

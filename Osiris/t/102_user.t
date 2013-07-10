@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 12;
+use Test::More tests => 27;
 
 use strict;
 use Data::Dumper;
@@ -74,4 +74,41 @@ my $job = $user->create_job(
 
 ok($job, "Created a new job");
 
+my $id = $job->{id};
+
+ok($user->{jobs}{$id}, "Job appears in user's job list");
+
+my $summary1 = $user->{jobs}{$id}->summary;
+my $summary2 = $job->summary;
+
+for my $field ( qw(id created status app from to) ) {
+    cmp_ok($summary2->{$field}, 'eq', $summary1->{$field}, "Summary '$field' matches");
+}
+
+# Now destroy the original user, reload it and make sure that th
+# job is being read from the joblist.
+
+$user = undef;
+$jobs = undef;
+$job = undef;
+
+my $user2 = Osiris::User->new(
+    id => $USER,
+    basedir => $conf->{workingdir},
+);
+
+$jobs = $user2->jobs;
+
+ok($jobs, "Got second joblist");
+
+cmp_ok(keys %$jobs, '==', 1, "User has one job");
+
+my ( $job ) = values %$jobs;
+
+my $summary3 = $job->summary;
+
+for my $field ( qw(id created status app from to) ) {
+    ok($summary3->{$field}, "Value for summary field '$field'");
+    cmp_ok($summary3->{$field}, 'eq', $summary1->{$field}, "Summary '$field' matches");
+}
  

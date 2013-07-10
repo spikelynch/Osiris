@@ -2,6 +2,7 @@ package Osiris::User;
 
 use strict;
 
+use Data::Dumper;
 use XML::Twig;
 use Log::Log4perl;
 
@@ -20,7 +21,7 @@ directory and list of jobs and their status.
 
 =cut
 
-our $JOBLISTFILE = 'jobs.txt';
+our $JOBLISTFILE = 'joblist.xml';
 
 
 =head METHODS
@@ -185,38 +186,41 @@ sub _load_joblist {
     $self->{jobs} = {};
    
     if( -f $joblistfile ) {
-        open(JOBS, $joblistfile) || do {
-            $self->{log}->error("Couldn't read joblist file $joblistfile $!");
+        my $tw = XML::Twig->new(
+            twig_handlers => { job => sub { $self->_load_job($_) } }
+            );
+        eval { $tw->parsefile($joblistfile) };
+        if( $@ ) {
+            $self->{log}->error("Joblist parse failed: $@");
             return undef;
-        };
-
- 
-        while( <JOBS> ) {
-            chomp;
-            my ( $id, $date, $status, $app, $from, $to ) = split(',');
-            if( $id =~ /^(\d+)$/ ) {
-                my ( $id, $status ) = ( $1, $2 );
-                my $job = Osiris::Job->new(
-                    user => $self,
-                    id => $id,
-                    summary => {
-                        date => $date,
-                        status => $status,
-                        app => $app,
-                        from => $from,
-                        to => $to
-                    }
-                    );
-                if( $job ) {
-                    $self->{jobs}{$id} = $job;
-                    $self->{log}->debug("Job $id = $job");
-                } else {
-                    $self->{log}->error("Couldn't create job $id for user $self->{id}");
-                }
-            }
         }
     }
     return $self->{jobs};
+}
+
+
+
+
+=item _load_job
+
+XML::Twig handler to read a single job element
+
+=cut
+
+
+
+sub _load_job {
+    my ( $self, $elt ) = @_;
+    my $s = $elt->atts;
+    if( $s->{id} =~ /^\d$/ ) {
+        $self->{jobs}{$s->{id}} = Osiris::Job->new(
+            id => $s->{id}, 
+            user => $self,
+            summary => $s
+            ) || do {
+                $self->{log}->error("Couldn't create job")
+        };
+    }
 }
 
 
@@ -240,14 +244,40 @@ sub _save_joblist {
         return undef;
     };
 
+    print JOBS <<EOXML;
+<?xml version="1.0" encoding="UTF-8"?>
+<joblist user="$self->{id}">
+EOXML
+
     for my $id ( sort keys %{$self->{jobs}} ) {
-        my $line = join(',', $self->{jobs}{$id}->summary) . "\n";
-        print JOBS $line;
+        print JOBS $self->_job_elt($self->{jobs}{$id}) . "\n";
     }
-    $self->{log}->debug("Done.");
+
+    print JOBS <<EOXML;
+</joblist>
+EOXML
     close JOBS;
     return 1;
 }
+
+=item _save_job
+
+Returns a job as an XML element for the joblist
+
+=cut
+
+sub _job_elt {
+    my ( $self, $job ) = @_;
+
+    my $s = $job->summary;
+
+    my $atts = join(' ', map { "$_=\"$s->{$_}\"" } sort keys %$s);
+    
+    return "<job $atts />";
+}
+
+
+    
 
 
 =item update_joblist( job => $job, status => $status )
@@ -301,4 +331,6 @@ sub update_joblist {
 
 
 
+
 1;
+        
