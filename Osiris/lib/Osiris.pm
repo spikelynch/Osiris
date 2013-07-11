@@ -51,11 +51,16 @@ post '/login' => sub {
     }
 };
 
+get '/logout' => sub {
+    session->destroy;
+    redirect '/login';
+};
+
 ###### Routes for browsing/searching apps
 #
 # /  a list of app categories and missions
 
-get '/' => sub {
+get '/browse' => sub {
     my $user = get_user();
     template 'index' => { user => $user->{id}, browse => $cats };
 };
@@ -100,6 +105,7 @@ get '/app/:name' => sub {
 			app => $app->name,
 			brief => $app->brief,
 			form => $app->form,
+            guards => $app->guards,
 			description => $app->description,
 		};
 	} else {
@@ -125,9 +131,9 @@ get '/app/:name' => sub {
 ###### Routes for starting jobs, looking at the job list and 
 #      accessing results
 
-# jobs - current user's job list
+# Default page: current user's job list
 
-get '/jobs' => sub {
+get '/' => sub {
     my $user = get_user();
     
     my $jobhash = $user->jobs(reload => 1);
@@ -140,7 +146,10 @@ get '/jobs' => sub {
         }
     }
 
-    template jobs => { jobs => $jobs };
+    template jobs => {
+        user => $user->{id},
+        jobs => $jobs
+    };
 
 };
 
@@ -153,16 +162,45 @@ get '/job/:id' => sub {
     
     my $id = param('id');
     my $jobhash = $user->jobs(reload => 1);
-
     my $job = $jobhash->{$id};
-
     if( ! $job ) {
         forward '/jobs';
     } else {
         $job->load_xml;
-        template job => { job => $job };
+        my $vars =  {
+            user => $user->{id},
+            job => $job
+        };
+        if( $job->{status} eq 'done' ) {
+            $job->{app} = get_app(name => $job->{appname});
+            $vars->{files} = $job->output_files;
+        }
+        template job => $vars
     }
 };
+
+
+# job/$id/files/$file - pass through a link to a file
+
+get '/job/:id/files/:file' => sub {
+    my $user = get_user();
+    my $id = param('id');
+    my $jobhash = $user->jobs(reload => 1);
+    my $job = $jobhash->{$id};
+    if( ! $job ) {
+        forward '/jobs';
+    } else {
+        my $file = param('file');
+        $job->load_xml;
+        if( !$job->{parameters}{$file} ) {
+            forward "/jobs/$id";
+        } else {
+            my $filename = $job->working_dir(file => $job->{parameters}{$file});
+            send_file($filename, system_path => 1);
+        }
+    }
+};
+    
 
 
 
@@ -206,6 +244,7 @@ post '/app/:name' => sub {
         }
     } else {
         template 'job' => {
+            user => $user->{id},
             job => $job 
         }
     }
@@ -226,8 +265,22 @@ sub get_user {
 }
 
 
+sub get_app {
+    my %params = @_;
 
+    my $name = $params{name};
 
+	if( $toc->{$name} ) {
+		my $app = Osiris::App->new(
+			dir => $conf->{isisdir},
+			app => $name,
+			brief => $toc->{$name}
+		);
+        return $app;
+    } else {
+        return undef;
+    }
+}
 
 
 

@@ -35,6 +35,10 @@ for my $appfile ( 'cam2map.xml' ) {
 	
 	ok($form, "Got app's form structure");
 
+    my ( $files ) = grep { $_->{name} eq 'Files' } @$form;
+
+    print Dumper($files);
+
 }
 
 diag("FIXME this isn't really much of a test script.");

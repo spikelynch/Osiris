@@ -29,9 +29,22 @@
 <td><pre><% job.prt %></td>
 </tr>
 
+<% IF job.status == 'done' %>
+
+<tr>
+<td class="label">Output files</td>
+<td>
+<% FOR file IN files %>
+<a href="/file/<% file.param %>"><% file.filename %></a><br />
+<% END %>
+</td>
+</tr>
+
+<% END %>
+
 </table>
 
-<p><a href="/jobs">Back</a></p>
+<p><a href="/">Back</a></p>
 
 
 

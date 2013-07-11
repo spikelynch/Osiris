@@ -103,7 +103,14 @@ user's working dir
 =cut
 
 sub working_dir {
-    my ( $self ) = @_;
+    my ( $self, %params ) = @_;
+
+    my $dir = $self->{user}->working_dir;
+    if( $params{file} ) {
+        return join('/', $dir, $params{file});
+    } else {
+        return $dir;
+    }
 
     return $self->{user}->working_dir;
 }
@@ -128,17 +135,8 @@ sub write {
     # Note: probably should check and fail for missing
     # parameters at this stage?
 
-    for my $p ( $self->{app}->param_fields  ) {
-        push @$parameters, {
-            name => $p,
-            value => $self->{parameters}{$p}
-        };
-        if( $p eq 'TO' ) {
-            $self->{to} = $self->{parameters}{$p};
-        }
-    }
-
-    $files = $self->copy_uploads || do { return undef };
+    $parameters = $self->process_params;
+    $files = $self->process_uploads || do { return undef };
 
     $self->{created} = $self->timestamp;
     
@@ -207,7 +205,43 @@ sub set_status {
 
 }
 
-=item copy_uploads
+=item process_params
+
+Does any checking or conversion required on the parameters -
+this will include parameter value checking, and making sure that
+output files don't already exist etc.
+
+
+=cut
+
+sub process_params {
+    my ( $self ) = @_;
+
+    my $parameters = [];
+    for my $p ( $self->{app}->param_fields  ) {
+
+        if( my $ff = $self->{app}->file_filter(parameter => $p) ) {
+            if( $ff =~ /^\*(\..*)$/ ) {
+                $self->{parameters}{$p} .= $1;
+            } else {
+                $self->{log}->warn("Strange file filter on $p: '$ff'");
+            }
+        }
+
+        push @$parameters, {
+            name => $p,
+            value => $self->{parameters}{$p}
+        };
+
+        if( $p eq 'TO' ) {
+            $self->{to} = $self->{parameters}{$p};
+        }
+    }
+    return $parameters;
+}
+
+
+=item process_uploads
 
 Copies the upload files into the user's working directory.
 
@@ -217,24 +251,23 @@ testing with plain hashrefs and acts accordingly
 
 =cut
 
-sub copy_uploads {
+sub process_uploads {
     my ( $self ) = @_;
 
     my $files = [];
 
     for my $u ( $self->{app}->upload_fields ) {
-        my $upload = $self->{uploads}{$u};
-        if( ref($upload) eq 'Dancer::Request::Upload' ) {
+        my $upload = $self->{uploads}{$u};        if( ref($upload) eq 'Dancer::Request::Upload' ) {
             my $filename = $upload->filename;
             my $path = join("/", $self->{dir}, $filename);
             if( $upload->copy_to($path) ) {
                 push @$files, {
                     name => $u,
-                    value => $path
+                    value => $filename
                 };
-                $self->{files}{$u} = $path;
+                $self->{files}{$u} = $filename;
                 if( $u eq 'FROM' ) {
-                    $self->{from} = $path;
+                    $self->{from} = $filename;
                 }
             }  else {
                 $self->{log}->error("Couldn't copy upload to $path");
@@ -245,10 +278,10 @@ sub copy_uploads {
             # ie in tests
             my $filename = $upload->{filename};
             my $path = join("/", $self->{dir}, $filename);
-            if( copy($upload->{file}, $path) ) {
+            if( copy($upload->{file}, $filename) ) {
                 push @$files, { 
                     name => $u,
-                    value => $path
+                    value => $filename
                 };
                 if( $u eq 'FROM' ) {
                     $self->{from} = $filename;
@@ -411,6 +444,34 @@ sub command {
     return $command;
 }
 
+=item files
+
+Return a list of all the output files from this job. Each element
+in the list is a hashref { name => PARAM, file => FILE }
+
+=cut
+
+
+sub output_files {
+    my ( $self ) = @_;
+
+    if( !$self->{app} ) {
+        $self->{log}->warn("You need to set job->{app} before getting files");
+        return undef;
+    }
+
+    my $fields = $self->{app}->output_files;
+
+    my $files = [];
+
+    for my $field ( @$fields ) {
+        push @$files, {
+            name => $field,
+            file => $self->{parameters}{$field}
+        }
+    }
+    return $files;
+}
 
 
 1;

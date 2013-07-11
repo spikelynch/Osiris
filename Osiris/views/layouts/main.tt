@@ -19,11 +19,17 @@
 </head>
 <body>
 <div id="header">
-<h1>Osiris/Isis</h1>
-<div id="login">Logged in as <% user %></div>
+<h1>Osiris - a web interface to Isis</h1>
+<div id="login">Logged in as <strong><% user %></strong> [<a href="/logout">Log out</a>]</div>
 </div>
 
 <div id="sidebar">
+<ul class="sidebar">
+<li class="sidebar"><a href="/">Home</a></li>
+<li class="sidebar"><a href="/browse">Isis commands</a></li>
+</ul>
+
+
 </div>
 
 <div id="page">

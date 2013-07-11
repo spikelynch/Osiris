@@ -4,6 +4,8 @@ use strict;
 
 use XML::Twig;
 use Log::Log4perl;
+use Data::Dumper;
+use JSON;
 
 =head NAME
 
@@ -98,6 +100,8 @@ sub form {
 	
 }
 
+=item 
+
 
 
 =item param_fields
@@ -135,6 +139,73 @@ sub upload_fields {
 }
 
 
+=item file_filter
+
+Check if a parameter is a file.  If it is, returns the extension
+filter (ie '*.cub');
+
+=cut
+
+sub file_filter {
+    my ( $self, %params ) = @_;
+
+    my $p = $params{parameter};
+
+    if( my $field = $self->{api}{file_fields}{$p} ) {
+        return $field->{filter};
+    } else {
+        return undef;
+    }
+}
+
+=item output_files
+
+A list of all the output file parameters for this app
+
+=cut
+
+sub output_files {
+    my ( $self ) = @_;
+
+    my $fields = [];
+
+    for my $field ( sort keys %{$self->{api}{file_fields}} ) {
+        if( $field->{type} eq 'output_file_field' ) {
+            push @$fields, $field->{name};
+        }
+    }
+    return $fields
+} 
+
+=item guards_json( parameter => $param )
+
+Returns a JSON hash specifying guard values for this parameter, for
+eg
+
+guards = {
+     file: '.cub',
+     text: 'int/double/string'
+     mandatory: t or f
+     range: { gt , gte , lt , lte }
+     inclusions: { opt1: [ p1, p2, p3 ], opt2: [ p5 ] },
+     exclusions: { opt4: [ p1, p2, p3 ] }
+}
+
+=cut
+
+sub guards {
+    my ( $self, %params ) = @_;
+
+    if( !$self->{api} ) {
+        $self->parse_api;
+    }
+
+    if( $self->{api}{guards} ) {
+        return encode_json($self->{api}{guards});
+    } else {
+        return '{}';
+    }
+}
 
 
 
@@ -150,6 +221,8 @@ sub parse_api {
 	
 	my $xml_file = "$self->{dir}/$self->{app}.xml";
 	
+    warn("parse_api");
+
 	$self->{api} = {};
 	
 	my $tw = XML::Twig->new(
@@ -162,7 +235,33 @@ sub parse_api {
 	);
 	
 	$tw->parsefile($xml_file);
-	
+    
+    # Shortcut to the file fields, and to all parameters
+
+    my ( $files ) = grep { $_->{name} eq 'Files' } @{$self->{api}{groups}};
+    if( $files ) {
+        for my $p ( @{$files->{parameters}} ) {
+            $self->{api}{file_fields}{$p->{name}} = $p;
+        }
+    }
+
+    # setup guards as JSON strings
+
+    $self->{api}{guards} = {};
+    # warn("Making guards");
+    # die("AAAG" . Dumper($self));
+    for my $group ( @{$self->{api}{groups}} ) {
+        warn("Group $group->{name}");
+        for my $p ( @{$group->{parameters}} ) {
+            if( my $guard = $self->make_guard(parameter => $p) ) {
+                warn("Guard for $p->{name}: " . Dumper($guard));
+                $self->{api}{guards}{$p->{name}} = $guard;
+            }
+        }
+    }
+
+    print Dumper({inApp => $self->{api}{guards}}) . "\n\n\n";
+
 	return $self->{api};
 } 
 
@@ -211,7 +310,7 @@ Parses a <group> element.  Each app has a <groups> element,
 containing one or more <group>s, each of which has one or more
 <parameters>.  This routine calls xml_parameter on each of the
 child parameters, stores it in a group hashref, then appends
-the group hashref to 
+the group hashref to {groups}
 
 =cut
 
@@ -418,6 +517,75 @@ sub xml_fix_boolean {
 		return 'false';
 	}
 }
+
+
+=item make_guard(parameter => $p)
+
+Takes one of the parameter hashes from the API and returns the guards
+for this as a Perl data structure.
+
+To fetch an app's guards as a hash by parameter, call $app->guards().
+
+To apply the guards to an job, call $job->assert_guards();
+
+Conversion to JSON used to be done here but now it's left to the
+Dancer framework
+
+=cut
+
+
+
+sub make_guard {
+    my ( $self, %params ) = @_;
+
+    my $p = $params{parameter};
+
+    my $guards = {};
+
+    if( $p->{filter} ) {
+        $guards->{file} = $p->{filter};
+        $guards->{label} = substr($p->{filter}, 1);
+    } elsif( $p->{type} =~ /integer|double|string/ ) {
+        $guards->{type} = $p->{type};
+        if( $p->{type} ne 'string' ) {
+            $guards->{label} = $p->{type};
+        }
+    }
+
+    # Silently ignoring < > guards for non-numeric types.
+    # Assuming that field X can only have one of each inequality.
+    # (I've checked the current (July '13) Isis and this is OK for now. 
+
+    if( $p->{type} =~ /integer|double/ ) {
+
+        if( $p->{greaterThan} ) {
+            $guards->{gt} = $p->{greaterThan};
+        }
+        if( $p->{greaterThanOrEqual} ) {
+            $guards->{gte} = $p->{greaterThanOrEqual}
+        }
+        if( $p->{lessThan} ) {
+            $guards->{lt} = $p->{lessThan};
+        }
+        if( $p->{lessThanOrEqual} ) {
+            $guards->{lte} = $p->{lessThanOrEqual}
+        }
+    }
+
+    if( $p->{list} ) {
+        for my $option ( @{$p->{list}} ) {
+            for my $e ( qw(inclusions exclusions) ) {
+                if( $option->{$e} ) {
+                    $guards->{$e}{$option->{value}} = $option->{$e};
+                }
+            }
+        }
+    }
+    return $guards;
+}
+
+
+
 
 
 1;

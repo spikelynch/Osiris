@@ -19,7 +19,6 @@
 <td class="paramlabel"><% param.name %></td>
 <td>
 	<% INCLUDE $param.field_type %>
-
 </td>
 </tr>
 
@@ -51,7 +50,9 @@
 
 <script lang="javascript">
 setup_help_transitions();
-setup_guards();
+
+var osiris_guards = <% guards %>;
+
 </script>
 
 
