@@ -177,10 +177,10 @@ sub output_files {
     return $fields
 } 
 
-=item guards_json( parameter => $param )
+=item guards()
 
-Returns a JSON hash specifying guard values for this parameter, for
-eg
+Returns all this form's guards as a hash-by-parameter name.  Used to
+JSON-encode it but that happens in the web app now.
 
 guards = {
      file: '.cub',
@@ -201,7 +201,7 @@ sub guards {
     }
 
     if( $self->{api}{guards} ) {
-        return encode_json($self->{api}{guards});
+        $self->{api}{guards};
     } else {
         return '{}';
     }
@@ -221,8 +221,6 @@ sub parse_api {
 	
 	my $xml_file = "$self->{dir}/$self->{app}.xml";
 	
-    warn("parse_api");
-
 	$self->{api} = {};
 	
 	my $tw = XML::Twig->new(
@@ -245,22 +243,15 @@ sub parse_api {
         }
     }
 
-    # setup guards as JSON strings
-
     $self->{api}{guards} = {};
-    # warn("Making guards");
-    # die("AAAG" . Dumper($self));
+
     for my $group ( @{$self->{api}{groups}} ) {
-        warn("Group $group->{name}");
         for my $p ( @{$group->{parameters}} ) {
             if( my $guard = $self->make_guard(parameter => $p) ) {
-                warn("Guard for $p->{name}: " . Dumper($guard));
                 $self->{api}{guards}{$p->{name}} = $guard;
             }
         }
     }
-
-    print Dumper({inApp => $self->{api}{guards}}) . "\n\n\n";
 
 	return $self->{api};
 } 

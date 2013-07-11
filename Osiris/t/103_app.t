@@ -1,9 +1,10 @@
 #!/usr/bin/perl
 
-use Test::More tests => 2;
+use Test::More;
 
 use strict;
 use Data::Dumper;
+use JSON;
 
 use lib 'lib';
 
@@ -15,8 +16,14 @@ my $APPCATS = 'applicationCategories.xml';
 my $HTMLDIR = '/home/mike/workspace/DC18C Osiris/test/html/';
 
 opendir(my $dh, $APPDIR) || die("Couldn't open appdir");
-# sort readdir($dh)
-for my $appfile ( 'cam2map.xml' ) {
+
+my @appfiles = sort grep /^([a-zA-Z0-2]+)\.xml$/, readdir($dh);
+
+my $napps = scalar(@appfiles) - 2;
+
+plan tests => $napps * 4;
+
+for my $appfile ( @appfiles ) {
 	next unless $appfile =~ /^([a-zA-Z0-2]+)\.xml$/;
 	my $appname = $1;
 	next if $appfile eq $APPTOC || $appfile eq $APPCATS;
@@ -30,14 +37,17 @@ for my $appfile ( 'cam2map.xml' ) {
 	
 	ok($api, "Parsed app XML $appname");
 
-
 	my $form = $app->form;
 	
 	ok($form, "Got app's form structure");
 
-    my ( $files ) = grep { $_->{name} eq 'Files' } @$form;
+    my $guards = $app->guards;
 
-    print Dumper($files);
+    ok($guards, "Got app's guards");
+
+    my $guards_json = encode_json($guards);
+
+    ok($guards_json, "Encoded guards to JSON");
 
 }
 

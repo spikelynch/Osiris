@@ -2,6 +2,7 @@ package Osiris;
 
 use Dancer ':syntax';
 use XML::Simple;
+use JSON;
 
 use Osiris::App;
 use Osiris::Job;
@@ -99,13 +100,14 @@ get '/app/:name' => sub {
 			app => $name,
 			brief => $toc->{$name}
 		);
+
 		template 'app' => {
             user => $user->{id}, 
             javascripts => [ 'app' ],
 			app => $app->name,
 			brief => $app->brief,
 			form => $app->form,
-            guards => $app->guards,
+            guards => encode_json($app->guards),
 			description => $app->description,
 		};
 	} else {
