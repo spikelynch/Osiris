@@ -1,0 +1,4 @@
+How Mike sees it working:
+
+The students build a recipe in a wiki, and this has links to the
+web app for each step.

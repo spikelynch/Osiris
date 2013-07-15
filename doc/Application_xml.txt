@@ -1,0 +1,82 @@
+Isis App XML
+
+<brief>         - brief description (in the TOC)
+<description>   - full description, can have HTML
+<category>      - categoryItems, missionItems
+<history>       - revision history
+
+Parameter groups
+
+<groups>
+    <group name="Files">
+        <parameter name="FROM">
+
+
+Paramete children
+
+** Simple <tag>Content</tag> elements
+
+<type>           *      combo, filename, integer, double, string, boolean, cube
+<fileMode>              input,output
+<defaultPath>              
+<brief>          *        Brief description
+<internalDefault>         calculated default (depends on input files)
+<odd>
+<filter>
+<pixelType>
+
+** Tags with HTML markup
+
+<description>    *        Full description, may contain HTML
+
+** Tags with one attribute
+
+<count size="n">
+<mininum inclusive="yes/no/true/false">
+<maximum inclusive="yes/no/true/false">
+
+** Tags with child elements
+
+<default><item>ITEM</item>+ </default>
+<greaterThan><item>+
+<greaterThanOrEqual><item>+
+<lessThan><item>+
+<lessThanOrEqual><item>+
+<notEqual><item>+
+<exclusions><item>+        
+<inclusions><item>+
+
+
+** Tags with complex internal markup
+
+<list>
+        <option value="VAL">
+           <brief>
+           <description>HTML
+           <exclusions><item>+        
+           <inclusions><item>+
+        </option>+
+</list>
+
+
+<helpers>
+    <helper name="NAME">
+        <function>
+        <brief>
+        <description>HTML
+        <icon>
+
+
+Elements that can be transformed into the HTML view.
+
+groups -> form
+
+group -> div
+
+parameter -> div
+
+brief -> <div>
+
+<div class="parameter">
+<b>$parameter.name<b>
+<div class="brief">Brief description</div>

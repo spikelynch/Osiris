@@ -1,0 +1,38 @@
+Notes on guards
+
+- bits of js which check parameter validity on the client side.
+
+
+For a given param, check:
+
+* If it's a file, check it against the filter
+
+* If text: basic type validation - int/double/string
+
+* If there's no default value, ensure that it's not empty
+
+* If range guards are present (< > etc) check this
+
+Note that there are no inclusions or exclusions on parameters -
+they are all used on 
+
+
+
+
+* If it has no value, make sure that it is not INCLUDED
+
+* If it has a value, make sure that it's not EXCLUDED
+
+
+
+
+json data structure for this:
+
+
+
+
+
+
+{
+        type => 'text|inputfile|outputfile',
+        default => 'defau
