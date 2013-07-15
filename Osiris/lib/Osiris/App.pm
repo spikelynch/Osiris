@@ -104,14 +104,16 @@ sub form {
 
 
 
-=item param_fields
+
+
+=item params
 
 Return a list of all the app's parameters which are not 
 file uploads.
 
 =cut
  
-sub param_fields {
+sub params {
 	my ( $self ) = @_;
 
 	if( !$self->{api} ) {
@@ -128,7 +130,7 @@ Return a list of all of the app's file upload parameters
 
 =cut
 
-sub upload_fields {
+sub upload_params {
 	my ( $self ) = @_;
 
 	if( !$self->{api} ) {
@@ -137,6 +139,27 @@ sub upload_fields {
 	
 	return @{$self->{upload_fields}};
 }
+
+
+=item all_params
+
+Returns a list of all the form's parameters (including file uploads)
+
+=cut
+
+sub all_params {
+    my  ( $self ) = @_;
+    
+    if ( !$self->{api} ) {
+        $self->parse_api;
+    }
+
+#    $self->{log}->debug(Dumper({api => $self->{api}}));
+
+    return @{$self->{api}{all_params}};
+}
+
+    
 
 
 =item file_filter
@@ -222,6 +245,7 @@ sub parse_api {
 	my $xml_file = "$self->{dir}/$self->{app}.xml";
 	
 	$self->{api} = {};
+    $self->{api}{all_params} = [];
 	
 	my $tw = XML::Twig->new(
 		twig_handlers => {
@@ -234,8 +258,8 @@ sub parse_api {
 	
 	$tw->parsefile($xml_file);
     
-    # Shortcut to the file fields, and to all parameters
-
+    # Shortcut to the file fields
+    
     my ( $files ) = grep { $_->{name} eq 'Files' } @{$self->{api}{groups}};
     if( $files ) {
         for my $p ( @{$files->{parameters}} ) {
@@ -321,6 +345,7 @@ sub xml_group {
 		} else {
 			push @{$self->{param_fields}}, $param->{name};
 		}
+        push @{$self->{api}{all_params}}, $param->{name};
 	}
 	
 	push @{$self->{api}{groups}}, $group;
@@ -532,6 +557,12 @@ sub make_guard {
     my $p = $params{parameter};
 
     my $guards = {};
+
+    if( !$p->{default} ) {
+        $guards->{mandatory} = 1;
+    } else {
+        $guards->{mandatory} = 0;
+    }
 
     if( $p->{filter} ) {
         $guards->{file} = $p->{filter};

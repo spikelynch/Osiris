@@ -101,13 +101,20 @@ get '/app/:name' => sub {
 			brief => $toc->{$name}
 		);
 
+        my @p = $app->all_params;
+        my $guards = $app->guards;
+        for my $p ( keys %$guards ) {
+            $guards->{$p} = encode_json($guards->{$p});
+        }
+
 		template 'app' => {
             user => $user->{id}, 
-            javascripts => [ 'app' ],
+            javascripts => [ 'app', 'guards' ],
 			app => $app->name,
 			brief => $app->brief,
 			form => $app->form,
-            guards => encode_json($app->guards),
+            all_params => \@p,
+            guards => $guards,
 			description => $app->description,
 		};
 	} else {

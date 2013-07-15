@@ -218,7 +218,7 @@ sub process_params {
     my ( $self ) = @_;
 
     my $parameters = [];
-    for my $p ( $self->{app}->param_fields  ) {
+    for my $p ( $self->{app}->params  ) {
 
         if( my $ff = $self->{app}->file_filter(parameter => $p) ) {
             if( $ff =~ /^\*(\..*)$/ ) {
@@ -256,7 +256,7 @@ sub process_uploads {
 
     my $files = [];
 
-    for my $u ( $self->{app}->upload_fields ) {
+    for my $u ( $self->{app}->upload_params ) {
         my $upload = $self->{uploads}{$u};        if( ref($upload) eq 'Dancer::Request::Upload' ) {
             my $filename = $upload->filename;
             my $path = join("/", $self->{dir}, $filename);

@@ -17,7 +17,8 @@
 
 <tr class="param">
 <td class="paramlabel"><% param.name %></td>
-<td>
+<td class="parambox" id="parambox_<% param.name %>">
+    <div class="error_text" id="error_<% param.name %>"></div>
 	<% INCLUDE $param.field_type %>
 </td>
 </tr>
@@ -25,7 +26,7 @@
 <tr class="paramhelp">
 <td></td>
 <td class="paramhelp">
-<div id="paramhelp<% param.name %>" class="paramhelpswitch"><% param.brief %></div>
+<div id="paramhelp_<% param.name %>" class="paramhelpswitch"><% param.brief %></div>
 <div class="paramdesc"><% param.description %></div>
 </td>
 </tr>
@@ -37,6 +38,7 @@
 <input type="button" value="Cancel" />
 <input type="submit" value="Start job" />
 </td></tr>
+
 
 </tbody>
 
@@ -51,17 +53,19 @@
 <script lang="javascript">
 setup_help_transitions();
 
-var osiris_guards = <% guards %>;
+<% FOR p IN guards.keys %>
+bind_guards("<% p %>", <% guards.$p %>);
+<% END %>
 
 </script>
 
 
 <% BLOCK text_field %>
-	<input type="text" name="<% param.name %>" value="<% param.default %>" size="12" />
+	<input type="text" id="field_<% param.name %>" name="<% param.name %>" value="<% param.default %>" size="12" />
 <% END %>
 
 <% BLOCK list_field %>
-	<select name="<% param.name %>">
+	<select id="field_<% param.name %>" name="<% param.name %>">
 	<% FOR option IN param.list %>
 		<option value="<% option.value %>"<% IF option.value == param.default %>selected<% END %> >
 			<% option.value %>: <% option.brief %>
@@ -72,16 +76,16 @@ var osiris_guards = <% guards %>;
 
 <% BLOCK boolean_field %>
 	<% IF param.default == "false" %>
-		<input type="checkbox" name="<% param.name %> value="true" />
+		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %> value="true" />
 	<% ELSE %>
-		<input type="checkbox" name="<% param.name %> value="true" checked />
+		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %> value="true" checked />
 	<% END %>
 <% END %>
 
 <% BLOCK input_file_field %>
-	<input type="file" name="<% param.name %>" size="40" />
+	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" />
 <% END %>
 
 <% BLOCK output_file_field %>
-	<input type="text" name="<% param.name %>" size="40" /> <% param.extension %>
+	<input type="text" id="field_<% param.name %>" name="<% param.name %>" size="40" /> <% param.extension %>
 <% END %>
