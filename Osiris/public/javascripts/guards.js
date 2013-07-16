@@ -16,19 +16,30 @@ function apply_guards(event) {
     var g = $(this).data("guards");
     var errors = [];
 
-    console.log("Applying guards to " + p);
-    console.log("Guards = " + g);
+ 
     if( !g ) {
-        console.log("No guards");
-        return 1;
+         return 1;
     }
 
     if( g.mandatory ) {
-        console.log("mandatory");
         if( !val ) {
-            errors.push("Input must have a value");
+            errors.push("This parameter must have a value.");
         }
     }
+
+    if( g.type == 'integer' ) {
+        if( ! is_integer(val) ) {
+            errors.push("This parameter must be an integer.");
+        }
+    }
+
+    if( g.type == 'double' ) {
+        if( ! is_double(val) ) {
+            errors.push("This parameter must be a number.");
+        }
+    }
+
+
     // store the errors array against the input element
     $(this).data('errors', errors);
     console.log("errors = " + errors.join(', '))
@@ -38,6 +49,32 @@ function apply_guards(event) {
         hide_errors(p, this);
     }
 }
+
+
+
+function is_integer(v) {
+    var parsed = parseInt(v, 10);
+    if( !isNaN(v) && v == parsed ){
+        return 1;
+    }
+    return 0;
+}
+
+function is_double(v) {
+    var parsed = parseFloat(v);
+    if( !isNaN(v) && v == parsed ) {
+        return 1;
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+
 
 
 
