@@ -79,17 +79,21 @@ div.paramdesc {
     display:none
 }
 
-div.error_highlight {
-    background-color: #fdd;
-    border: 1px solid red;
-}
 
-td.error_highlight {
-    border: 1px solid red;
+input {
+    border: 1px solid #888;
 }
 
 
-div.error_text {
+input.error_highlight {
+    background-color: #fd8;
+    border: 1px solid red;
+}
+
+
+span.error_text {
     font-weight: bold;
+    font-size: 9pt;
+    color: #400;
 }
 

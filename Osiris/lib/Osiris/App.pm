@@ -564,9 +564,12 @@ sub make_guard {
         $guards->{mandatory} = 0;
     }
 
-    if( $p->{filter} ) {
-        $guards->{file} = $p->{filter};
-        $guards->{label} = substr($p->{filter}, 1);
+    # only filter input files by extension, because we are automatically
+    # adding the extension to output files.
+    if( $p->{filter} && $p->{field_type} eq 'input_file_field' ) {
+        
+        $guards->{filepattern} = $self->_make_filter(filter => $p->{filter});
+        $guards->{label} = $p->{filter};
     } elsif( $p->{type} =~ /integer|double|string/ ) {
         $guards->{type} = $p->{type};
         if( $p->{type} ne 'string' ) {
@@ -576,7 +579,7 @@ sub make_guard {
 
     # Silently ignoring < > guards for non-numeric types.
     # Assuming that field X can only have one of each inequality.
-    # (I've checked the current (July '13) Isis and this is OK for now. 
+    # (I've checked the current (July '13) Isis and this is OK for now.)
 
     if( $p->{type} =~ /integer|double/ ) {
 
@@ -607,7 +610,38 @@ sub make_guard {
 }
 
 
+=item _make_filter(filter => '*.cub')
+
+Turns the content of a <filter> tag in the XML API and converts it
+to a Javascript regexp, for eg:
+
+    *.cub *.QUB
+
+    \.(cub|QUB)$
+
+=cut
 
 
+sub _make_filter {
+    my ( $self, %params ) = @_;
+
+    my $filter = $params{filter};
+
+    my @globs = split(/\s+/, $filter);
+
+    my @exts = ();
+
+    for my $glob ( @globs ) {
+        if( $glob =~ /\*\.(.*)$/ ) {
+            push @exts, $1;
+        } else {
+            $self->{log}->error("Couldn't parse filter: $filter");
+        }
+    }
+
+    my $re = '\.(' . join('|', @exts) . ')$';
+
+    return $re;
+}
 
 1;

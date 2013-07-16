@@ -5,15 +5,39 @@
 
 function bind_guards(param, guards) {
     var id = "#field_" + param
-    $(id).data("guards", guards);
-    console.log("Bound guards to " + id);
-    $(id).change(apply_guards);
+    var input_elt = $(id);
+    input_elt.data("guards", guards);
+    input_elt.focusout(function(e) { apply_guards(this)});
+    input_elt.change(function(e) { apply_guards(this)});
+    $('#isisapp').submit(function(event) {
+//        event.preventDefault();
+        console.log("Applying guards");
+        return apply_all_guards(this);
+    } );
 }
 
-function apply_guards(event) {
-    var val = this.value;
-    var p = this.name
-    var g = $(this).data("guards");
+
+function guard_event(event) {
+    apply_guards(this);
+}
+
+
+function apply_all_guards(form) {
+    var valid = true;
+    $('input').each(function() {
+        if( !apply_guards(this) ) {
+            valid = false;
+        }
+    });
+    return valid;
+}
+        
+
+
+function apply_guards(elt) {
+    var val = elt.value;
+    var p = elt.name
+    var g = $(elt).data("guards");
     var errors = [];
 
  
@@ -22,8 +46,16 @@ function apply_guards(event) {
     }
 
     if( g.mandatory ) {
-        if( !val ) {
+        if( val == "" ) {
             errors.push("This parameter must have a value.");
+        }
+    }
+
+    if( g.filepattern ) {
+        console.log("Applying file filter " + g.filepattern);
+        var re = new RegExp(g.filepattern, 'i');
+        if( !val.match(re) ) {
+            errors.push("The filename must match " + g.label);
         }
     }
 
@@ -41,12 +73,14 @@ function apply_guards(event) {
 
 
     // store the errors array against the input element
-    $(this).data('errors', errors);
+    $(elt).data('errors', errors);
     console.log("errors = " + errors.join(', '))
     if( errors.length > 0 ) {
-        show_errors(p, this);
+        show_errors(p, elt);
+        return false;
     } else {
-        hide_errors(p, this);
+        hide_errors(p, elt);
+        return true;
     }
 }
 
@@ -80,12 +114,11 @@ function is_double(v) {
 
 function show_errors(param, elt) {
     $(elt).addClass("error_highlight");
-    $(elt).parent().addClass("error_highlight");
     var errors = $(elt).data('errors');
     var error_div = $("#error_" + param);
     error_div.empty();
     for ( var i = 0; i < errors.length; i++ ) {
-        error_div.append('<span>' + errors[i] + '</span>');
+        error_div.append('<p class="error">' + errors[i] + '</p>');
     }
     error_div.show();
 }
