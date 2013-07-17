@@ -10,6 +10,8 @@
 <table class="form">
 <tbody>
 
+
+
 <% FOR group IN form %>
 
 <tr class="groupheader"><td colspan="2"><% group.name %></td><tr>
@@ -95,7 +97,8 @@ bind_guards("<% p %>", <% guards.$p %>);
 <% END %>
 
 <% BLOCK input_file_field %>
-	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" />
+	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" /> or <a href="#TODO">use a file from a previous job</a>
+
 <% END %>
 
 <% BLOCK output_file_field %>

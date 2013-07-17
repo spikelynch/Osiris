@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 13;
+use Test::More tests => 15;
 
 use strict;
 use Data::Dumper;
@@ -75,3 +75,9 @@ ok($job->{id}, "Job has an id");
 
 
 cmp_ok($job->{status}, 'eq', 'processing', "Job's status is 'processing'");
+
+my $xmlfile = $job->xmlfile;
+
+ok($xmlfile, "Job has an xmlfile");
+
+ok(-f $xmlfile, "xmlfile $xmlfile exists");

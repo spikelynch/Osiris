@@ -70,8 +70,6 @@ sub new {
     $self->{user} = $params{user};
     $self->{status} = $params{status};
 
-    $self->{dir} = $self->{user}{dir}; # FIXME JOBDIR
-
     if( my $s = $params{summary} ) {
         # job is being created from the job list
         for ( qw(created status to from) ) {
@@ -93,26 +91,50 @@ sub new {
 	return $self;
 }
 
+=item create_dir
+
+Create this job's subdirectory in the user's working directory
+
+=cut
+
+sub create_dir {
+    my ( $self ) = @_;
+    
+    my $basedir = $self->{user}->working_dir;
+
+    my $path = join('/', $basedir, $self->{id});
+    
+    if( -d $path ) {
+        $self->{log}->warn("Job working directory already exists");
+        return $path;
+    }
+
+    if( mkdir($path) ) {
+        return $path;
+    } else {
+        $self->{log}->error("Couldn't create job working directory");
+        return undef;
+    }
+}
 
 
-=item working_dir
 
-Returns the directory in which this command should be executed - the
-user's working dir
+=item working_dir([file => $file])
+
+Returns the directory in which this job will be run.  If a file param is
+passed in, returns the complete path to a file in the directory.
 
 =cut
 
 sub working_dir {
     my ( $self, %params ) = @_;
 
-    my $dir = $self->{user}->working_dir;
+    my $dir = join('/', $self->{user}->working_dir, $self->{id});
     if( $params{file} ) {
         return join('/', $dir, $params{file});
     } else {
         return $dir;
     }
-
-    return $self->{user}->working_dir;
 }
 
 
@@ -132,10 +154,14 @@ sub write {
     my $parameters = [];
     my $files = [];
 
-    # Note: probably should check and fail for missing
-    # parameters at this stage?
-
+    # TODO: process_params should return undef if the parameters
+    # are invalid
     $parameters = $self->process_params;
+
+    if( !$self->create_dir ) {
+        return undef;
+    }
+
     $files = $self->process_uploads || do { return undef };
 
     $self->{created} = $self->timestamp;
@@ -194,9 +220,6 @@ sub set_status {
 
     $self->{log}->debug("Job $self $self->{id} status set to $status");
     
-#    $self->{user}->save_joblist;
-
-
     return $self->{user}->update_joblist(
         job => $self->{id},
         status => $self->{status}
@@ -259,7 +282,7 @@ sub process_uploads {
     for my $u ( $self->{app}->upload_params ) {
         my $upload = $self->{uploads}{$u};        if( ref($upload) eq 'Dancer::Request::Upload' ) {
             my $filename = $upload->filename;
-            my $path = join("/", $self->{dir}, $filename);
+            my $path = $self->working_dir(file => $filename);
             if( $upload->copy_to($path) ) {
                 push @$files, {
                     name => $u,
@@ -277,7 +300,7 @@ sub process_uploads {
             # for Jobs that aren't created via a web post
             # ie in tests
             my $filename = $upload->{filename};
-            my $path = join("/", $self->{dir}, $filename);
+            my $path = $self->working_dir(file => $filename);
             if( copy($upload->{file}, $filename) ) {
                 push @$files, { 
                     name => $u,
@@ -345,7 +368,9 @@ sub xmlfile {
     my ( $self ) = @_;
 
     if( $self->{id} ) {
-        $self->{xmlfile} = $self->{dir} . '/job_' . $self->{id} . '.xml';
+        $self->{xmlfile} = $self->working_dir(
+            file => 'job_' . $self->{id} . '.xml'
+            );
         return $self->{xmlfile};
     } else {
         $self->{log}->error("Job does not yet have an id");
