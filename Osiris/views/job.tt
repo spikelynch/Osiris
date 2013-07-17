@@ -5,11 +5,6 @@
 
 
 <tr>
-<td class="label">Command line</td>
-<td><pre><% job.command.join(' ') %></pre></td>
-</tr>
-
-<tr>
 <td class="label">Job status</td>
 <td><strong><% job.status %></strong></td>
 </tr>
@@ -24,23 +19,16 @@
 <td><% job.completed %></td>
 </tr>
 
+<tr><td class="label" colspan="2">Command line</td></tr>
+<tr><td colspan="2"><pre><% job.command.join(' ') %></pre></td></tr>
+
+
+
 <tr>
 <td class="label">print.prt</td>
-<td><pre><% job.prt %></td>
+<td><pre id="printprt"><% job.files.print %></pre></td>
 </tr>
 
-<% IF job.status == 'done' %>
-
-<tr>
-<td class="label">Output files</td>
-<td>
-<% FOR file IN files %>
-<a href="/file/<% file.param %>"><% file.filename %></a><br />
-<% END %>
-</td>
-</tr>
-
-<% END %>
 
 </table>
 

@@ -43,6 +43,7 @@ name.  When passing back a summary for the job, 'appname' is called 'app'.
 =cut
 
 my $TIME_FORMAT = "%d %b %Y %I:%M:%S %p";
+my $PRINT_PRT = 'print.prt';
 
 
 =head METHODS
@@ -469,21 +470,43 @@ sub command {
     return $command;
 }
 
+
 =item files
 
-Return a list of all the output files from this job. Each element
-in the list is a hashref { name => PARAM, file => FILE }
+Returns all the files associated with this job as a hashref:
+
+
+{
+    print.prt => ${CONTENTS},
+    input => [ { name => $field, file => $filename } , ... ],
+    output => [ { name => $field, file => $filename } , ... ]
+}
+
+Note that there may be more than one file associated with a given
+output field (ie FILENAME.odd.cub and FILENAME.even.cub) - this routine
+tries to guess which ones match based on the job parameters.
+
 
 =cut
 
 
-sub output_files {
+sub files {
     my ( $self ) = @_;
 
     if( !$self->{app} ) {
         $self->{log}->warn("You need to set job->{app} before getting files");
         return undef;
     }
+
+    my $result = {
+        print => $self->_read_print_prt
+    };
+    
+    return $result;
+
+
+
+
 
     my $fields = $self->{app}->output_files;
 
@@ -498,5 +521,23 @@ sub output_files {
     return $files;
 }
 
+
+
+sub _read_print_prt {
+    my ( $self ) = @_;
+
+    my $printprt = $self->working_dir(file => $PRINT_PRT);
+
+    open(my $fh, $printprt) || do {
+        $self->{log}->error("Couldn't open $printprt: $!");
+        return undef;
+    };
+
+    local $/;
+    my $content = <$fh>;
+    close $fh;
+
+    return $content;
+}
 
 1;

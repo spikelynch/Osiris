@@ -3,21 +3,28 @@ Targets 17/7/12
 
 Still stuck on javascript guards - have to get them finished this morning.  <-- DONE
 
-Idea for help fields - ghost the rest of the form when they appear?
-
-Another (blue-sky) idea - store the user's command history in the
-joblist file (which would then become a general config document)
-
 --
 
 Make sure guards are being applied on submit.
 
 Highest priority tomorrow: links to output files.
 
+print.prt is being read and passed through to the job page.
+
+Have modified Osiris::Job so that it runs each job in its own subdirectory
+of the user's directory
+
 
 
 --------
 
+
+Idea for help fields - ghost the rest of the form when they appear?
+
+Another (blue-sky) idea - store the user's command history in the
+joblist file (which would then become a general config document)
+
+---------------
 
 Targets for 16/7/12
 
