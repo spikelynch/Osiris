@@ -3,6 +3,7 @@ package Osiris;
 use Dancer ':syntax';
 use XML::Simple;
 use JSON;
+use Data::Dumper;
 
 use Osiris::App;
 use Osiris::Job;
@@ -107,6 +108,8 @@ get '/app/:name' => sub {
             $guards->{$p} = encode_json($guards->{$p});
         }
 
+        my $debugmsg = "Guards: \n" . Dumper({guards => $guards});
+
 		template 'app' => {
             user => $user->{id}, 
             javascripts => [ 'app', 'guards' ],
@@ -116,6 +119,7 @@ get '/app/:name' => sub {
             all_params => \@p,
             guards => $guards,
 			description => $app->description,
+            debugmsg => $debugmsg,
 		};
 	} else {
 		send_error("Not found", 404);
@@ -232,11 +236,11 @@ post '/app/:name' => sub {
         brief => $toc->{$name}
 		);
 
-    for my $p ( $app->param_fields ) {
+    for my $p ( $app->params ) {
         $params->{$p} = param($p);
     }
 
-    for my $u ( $app->upload_fields ) {
+    for my $u ( $app->upload_params ) {
         $uploads->{$u} = upload($u);
     }
 

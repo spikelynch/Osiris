@@ -47,6 +47,16 @@
 
 </form>
 
+<% IF debugmsg %>
+
+<div id="debug">
+<p><strong>Debug</strong></p>
+<pre>
+<% debugmsg %>
+</pre>
+</div>
+
+<% END %>
 
 <p><a href="/">Back</a></p>
 
@@ -67,6 +77,7 @@ bind_guards("<% p %>", <% guards.$p %>);
 
 <% BLOCK list_field %>
 	<select id="field_<% param.name %>" name="<% param.name %>">
+        <option value=""></option>
 	<% FOR option IN param.list %>
 		<option value="<% option.value %>"<% IF option.value == param.default %>selected<% END %> >
 			<% option.value %>: <% option.brief %>
@@ -77,9 +88,9 @@ bind_guards("<% p %>", <% guards.$p %>);
 
 <% BLOCK boolean_field %>
 	<% IF param.default == "false" %>
-		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %> value="true" />
+		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %>" value="true" />
 	<% ELSE %>
-		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %> value="true" checked />
+		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %>" value="true" checked />
 	<% END %>
 <% END %>
 

@@ -15,6 +15,8 @@ my $APPTOC = 'applicationTOC.xml';
 my $APPCATS = 'applicationCategories.xml';
 my $HTMLDIR = '/home/mike/workspace/DC18C Osiris/test/html/';
 
+my $ONE_APP = 'cam2map';
+
 opendir(my $dh, $APPDIR) || die("Couldn't open appdir");
 
 my @appfiles = sort grep /^([a-zA-Z0-2]+)\.xml$/, readdir($dh);
@@ -28,6 +30,8 @@ for my $appfile ( @appfiles ) {
 	my $appname = $1;
 	next if $appfile eq $APPTOC || $appfile eq $APPCATS;
 	
+    next if ( $ONE_APP && $appname ne $ONE_APP );
+
 	my $app = Osiris::App->new(
 		dir => $APPDIR,
 		app => $appname
@@ -48,6 +52,8 @@ for my $appfile ( @appfiles ) {
     my $guards_json = encode_json($guards);
 
     ok($guards_json, "Encoded guards to JSON");
+
+    print Dumper({guards => $guards});
 
 }
 

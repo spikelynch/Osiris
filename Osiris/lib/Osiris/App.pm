@@ -7,6 +7,14 @@ use Log::Log4perl;
 use Data::Dumper;
 use JSON;
 
+
+my $CLUSIONED = {
+    inclusions => 'included',
+    exclusions => 'excluded'
+};
+    
+
+
 =head NAME
 
 Osiris::App
@@ -226,7 +234,7 @@ sub guards {
     if( $self->{api}{guards} ) {
         $self->{api}{guards};
     } else {
-        return '{}';
+        return {};
     }
 }
 
@@ -267,15 +275,43 @@ sub parse_api {
         }
     }
 
-    $self->{api}{guards} = {};
+    my $guards = {};
 
     for my $group ( @{$self->{api}{groups}} ) {
         for my $p ( @{$group->{parameters}} ) {
             if( my $guard = $self->make_guard(parameter => $p) ) {
-                $self->{api}{guards}{$p->{name}} = $guard;
+                $guards->{$p->{name}} = $guard;
             }
         }
     }
+
+    # record clusion guards against the fields they in/exclude too
+
+    for my $pname ( keys %$guards ) {
+        for my $clusion ( qw(inclusions exclusions) ) {
+            my $ch = $guards->{$pname}{$clusion};
+            my $clusioned = $CLUSIONED->{$clusion} || die("No reverse $clusion");
+            for my $value ( keys %$ch ) {
+                $self->{log}->debug(">> $pname $clusion $value");
+                for my $cp ( @{$ch->{$value}} ) {
+                    $guards->{$cp}{$clusioned}{$pname}{$value} = 1;
+                    # if( ! $guards->{$cp} ) {
+                    #     $guards->{$cp} = {};
+                    # }
+                    # if( ! $guards->{$cp}{$clusioned} ) {
+                    #     $guards->{$cp}{$clusioned} = {};
+                    # }                    
+                }
+            }
+        }
+    }
+
+    $self->{log}->debug(Dumper({guards => $guards}));
+
+    $self->{api}{guards} = $guards;
+
+
+
 
 	return $self->{api};
 } 
