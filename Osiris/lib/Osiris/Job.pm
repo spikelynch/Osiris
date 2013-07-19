@@ -40,6 +40,11 @@ NOTE: in this class, 'app' refers to an Osiris::App object, and
 'appname' refers to the object's name (the actual command line program's
 name.  When passing back a summary for the job, 'appname' is called 'app'.
 
+Terminology for file uploads:
+
+FILE     = the full path to the actual file
+FILENAME = the filename (minus full path)  
+
 =cut
 
 my $TIME_FORMAT = "%d %b %Y %I:%M:%S %p";
@@ -79,11 +84,9 @@ sub new {
         $self->{appname} = $s->{app};
 
     } else{
-        # job is being created via the web app
+        # job is being created via the web app (or a test script)
         $self->{app} = $params{app};
         $self->{appname} = $params{app}->{app};
-        $self->{uploads} = $params{uploads};
-        $self->{parameters} = $params{parameters};
 	} 
 
 	$self->{log} = Log::Log4perl->get_logger($class);
@@ -143,8 +146,9 @@ sub working_dir {
 
 =item write()
 
-Writes out this job's XML and copies any files into the working
-directory
+Writes out this job's XML
+
+FIXME - this has to create the parameter and file lists itself
 
 =cut
 
@@ -152,18 +156,34 @@ directory
 sub write {
 	my ( $self ) = @_;
 
-    my $parameters = [];
-    my $files = [];
+    if( !-d $self->working_dir ) {
+        $self->{log}->error("write called before working dir created");
+    }
 
-    # TODO: process_params should return undef if the parameters
-    # are invalid
-    $parameters = $self->process_params;
-
-    if( !$self->create_dir ) {
+    if( !$self->{parameters} || !$self->{files} ) {
+        $self->{log}->error("write called before parameters and/or files added");
         return undef;
     }
 
-    $files = $self->process_uploads || do { return undef };
+    my $parameters = [];
+    my $files = [];
+    for my $p ( $self->{app}->params ) {
+        push @$parameters, {
+            name => $p,
+            value => $self->{parameters}{$p}
+        };
+    }
+
+    for my $f ( $self->{app}->upload_params ) {
+        push @$files, {
+            name => $f,
+            value => $self->{files}{$f}
+        };
+    }
+
+    $self->{log}->debug(Dumper({paramlist => $parameters}));
+
+    $self->{log}->debug(Dumper({filelist => $files}));
 
     $self->{created} = $self->timestamp;
     
@@ -227,7 +247,7 @@ sub set_status {
 
 }
 
-=item process_params
+=item add_parameters
 
 Does any checking or conversion required on the parameters -
 this will include parameter value checking, and making sure that
@@ -236,11 +256,15 @@ output files don't already exist etc.
 
 =cut
 
-sub process_params {
-    my ( $self ) = @_;
+sub add_parameters {
+    my ( $self, %params ) = @_;
 
-    my $parameters = [];
+    my $phash = $params{parameters};
+
+    $self->{parameters} = {};
+
     for my $p ( $self->{app}->params  ) {
+        $self->{parameters}{$p} = $phash->{$p};
 
         if( my $ff = $self->{app}->file_filter(parameter => $p) ) {
             if( $ff =~ /^\*(\..*)$/ ) {
@@ -250,76 +274,44 @@ sub process_params {
             }
         }
 
-        push @$parameters, {
-            name => $p,
-            value => $self->{parameters}{$p}
-        };
-
         if( $p eq 'TO' ) {
             $self->{to} = $self->{parameters}{$p};
         }
     }
-    return $parameters;
+    return $self->{parameters};
 }
 
 
-=item process_uploads
+=item add_input_files
 
-Copies the upload files into the user's working directory.
+Add a set of input files as a hashref of 
 
-If the uploads aren't Dancer upload objects, assumes that we're
-testing with plain hashrefs and acts accordingly
+    paramname => { file => $full_path_to_file, filename => $filename }
 
+This used to do the actual copying out of Dancer upload objects, but
+I'm pushing all of the Dancer code back to Osiris.pm to make things 
+cleaner and testing easire
 
 =cut
 
-sub process_uploads {
-    my ( $self ) = @_;
+sub add_input_files {
+    my ( $self, %params ) = @_;
 
-    my $files = [];
+    $self->{files} = {};
 
-    for my $u ( $self->{app}->upload_params ) {
-        my $upload = $self->{uploads}{$u};
-        $self->{log}->debug(Dumper({$u => $upload}));
+    my $files = $params{files};
 
-
-
-        if( ref($upload) eq 'Dancer::Request::Upload' ) {
-            my $filename = $upload->filename;
-            my $path = $self->working_dir(file => $filename);
-            if( $upload->copy_to($path) ) {
-                push @$files, {
-                    name => $u,
-                    value => $filename
-                };
-                $self->{files}{$u} = $filename;
-                if( $u eq 'FROM' ) {
-                    $self->{from} = $filename;
-                }
-            }  else {
-                $self->{log}->error("Couldn't copy upload to $path");
-                return undef;
-            }
-        } else {
-            # for Jobs that aren't created via a web post
-            # ie in tests
-            my $filename = $upload->{filename};
-            my $path = $self->working_dir(file => $filename);
-            if( copy($upload->{file}, $filename) ) {
-                push @$files, { 
-                    name => $u,
-                    value => $filename
-                };
-                if( $u eq 'FROM' ) {
-                    $self->{from} = $filename;
-                }
-            } else {
-                $self->{log}->error("couldn't copy $upload->{file} to $path: $!");
-                return undef;
-            }
+    for my $f ( keys %$files ) {
+        if( !-f $files->{$f}{file} ) {
+            $self->{log}->error("File $files->{$f}{file} not found");
+            return undef;
+        }
+        $self->{files}{$f} = $files->{$f};
+        if( $f eq 'FROM' ) {
+            $self->{from} = $files->{filename};
         }
     }
-    return $files;
+    return $self->{files};
 }
 
 
@@ -459,14 +451,9 @@ sub command {
         }
     }
 
-    $self->{log}->debug(Dumper(
-                            { files => $self->{files},
-                              parameters => $self->{parameters} 
-                            }));
-
     my $command = [ $self->{appname} ];
     for my $name ( sort keys %{$self->{files}} ) {
-        push @$command, join('=', $name, $self->{files}{$name});
+        push @$command, join('=', $name, $self->{files}{$name}{file});
     }
 
     for my $name ( sort keys %{$self->{parameters}} ) {
@@ -585,7 +572,7 @@ sub _read_dir {
             next FILE if $file eq $xml;
             next FILE if $file =~ /^\./;
             next FILE unless -f $file;
-            push @files;
+            push @files, $file;
         }
           closedir($dh);
           return @files;

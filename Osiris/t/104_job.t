@@ -82,6 +82,3 @@ ok($xmlfile, "Job has an xmlfile");
 
 ok(-f $xmlfile, "xmlfile $xmlfile exists");
 
-my $files = $job->files;
-
-print Dumper({files => $files});

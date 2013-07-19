@@ -96,11 +96,12 @@ sub jobs {
 }
 
 
-=item create_job(app => $app, parameters => $p, files => $f)
+=item create_job(app => $app)
 
 Method used by the Dancer app to create a new job for this user.
-Parameters and files are the data entered by the used in the app's
-web form.  Returns an Osiris::Job if successful, otherwise undef.
+Used to also take the uploads and parameters, but these are now added 
+separately by calling add_parameters and add_input_files on the
+Job.
 
 =cut
 
@@ -113,22 +114,31 @@ sub create_job {
         user => $self,
         app => $params{app},
         id => $id,
-        parameters => $params{parameters},
-        uploads => $params{uploads}
     );
+    
+    return undef unless $job;
 
-    if( $job ) {  
-        if( $job->write ) {
-            $self->{jobs}{$id} = $job;
-            $job->{status} = 'new';
-            $self->_save_joblist;
-            return $job;
-        } else {
-            $self->{log}->error("Couldn't write job");
-            return undef;
-        }
+    if( $job->create_dir ) {
+        return $job;
     } else {
-        $self->{log}->error("Couldn't initialise job");
+        return undef;
+    }
+}
+
+
+
+
+sub write_job {
+    my ( $self, %params ) = @_;
+
+    my $job = $params{job};
+    if( $job->write ) {
+        $self->{jobs}{$job->{id}} = $job;
+        $job->{status} = 'new';
+        $self->_save_joblist;
+        return $job;
+    } else {
+        $self->{log}->error("Couldn't write job");
         return undef;
     }
 }

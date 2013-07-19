@@ -236,31 +236,48 @@ post '/app/:name' => sub {
         brief => $toc->{$name}
 		);
 
+    my $job = $user->create_job(app => $app);
+
     for my $p ( $app->params ) {
         $params->{$p} = param($p);
     }
 
-    for my $u ( $app->upload_params ) {
-        $uploads->{$u} = upload($u);
-    }
+    $job->add_parameters(parameters => $params);
 
-    my $job = $user->create_job(
-        app => $app,
-        parameters => $params,
-        uploads => $uploads
-    );
-    
-    if( !$job ) {
-        template 'error' => {
-            user => $user->{id}, 
-            error => "Couldn't create Osiris::Job"
+    for my $u ( $app->upload_params ) {
+        my $upload = upload($u);
+        my $filename = $upload->filename;
+        my $to_file = $job->working_dir(file => $filename);
+        if( ! $upload->copy_to($filename) ) {
+            error("Couldn't copy upload to $filename");
+            template 'error' => {
+                user => $user->{id}, 
+                error => "Couldn't create Osiris::Job"
+            };
+        } else {
+            $uploads->{$u} = {
+                filename => $filename,
+                file => $to_file
+            };
         }
-    } else {
+    }
+    
+    $job->add_input_files(files => $uploads);
+
+    if( $user->write_job(job => $job) ) {
+        
         template 'job' => {
             user => $user->{id},
             job => $job 
         }
+    } else {
+        error("Couldn't write job");
+        template 'error' => {
+            user => $user->{id}, 
+            error => "Couldn't create Osiris::Job"
+        };
     }
+        
 };
 
 
