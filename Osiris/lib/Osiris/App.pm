@@ -41,6 +41,7 @@ sub new {
 
     $self->{log} = Log::Log4perl->get_logger($class);
 
+    $self->parse_api;   # always?
 
 	return $self;
 }
@@ -147,6 +148,25 @@ sub upload_params {
 	
 	return @{$self->{upload_fields}};
 }
+
+
+=item output_params
+
+Returns a list of all of this app's output file parameter names
+
+=cut
+
+
+sub output_params {
+	my ( $self ) = @_;
+
+	if( !$self->{api} ) {
+		$self->parse_api;
+	}
+	
+	return @{$self->{output_fields}};
+}
+
 
 
 =item all_params
@@ -306,8 +326,6 @@ sub parse_api {
         }
     }
 
-    $self->{log}->debug(Dumper({guards => $guards}));
-
     $self->{api}{guards} = $guards;
 
 
@@ -380,6 +398,9 @@ sub xml_group {
 			push @{$self->{upload_fields}}, $param->{name};
 		} else {
 			push @{$self->{param_fields}}, $param->{name};
+            if( $param->{field_type} eq 'output_file_field' ) {
+                push @{$self->{output_fields}}, $param->{name};
+            }
 		}
         push @{$self->{api}{all_params}}, $param->{name};
 	}

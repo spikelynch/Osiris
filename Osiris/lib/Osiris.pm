@@ -186,9 +186,7 @@ get '/job/:id' => sub {
         };
         if( $job->{status} eq 'done' ) {
             $job->{app} = get_app(name => $job->{appname});
-            debug("job app = $job->{app}");
             $vars->{files} = $job->files;
-            debug($vars->{files});
         }
         template job => $vars
     }

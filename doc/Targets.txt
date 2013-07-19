@@ -1,3 +1,16 @@
+Targets 19/7/12
+---------------
+
+-> get test 105 working
+
+-> get Osiris::Job::files() working
+
+-> file download from job pages
+
+-> make a start on 'use an existing file' feature
+
+
+
 Targets 17/7/12
 ---------------
 

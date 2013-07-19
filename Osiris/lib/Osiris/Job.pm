@@ -189,7 +189,7 @@ EOXML
 EOXML
 
 
-    $self->{xmlfile} = $self->xmlfile;
+    $self->{xmlfile} = $self->xml_file;
 
     open(XML, ">$self->{xmlfile}") || do {
         $self->{log}->error("Couldn't write to $self->{xmlfile} $!");
@@ -219,8 +219,6 @@ sub set_status {
 
     $self->{status} = $status;
 
-    $self->{log}->debug("Job $self $self->{id} status set to $status");
-    
     return $self->{user}->update_joblist(
         job => $self->{id},
         status => $self->{status}
@@ -281,7 +279,12 @@ sub process_uploads {
     my $files = [];
 
     for my $u ( $self->{app}->upload_params ) {
-        my $upload = $self->{uploads}{$u};        if( ref($upload) eq 'Dancer::Request::Upload' ) {
+        my $upload = $self->{uploads}{$u};
+        $self->{log}->debug(Dumper({$u => $upload}));
+
+
+
+        if( ref($upload) eq 'Dancer::Request::Upload' ) {
             my $filename = $upload->filename;
             my $path = $self->working_dir(file => $filename);
             if( $upload->copy_to($path) ) {
@@ -359,13 +362,13 @@ sub summary {
 
 
 
-=item xmlfile
+=item xml_file
 
 Generates and returns the full path to the job's XML file
 
 =cut
 
-sub xmlfile {
+sub xml_file {
     my ( $self ) = @_;
 
     if( $self->{id} ) {
@@ -403,7 +406,7 @@ Reads a job from the XML file in the user's working directory
 sub load_xml {
     my ( $self ) = @_;
     
-    my $xmlfile = $self->xmlfile;
+    my $xmlfile = $self->xml_file;
     return undef unless $xmlfile;
     $self->{files} = {};
     $self->{parameters} = {};
@@ -456,6 +459,11 @@ sub command {
         }
     }
 
+    $self->{log}->debug(Dumper(
+                            { files => $self->{files},
+                              parameters => $self->{parameters} 
+                            }));
+
     my $command = [ $self->{appname} ];
     for my $name ( sort keys %{$self->{files}} ) {
         push @$command, join('=', $name, $self->{files}{$name});
@@ -477,7 +485,7 @@ Returns all the files associated with this job as a hashref:
 
 
 {
-    print.prt => ${CONTENTS},
+    print => ${CONTENTS},
     input => [ { name => $field, file => $filename } , ... ],
     output => [ { name => $field, file => $filename } , ... ]
 }
@@ -498,25 +506,42 @@ sub files {
         return undef;
     }
 
-    my $result = {
-        print => $self->_read_print_prt
-    };
-    
-    return $result;
+    my $files = {};
 
+    $files->{print} = $self->_read_print_prt;
+    $files->{inputs} = [];
+    $files->{outputs} = [];
 
+    # build two hashes of filenames => params, one for input files,
+    # the other for output files
 
+    my $inputs = map {
+        $self->{parameters}{$_} => $_ 
+    } $self->{app}->upload_params;
 
+    my $outputs = map {
+        $self->{parameters}{$_} => $_
+    } $self->{app}->output_params;
 
-    my $fields = $self->{app}->output_files;
+    # loop through all the files in the job's directory and try to 
+    # match them to an input or output filename.  _readdir automatically
+    # ignores print.prt and job_n.xml.
 
-    my $files = [];
-
-    for my $field ( @$fields ) {
-        push @$files, {
-            name => $field,
-            file => $self->{parameters}{$field}
+    FILE: for my $file ( $self->_read_dir ) {
+        if( my $param = $inputs->{$file} ) {
+            push @{$files->{inputs}}, {
+                name => $param, file => $file
+            };
+            next FILE;
+        } 
+        if( my $param = $outputs->{$file} ) {
+            push @{$files->{outputs}}, {
+                name => $param, file => $file
+            };
+            next FILE;
         }
+        # a file which hasn't matched either an explicit
+        # input or output.  Try to
     }
     return $files;
 }
@@ -539,5 +564,36 @@ sub _read_print_prt {
 
     return $content;
 }
+
+=item _read_dir()
+
+Reads the working directory for this job and returns a list of
+files (with print.prt and the job.xml file filtered out)
+
+=cut
+
+
+sub _read_dir {
+    my ( $self ) = @_;
+
+    my @files = ();
+    my $dir = $self->working_dir;
+    my $xml = $self->xml_file;
+    if( opendir(my $dh, $dir) ) {
+        FILE: for my $file ( sort readdir($dh) ) {
+            next FILE if $file eq $PRINT_PRT;
+            next FILE if $file eq $xml;
+            next FILE if $file =~ /^\./;
+            next FILE unless -f $file;
+            push @files;
+        }
+          closedir($dh);
+          return @files;
+    } else {
+        $self->{log}->error("Couldn't open $dir for reading: $!");
+        return undef;
+    }
+}
+                
 
 1;

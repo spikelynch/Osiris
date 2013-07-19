@@ -23,3 +23,4 @@ $cmd =~ s/\s/\\ /g;
 print "Running $cmd\n";
 
 exec($cmd);
+

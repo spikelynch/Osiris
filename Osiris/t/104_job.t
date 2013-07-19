@@ -76,8 +76,12 @@ ok($job->{id}, "Job has an id");
 
 cmp_ok($job->{status}, 'eq', 'processing', "Job's status is 'processing'");
 
-my $xmlfile = $job->xmlfile;
+my $xmlfile = $job->xml_file;
 
 ok($xmlfile, "Job has an xmlfile");
 
 ok(-f $xmlfile, "xmlfile $xmlfile exists");
+
+my $files = $job->files;
+
+print Dumper({files => $files});
