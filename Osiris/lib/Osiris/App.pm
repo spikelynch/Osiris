@@ -117,8 +117,7 @@ sub form {
 
 =item params
 
-Return a list of all the app's parameters which are not 
-file uploads.
+Return a list of all the app's parameters
 
 =cut
  
@@ -133,20 +132,20 @@ sub params {
 }
 
 
-=item upload_fields
+=item input_params
 
 Return a list of all of the app's file upload parameters
 
 =cut
 
-sub upload_params {
+sub input_params {
 	my ( $self ) = @_;
 
 	if( !$self->{api} ) {
 		$self->parse_api;
 	}
 	
-	return @{$self->{upload_fields}};
+	return @{$self->{input_fields}};
 }
 
 
@@ -169,64 +168,31 @@ sub output_params {
 
 
 
-=item all_params
+=item settings(parameter => $p)
 
-Returns a list of all the form's parameters (including file uploads)
-
-=cut
-
-sub all_params {
-    my  ( $self ) = @_;
-    
-    if ( !$self->{api} ) {
-        $self->parse_api;
-    }
-
-#    $self->{log}->debug(Dumper({api => $self->{api}}));
-
-    return @{$self->{api}{all_params}};
-}
-
-    
-
-
-=item file_filter
-
-Check if a parameter is a file.  If it is, returns the extension
-filter (ie '*.cub');
+Return the API settings for a parameter as a hashref
 
 =cut
 
-sub file_filter {
+sub settings {
     my ( $self, %params ) = @_;
 
     my $p = $params{parameter};
 
-    if( my $field = $self->{api}{file_fields}{$p} ) {
-        return $field->{filter};
-    } else {
+    if( !$self->{paramshash}{$p} ) {
+        $self->{log}->error("No parameter $p");
         return undef;
     }
+
+    return $self->{paramshash}{$p};
 }
 
-=item output_files
 
-A list of all the output file parameters for this app
+    
 
-=cut
 
-sub output_files {
-    my ( $self ) = @_;
 
-    my $fields = [];
 
-    for my $field ( sort keys %{$self->{api}{file_fields}} ) {
-        if( $field->{type} eq 'output_file_field' ) {
-            push @$fields, $field->{name};
-        }
-    }
-    return $fields
-} 
 
 =item guards()
 
@@ -274,6 +240,7 @@ sub parse_api {
 	
 	$self->{api} = {};
     $self->{api}{all_params} = [];
+    $self->{paramshash} = {};
 	
 	my $tw = XML::Twig->new(
 		twig_handlers => {
@@ -312,7 +279,6 @@ sub parse_api {
             my $ch = $guards->{$pname}{$clusion};
             my $clusioned = $CLUSIONED->{$clusion} || die("No reverse $clusion");
             for my $value ( keys %$ch ) {
-                $self->{log}->debug(">> $pname $clusion $value");
                 for my $cp ( @{$ch->{$value}} ) {
                     $guards->{$cp}{$clusioned}{$pname}{$value} = 1;
                     # if( ! $guards->{$cp} ) {
@@ -327,10 +293,6 @@ sub parse_api {
     }
 
     $self->{api}{guards} = $guards;
-
-
-
-
 	return $self->{api};
 } 
 
@@ -394,10 +356,11 @@ sub xml_group {
 	for my $pelt ( $elt->children('parameter') ) {
 		my $param = $self->xml_parameter($pelt);
 		push @{$group->{parameters}}, $param;
+        push @{$self->{param_fields}}, $param->{name};
+        $self->{paramshash}{$param->{name}} = $param;
 		if( $param->{field_type} eq 'input_file_field' ) {
-			push @{$self->{upload_fields}}, $param->{name};
+			push @{$self->{input_fields}}, $param->{name};
 		} else {
-			push @{$self->{param_fields}}, $param->{name};
             if( $param->{field_type} eq 'output_file_field' ) {
                 push @{$self->{output_fields}}, $param->{name};
             }

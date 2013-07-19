@@ -102,7 +102,7 @@ get '/app/:name' => sub {
 			brief => $toc->{$name}
 		);
 
-        my @p = $app->all_params;
+        my @p = $app->params;
         my $guards = $app->guards;
         for my $p ( keys %$guards ) {
             $guards->{$p} = encode_json($guards->{$p});
@@ -116,7 +116,6 @@ get '/app/:name' => sub {
 			app => $app->name,
 			brief => $app->brief,
 			form => $app->form,
-            all_params => \@p,
             guards => $guards,
 			description => $app->description,
             debugmsg => $debugmsg,
@@ -179,6 +178,7 @@ get '/job/:id' => sub {
     if( ! $job ) {
         forward '/jobs';
     } else {
+        
         $job->load_xml;
         my $vars =  {
             user => $user->{id},
@@ -228,7 +228,6 @@ post '/app/:name' => sub {
     }
 
     my $params = {};
-    my $uploads = {};
 
 	my $app = Osiris::App->new(
         dir => $conf->{isisdir},
@@ -238,31 +237,32 @@ post '/app/:name' => sub {
 
     my $job = $user->create_job(app => $app);
 
-    for my $p ( $app->params ) {
-        $params->{$p} = param($p);
-    }
-
-    $job->add_parameters(parameters => $params);
-
-    for my $u ( $app->upload_params ) {
+    for my $u ( $app->input_params ) {
         my $upload = upload($u);
         my $filename = $upload->filename;
         my $to_file = $job->working_dir(file => $filename);
-        if( ! $upload->copy_to($filename) ) {
+
+        if( ! $upload->copy_to($to_file) ) {
             error("Couldn't copy upload to $filename");
             template 'error' => {
                 user => $user->{id}, 
                 error => "Couldn't create Osiris::Job"
             };
         } else {
-            $uploads->{$u} = {
-                filename => $filename,
-                file => $to_file
-            };
+            debug("Copied to $to_file");
+            $params->{$u} = $to_file;
         }
     }
-    
-    $job->add_input_files(files => $uploads);
+
+    # any params which aren't uploads are regular params
+
+    for my $p ( $app->params ) {
+        if( !$params->{$p} ) {
+            $params->{$p} = param($p);
+        }
+    }
+
+    $job->add_parameters(parameters => $params);
 
     if( $user->write_job(job => $job) ) {
         

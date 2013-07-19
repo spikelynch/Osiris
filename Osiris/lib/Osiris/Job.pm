@@ -160,13 +160,13 @@ sub write {
         $self->{log}->error("write called before working dir created");
     }
 
-    if( !$self->{parameters} || !$self->{files} ) {
-        $self->{log}->error("write called before parameters and/or files added");
+    if( !$self->{parameters}  ) {
+        $self->{log}->error("write called before parameters added");
         return undef;
     }
 
     my $parameters = [];
-    my $files = [];
+
     for my $p ( $self->{app}->params ) {
         push @$parameters, {
             name => $p,
@@ -174,16 +174,7 @@ sub write {
         };
     }
 
-    for my $f ( $self->{app}->upload_params ) {
-        push @$files, {
-            name => $f,
-            value => $self->{files}{$f}
-        };
-    }
-
     $self->{log}->debug(Dumper({paramlist => $parameters}));
-
-    $self->{log}->debug(Dumper({filelist => $files}));
 
     $self->{created} = $self->timestamp;
     
@@ -194,12 +185,8 @@ sub write {
     <metadata>
     <created>$self->{created}</created>
     </metadata>
-    <files>
+    <parameters>
 EOXML
-    for my $file ( @$files ) {
-        $self->{xml} .= "<file name=\"$file->{name}\">$file->{value}</file>\n";
-    }
-    $self->{xml} .= "</files>\n><parameters>\n";
     for my $parameter ( @$parameters ) {
         $self->{xml} .= "<parameter name=\"$parameter->{name}\">$parameter->{value}</parameter>\n";
     }
@@ -253,6 +240,9 @@ Does any checking or conversion required on the parameters -
 this will include parameter value checking, and making sure that
 output files don't already exist etc.
 
+This is now used for ALL parameters, as copying the input files
+now happens outside this object.
+
 
 =cut
 
@@ -263,56 +253,75 @@ sub add_parameters {
 
     $self->{parameters} = {};
 
+    my $errors = {};
+
     for my $p ( $self->{app}->params  ) {
         $self->{parameters}{$p} = $phash->{$p};
 
-        if( my $ff = $self->{app}->file_filter(parameter => $p) ) {
-            if( $ff =~ /^\*(\..*)$/ ) {
+        my $app_p = $self->{app}->settings(parameter => $p);
+
+        if( $app_p->{filter} && $app_p->{field_type} eq 'output_file_field' ) {
+            if( $app_p->{filter} =~ /^\*(\..*)$/ ) {
                 $self->{parameters}{$p} .= $1;
             } else {
-                $self->{log}->warn("Strange file filter on $p: '$ff'");
+                $self->{log}->warn("Strange file filter on $p: '$app_p->{filter}'");
+            }
+        }
+        
+        if( $app_p->{field_type} eq 'input_file_field' ) {
+            if( !-f $phash->{$p} ) {
+                $errors->{$p} = "File $p: $phash->{$p} not found";
+                $self->{log}->error($errors->{$p});
             }
         }
 
         if( $p eq 'TO' ) {
             $self->{to} = $self->{parameters}{$p};
         }
+
+        if( $p eq 'FROM' ) {
+            $self->{from} = $self->{parameters}{$p};
+        }
+    }
+
+    if( keys %$errors ) {
+        return undef;
     }
     return $self->{parameters};
 }
 
 
-=item add_input_files
+# =item add_input_files
 
-Add a set of input files as a hashref of 
+# Add a set of input files as a hashref of 
 
-    paramname => { file => $full_path_to_file, filename => $filename }
+#     paramname => { file => $full_path_to_file, filename => $filename }
 
-This used to do the actual copying out of Dancer upload objects, but
-I'm pushing all of the Dancer code back to Osiris.pm to make things 
-cleaner and testing easire
+# This used to do the actual copying out of Dancer upload objects, but
+# I'm pushing all of the Dancer code back to Osiris.pm to make things 
+# cleaner and testing easire
 
-=cut
+# =cut
 
-sub add_input_files {
-    my ( $self, %params ) = @_;
+# sub add_input_files {
+#     my ( $self, %params ) = @_;
 
-    $self->{files} = {};
+#     $self->{files} = {};
 
-    my $files = $params{files};
+#     my $files = $params{files};
 
-    for my $f ( keys %$files ) {
-        if( !-f $files->{$f}{file} ) {
-            $self->{log}->error("File $files->{$f}{file} not found");
-            return undef;
-        }
-        $self->{files}{$f} = $files->{$f};
-        if( $f eq 'FROM' ) {
-            $self->{from} = $files->{filename};
-        }
-    }
-    return $self->{files};
-}
+#     for my $f ( keys %$files ) {
+#         if( !-f $files->{$f}{file} ) {
+#             $self->{log}->error("File $files->{$f}{file} not found");
+#             return undef;
+#         }
+#         $self->{files}{$f} = $files->{$f};
+#         if( $f eq 'FROM' ) {
+#             $self->{from} = $files->{filename};
+#         }
+#     }
+#     return $self->{files};
+# }
 
 
 =item timestamp
@@ -400,16 +409,13 @@ sub load_xml {
     
     my $xmlfile = $self->xml_file;
     return undef unless $xmlfile;
-    $self->{files} = {};
+
     $self->{parameters} = {};
     $self->{metadata} = {};
 
     my $tw = XML::Twig->new(
         twig_handlers => {
             job => sub { $self->{appname} = $_->att('app') },
-            file => sub { 
-                $self->{files}{$_->att('name')} = $_->text;
-            },
             parameter => sub {
                 $self->{parameters}{$_->att('name')} = $_->text
             },
@@ -452,9 +458,6 @@ sub command {
     }
 
     my $command = [ $self->{appname} ];
-    for my $name ( sort keys %{$self->{files}} ) {
-        push @$command, join('=', $name, $self->{files}{$name}{file});
-    }
 
     for my $name ( sort keys %{$self->{parameters}} ) {
         push @$command, join('=', $name, $self->{parameters}{$name});
@@ -499,37 +502,37 @@ sub files {
     $files->{inputs} = [];
     $files->{outputs} = [];
 
-    # build two hashes of filenames => params, one for input files,
-    # the other for output files
+    # # build two hashes of filenames => params, one for input files,
+    # # the other for output files
 
-    my $inputs = map {
-        $self->{parameters}{$_} => $_ 
-    } $self->{app}->upload_params;
+    # my $inputs = map {
+    #     $self->{parameters}{$_} => $_ 
+    # } $self->{app}->upload_params;
 
-    my $outputs = map {
-        $self->{parameters}{$_} => $_
-    } $self->{app}->output_params;
+    # my $outputs = map {
+    #     $self->{parameters}{$_} => $_
+    # } $self->{app}->output_params;
 
-    # loop through all the files in the job's directory and try to 
-    # match them to an input or output filename.  _readdir automatically
-    # ignores print.prt and job_n.xml.
+    # # loop through all the files in the job's directory and try to 
+    # # match them to an input or output filename.  _readdir automatically
+    # # ignores print.prt and job_n.xml.
 
-    FILE: for my $file ( $self->_read_dir ) {
-        if( my $param = $inputs->{$file} ) {
-            push @{$files->{inputs}}, {
-                name => $param, file => $file
-            };
-            next FILE;
-        } 
-        if( my $param = $outputs->{$file} ) {
-            push @{$files->{outputs}}, {
-                name => $param, file => $file
-            };
-            next FILE;
-        }
-        # a file which hasn't matched either an explicit
-        # input or output.  Try to
-    }
+    # FILE: for my $file ( $self->_read_dir ) {
+    #     if( my $param = $inputs->{$file} ) {
+    #         push @{$files->{inputs}}, {
+    #             name => $param, file => $file
+    #         };
+    #         next FILE;
+    #     } 
+    #     if( my $param = $outputs->{$file} ) {
+    #         push @{$files->{outputs}}, {
+    #             name => $param, file => $file
+    #         };
+    #         next FILE;
+    #     }
+    #     # a file which hasn't matched either an explicit
+    #     # input or output.  Try to
+    # }
     return $files;
 }
 

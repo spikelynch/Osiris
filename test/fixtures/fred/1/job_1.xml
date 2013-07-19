@@ -3,12 +3,10 @@
 <job app="thm2isis">
     <metadata>
     </metadata>
-    <files>
-    
-        <file name="FROM">/home/mike/workspace/DC18C Osiris/working/fred/1/V03537002EDR.QUB</file>
-    
-    </files>
+
     <parameters>
+        <parameter name="FROM">/home/mike/workspace/DC18C Osiris/working/fred/1/V03537002EDR.QUB</parameter>
+    
     
         <parameter name="TO">V0000FRED</parameter>
     
