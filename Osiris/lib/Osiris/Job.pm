@@ -78,7 +78,7 @@ sub new {
 
     if( my $s = $params{summary} ) {
         # job is being created from the job list
-        for ( qw(created status to from) ) {
+        for ( qw(created started completed status to from) ) {
             $self->{$_} = $s->{$_};
         }
         $self->{appname} = $s->{app};
@@ -289,38 +289,6 @@ sub add_parameters {
 }
 
 
-# =item add_input_files
-
-# Add a set of input files as a hashref of 
-
-#     paramname => { file => $full_path_to_file, filename => $filename }
-
-# This used to do the actual copying out of Dancer upload objects, but
-# I'm pushing all of the Dancer code back to Osiris.pm to make things 
-# cleaner and testing easire
-
-# =cut
-
-# sub add_input_files {
-#     my ( $self, %params ) = @_;
-
-#     $self->{files} = {};
-
-#     my $files = $params{files};
-
-#     for my $f ( keys %$files ) {
-#         if( !-f $files->{$f}{file} ) {
-#             $self->{log}->error("File $files->{$f}{file} not found");
-#             return undef;
-#         }
-#         $self->{files}{$f} = $files->{$f};
-#         if( $f eq 'FROM' ) {
-#             $self->{from} = $files->{filename};
-#         }
-#     }
-#     return $self->{files};
-# }
-
 
 =item timestamp
 
@@ -348,6 +316,8 @@ sub summary {
     my $s = {
         id => $self->{id},
         created => $self->{created},
+        started => $self->{started},
+        finished => $self->{finished},
         status => $self->{status},
         app => $self->{appname},
         from => $self->{from}, 
@@ -504,15 +474,17 @@ sub files {
 
     my $files = $self->_read_dir;
 
+    $self->{log}->debug(Dumper({dirfiles => $files}));
     
     for my $param ( $self->{app}->input_params ) {
         my $path = $self->{parameters}{$param};
         if( $path =~ /\/([^\/]+)$/ ) {
             my $ifile = $1;
-            $self->{log}->debug($ifile);
+            $self->{log}->debug("Matching input file ($param) $ifile");
             if( $files->{$ifile} ) {
-                $self->{log}->debug("$ifile matched $param");
+                $self->{log}->debug("Matched $ifile");
                 push @{$f->{inputs}{$param}}, $ifile;
+                
                 delete $files->{$ifile};
             }
         }
@@ -523,17 +495,19 @@ sub files {
 
     for my $param ( $self->{app}->output_params ) {
         my $ofile = $self->{parameters}{$param};
-        $self->{log}->debug($ofile);
+        $self->{log}->debug("Matching output file ($param) $ofile");
         if( $files->{$ofile} ) {
-            $self->{log}->debug("$ofile matched $param");
+            $self->{log}->debug("Matched $ofile");
             push @{$f->{outputs}{$param}}, $ofile;
             delete $files->{$ofile};
         } else {
             my ( $filename, $ext ) = split('\.', $ofile);
             my $pat = qr/^${filename}\..*\.${ext}$/i;
+            $self->{log}->debug("Matching output file pattern ($param) $pat");
             for my $file ( keys %$files ) {
+                $self->{log}->debug("-- $file");
                 if( $file =~ $pat ) {
-                    $self->{log}->debug("$file matched $pat");
+                    $self->{log}->debug("Matched $file");
                     push @{$f->{outputs}{$param}}, $file;
                     delete $files->{$file};
                 }
@@ -542,6 +516,8 @@ sub files {
     }
     
     # Anything left over gets presented as 'other'
+
+    $self->{log}->debug(Dumper({remaining => $files}));
 
     push @{$f->{other}}, sort keys %$files; 
 
@@ -586,13 +562,11 @@ sub _read_dir {
     if( $xml =~ /\/([^\/]+)$/ ) {
         $xml = $1;
     }
-    $self->{log}->debug("xml file = $xml");
     if( opendir(my $dh, $dir) ) {
         FILE: for my $file ( sort readdir($dh) ) {
             next FILE if $file eq $PRINT_PRT;
             next FILE if $file eq $xml;
             next FILE if $file =~ /^\./;
-            next FILE unless -f $file;
             $files->{$file} = 1;
         }
           closedir($dh);

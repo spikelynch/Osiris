@@ -4,7 +4,7 @@
 # via ptah) and then checks to see that the job can associate all the
 # output files. (Capturing stdout and stderr is left to the ptah tests).
 
-use Test::More tests => 24;
+use Test::More tests => 26;
 
 use strict;
 use Data::Dumper;
@@ -136,3 +136,9 @@ ok(! keys %OUTPUTS, "Got all expected output files") || do {
     
    
 
+
+ok($job->set_status(status => 'done'), "Updated job status to 'done'");
+
+
+
+cmp_ok($job->{status}, 'eq', 'done', "Job's status is 'done'");

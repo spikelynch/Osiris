@@ -4,8 +4,6 @@
 <tbody>
 
 
-<td class="header" colspan="2"">Basic information</td></tr>
-
 <tr>
 <td class="label">Job status</td>
 <td class="value"><strong><% job.status %></strong></td>
@@ -13,13 +11,17 @@
 
 <tr>
 <td class="label">Started</td>
-<td class="value"><% job.created %></td>
+<td class="value"><% job.started %></td>
 </tr>
+
+<% IF job.status == "done" %>
 
 <tr>
 <td class="label">Completed</td>
 <td class="value"><% job.completed %></td>
 </tr>
+
+<% END %>
 
 <tr>
 <td class="label">Command</td>
