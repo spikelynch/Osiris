@@ -1,7 +1,24 @@
-Targets 19/7/12
+Targets 22/7/13
 ---------------
 
--> get test 105 working
+This morning: links to all files (input and output) within a job.
+
+If there's time before lunch, a server-side file browser
+
+This afternoon:
+
+List of tasks to be done ASAP to get some test records to ANDS -
+basically, a production ReDBox server and Fedora Commons server
+
+Sbg's email login question.
+
+
+
+
+Targets 19/7/13
+---------------
+
+-> get test 105 working   <= Done
 
 -> get Osiris::Job::files() working
 
@@ -11,7 +28,7 @@ Targets 19/7/12
 
 
 
-Targets 17/7/12
+Targets 17/7/13
 ---------------
 
 Still stuck on javascript guards - have to get them finished this morning.  <-- DONE
@@ -39,7 +56,7 @@ joblist file (which would then become a general config document)
 
 ---------------
 
-Targets for 16/7/12
+Targets for 16/7/13
 
 Fell behind because had to do a lot of datascrubbing for MS22 yesterday
 
@@ -53,7 +70,7 @@ expand the help: need a clue or affordance for this like a down-arrow
 or something
 
 
-Targets for 15/7/12
+Targets for 15/7/13
 -------------------
 
 Finish guards (at least to the stage where they are preventing submission
@@ -64,7 +81,7 @@ of invalid form parameters in javascript)
 Capture print.prt and output files.
 
 
-Targets for 11/7/12
+Targets for 11/7/13
 -------------------
 
 This morning's sprint: javascript guards!
@@ -83,7 +100,7 @@ This afternoon: capture print.prt and multiple output files.
 
 
 
-Targets for 10/7/12
+Targets for 10/7/13
 -------------------
 
 Fix the expanded job list  <==  DONE

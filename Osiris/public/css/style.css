@@ -102,3 +102,23 @@ div#debug {
     background-color: white;
     border: 1px solid black;
 }
+
+
+/* Styles for the job pages */
+
+td.header {
+    font-weight: bold;
+    font-size: 115%;
+    border-top: 1px solid #888;
+    padding-bottom: 2em;
+}
+
+td.label {
+    font-weight: bold;
+    vertical-align: top;
+    width: 150px;
+}
+
+td.value {
+    vertical-align: top;
+}

@@ -4,35 +4,43 @@
 <tbody>
 
 
+<td class="header" colspan="2"">Basic information</td></tr>
+
 <tr>
 <td class="label">Job status</td>
-<td><strong><% job.status %></strong></td>
+<td class="value"><strong><% job.status %></strong></td>
 </tr>
 
 <tr>
 <td class="label">Started</td>
-<td><% job.created %></td>
+<td class="value"><% job.created %></td>
 </tr>
 
 <tr>
 <td class="label">Completed</td>
-<td><% job.completed %></td>
-</tr>
-
-<tr><td class="label" colspan="2">Command line</td></tr>
-<tr><td colspan="2"><pre><% job.command.join(' ') %></pre></td></tr>
-
-<tr>
-<td class="label">print.prt</td>
-<td><pre id="printprt"><% job.files.print %></pre></td>
+<td class="value"><% job.completed %></td>
 </tr>
 
 <tr>
-<td class="label">Input files</td>
-<td><pre id="printprt"><% job.files.print %></pre></td>
-</tr>
+<td class="label">Command</td>
+<td class="value"><pre><% command %></pre></td></tr>
 
+<tr><td class="header" colspan="2"">Input files</td></tr>
 
+<% INCLUDE links list=files.inputs %>
+
+<% IF job.status == "done" %>
+
+    <tr><td class="header" colspan="2"">Output files</td></tr>
+
+    <% INCLUDE links list=files.outputs %>
+
+    <tr>
+        <td class="label">print.prt</td>
+        <td><pre id="printprt"><% files.print %></pre></td>
+    </tr>
+
+<% END %>
 
 </table>
 
@@ -40,4 +48,14 @@
 
 
 
-
+<% BLOCK links %>
+    <% FOR param IN list.keys %>
+    <tr><td class="label"><% param %></td>
+        <td class="value">
+        <% FOR file IN list.$param %>
+        <p class="filelink"><a href="/job/<% job.id %>/files/<% file %>"><% file %></a></p>
+        <% END %>
+        </td>
+    </tr>
+    <% END %>
+<% END %>

@@ -182,12 +182,15 @@ get '/job/:id' => sub {
         $job->load_xml;
         my $vars =  {
             user => $user->{id},
-            job => $job
+            job => $job,
         };
-        if( $job->{status} eq 'done' ) {
-            $job->{app} = get_app(name => $job->{appname});
-            $vars->{files} = $job->files;
-        }
+        my $command = $job->command;
+        $vars->{command} = join(' ', @$command);
+        my $dir = $job->working_dir;
+        $vars->{command} =~ s/$dir//g;
+        $job->{app} = get_app(name => $job->{appname});
+        $vars->{files} = $job->files;
+        debug("Files: " , $vars->{files});
         template job => $vars
     }
 };
@@ -204,12 +207,11 @@ get '/job/:id/files/:file' => sub {
         forward '/jobs';
     } else {
         my $file = param('file');
-        $job->load_xml;
-        if( !$job->{parameters}{$file} ) {
-            forward "/jobs/$id";
+        my $path = $job->working_dir(file => $file);
+        if( -f $path ) {
+            send_file($path, system_path => 1);
         } else {
-            my $filename = $job->working_dir(file => $job->{parameters}{$file});
-            send_file($filename, system_path => 1);
+            send_error('Not found', 404);
         }
     }
 };

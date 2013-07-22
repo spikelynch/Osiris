@@ -248,7 +248,6 @@ sub _save_joblist {
 
     my $joblistfile = $self->_joblistfile;
     
-    $self->{log}->debug("Saving joblist for $self->{id}");
     open(JOBS, ">$joblistfile") || do {
         $self->{log}->error("Couldn't write to joblist file $joblistfile $!");
         return undef;

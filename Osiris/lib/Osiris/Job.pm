@@ -174,8 +174,6 @@ sub write {
         };
     }
 
-    $self->{log}->debug(Dumper({paramlist => $parameters}));
-
     $self->{created} = $self->timestamp;
     
 
@@ -464,7 +462,6 @@ sub command {
     }
 
     $self->{command} = $command;
-    $self->{commandstr} = join(' ', @$command);
     return $command;
 }
 
@@ -496,44 +493,60 @@ sub files {
         return undef;
     }
 
-    my $files = {};
+    my $f = {};
 
-    $files->{print} = $self->_read_print_prt;
-    $files->{inputs} = [];
-    $files->{outputs} = [];
+    $f->{print} = $self->_read_print_prt;
+    $f->{inputs} = {};
+    $f->{outputs} = {};
+    $f->{other} = [];
 
-    # # build two hashes of filenames => params, one for input files,
-    # # the other for output files
+    # Look for input files
 
-    # my $inputs = map {
-    #     $self->{parameters}{$_} => $_ 
-    # } $self->{app}->upload_params;
+    my $files = $self->_read_dir;
 
-    # my $outputs = map {
-    #     $self->{parameters}{$_} => $_
-    # } $self->{app}->output_params;
+    
+    for my $param ( $self->{app}->input_params ) {
+        my $path = $self->{parameters}{$param};
+        if( $path =~ /\/([^\/]+)$/ ) {
+            my $ifile = $1;
+            $self->{log}->debug($ifile);
+            if( $files->{$ifile} ) {
+                $self->{log}->debug("$ifile matched $param");
+                push @{$f->{inputs}{$param}}, $ifile;
+                delete $files->{$ifile};
+            }
+        }
+    }
 
-    # # loop through all the files in the job's directory and try to 
-    # # match them to an input or output filename.  _readdir automatically
-    # # ignores print.prt and job_n.xml.
+    # Look for output files, both those which directly match the
+    # params, and those with extra extensions like FILENAME.even.EXT
 
-    # FILE: for my $file ( $self->_read_dir ) {
-    #     if( my $param = $inputs->{$file} ) {
-    #         push @{$files->{inputs}}, {
-    #             name => $param, file => $file
-    #         };
-    #         next FILE;
-    #     } 
-    #     if( my $param = $outputs->{$file} ) {
-    #         push @{$files->{outputs}}, {
-    #             name => $param, file => $file
-    #         };
-    #         next FILE;
-    #     }
-    #     # a file which hasn't matched either an explicit
-    #     # input or output.  Try to
-    # }
-    return $files;
+    for my $param ( $self->{app}->output_params ) {
+        my $ofile = $self->{parameters}{$param};
+        $self->{log}->debug($ofile);
+        if( $files->{$ofile} ) {
+            $self->{log}->debug("$ofile matched $param");
+            push @{$f->{outputs}{$param}}, $ofile;
+            delete $files->{$ofile};
+        } else {
+            my ( $filename, $ext ) = split('\.', $ofile);
+            my $pat = qr/^${filename}\..*\.${ext}$/i;
+            for my $file ( keys %$files ) {
+                if( $file =~ $pat ) {
+                    $self->{log}->debug("$file matched $pat");
+                    push @{$f->{outputs}{$param}}, $file;
+                    delete $files->{$file};
+                }
+            }
+        }
+    }
+    
+    # Anything left over gets presented as 'other'
+
+    push @{$f->{other}}, sort keys %$files; 
+
+
+    return $f;
 }
 
 
@@ -557,8 +570,9 @@ sub _read_print_prt {
 
 =item _read_dir()
 
-Reads the working directory for this job and returns a list of
-files (with print.prt and the job.xml file filtered out)
+Reads the working directory for this job and returns a hashref of
+filenames (relative to the working directory, with print.prt and the
+job xml file filtered out)
 
 =cut
 
@@ -566,19 +580,23 @@ files (with print.prt and the job.xml file filtered out)
 sub _read_dir {
     my ( $self ) = @_;
 
-    my @files = ();
+    my $files = {};
     my $dir = $self->working_dir;
     my $xml = $self->xml_file;
+    if( $xml =~ /\/([^\/]+)$/ ) {
+        $xml = $1;
+    }
+    $self->{log}->debug("xml file = $xml");
     if( opendir(my $dh, $dir) ) {
         FILE: for my $file ( sort readdir($dh) ) {
             next FILE if $file eq $PRINT_PRT;
             next FILE if $file eq $xml;
             next FILE if $file =~ /^\./;
             next FILE unless -f $file;
-            push @files, $file;
+            $files->{$file} = 1;
         }
           closedir($dh);
-          return @files;
+          return $files;
     } else {
         $self->{log}->error("Couldn't open $dir for reading: $!");
         return undef;
