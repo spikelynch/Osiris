@@ -474,8 +474,6 @@ sub files {
 
     my $files = $self->_read_dir;
 
-    $self->{log}->debug(Dumper({dirfiles => $files}));
-    
     for my $param ( $self->{app}->input_params ) {
         my $path = $self->{parameters}{$param};
         if( $path =~ /\/([^\/]+)$/ ) {

@@ -1,9 +1,18 @@
 Targets 22/7/13
 ---------------
 
-This morning: links to all files (input and output) within a job.
+This morning: links to all files (input and output) within a job. <-- DONE
 
 If there's time before lunch, a server-side file browser
+
+(AS AJAX):
+
+Job 1
+Job 2  <-- when they select this, do an Ajax request for the file
+           structure and render it in the browser.
+Job 3
+
+
 
 This afternoon:
 

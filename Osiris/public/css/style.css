@@ -122,3 +122,35 @@ td.label {
 td.value {
     vertical-align: top;
 }
+
+
+/* styles for file browsingn */
+
+
+
+div.filejob {
+    font-weight: bold;
+    padding-top: .2em;
+    cursor: pointer;
+}
+
+div.files {
+    padding-left: 1em;
+}
+
+div.fhead {
+    font-weight: normal;
+    font-style: italic;
+    font-size: 80%
+}
+
+
+div.file {
+    font-family: monospace;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 80%
+    padding-left: 2em;
+    color: blue;
+    cursor: pointer;
+}

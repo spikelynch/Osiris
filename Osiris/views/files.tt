@@ -1,0 +1,14 @@
+<h2> Rudimentary file browser </h2>
+
+<div id="jobs">
+
+<% FOR id IN jobs.keys %>
+<div class="filejob" id="job<% id %>">Job <% id %> <% jobs.$id.appname %></div>
+<% END %>
+
+</div>
+
+<script lang="javascript">
+$("div.filejob").click(files_browse);
+</script>
+   

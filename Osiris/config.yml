@@ -28,3 +28,7 @@ template: "template_toolkit"
 #     end_tag:   '%]'
 
 session: YAML
+
+plugins:
+    'Ajax':
+        content_type: 'application/json'

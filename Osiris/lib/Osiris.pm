@@ -1,6 +1,8 @@
 package Osiris;
 
 use Dancer ':syntax';
+use Dancer::Plugin::Ajax;
+
 use XML::Simple;
 use JSON;
 use Data::Dumper;
@@ -216,6 +218,44 @@ get '/job/:id/files/:file' => sub {
     }
 };
     
+
+get '/files' => sub {
+    my $user = get_user();
+    my $jobs = $user->jobs(reload => 1);
+
+    template files => {
+        javascripts => [ 'files' ],
+        jobs => $jobs
+    };
+};
+
+
+
+
+# Ajax handler for browsing a user's working directory.  Returns a 
+# JSON object with files broken down by input, output and other.
+
+
+ajax '/files/:id' => sub {
+    my $user = get_user();
+    my $id = param('id');
+    my $jobhash = $user->jobs(reload => 1);
+    my $job = $jobhash->{$id};
+
+    if( ! $job ) {
+        send_error("Not found", 404);
+    } else {
+        
+        $job->load_xml;
+        $job->{app} = get_app(name => $job->{appname});
+
+        my $files = $job->files;
+
+        debug("files: ", $files);
+
+        to_json($files);
+    }
+};
 
 
 
