@@ -19,7 +19,9 @@
 <% FOR param IN group.parameters %>
 
 <tr class="param">
-<td class="paramlabel"><% param.name %></td>
+<td class="paramlabel">
+<% param.name %>
+</td>
 <td class="parambox" id="parambox_<% param.name %>">
 	<% INCLUDE $param.field_type %>
     <span class="error_text" id="error_<% param.name %>"></span>
@@ -77,6 +79,8 @@ bind_guards("<% p %>", <% guards.$p %>);
 	<input type="text" id="field_<% param.name %>" name="<% param.name %>" value="<% param.default %>" size="12" />
 <% END %>
 
+
+
 <% BLOCK list_field %>
 	<select id="field_<% param.name %>" name="<% param.name %>">
         <option value=""></option>
@@ -88,6 +92,8 @@ bind_guards("<% p %>", <% guards.$p %>);
 	</select>
 <% END %>
 
+
+
 <% BLOCK boolean_field %>
 	<% IF param.default == "false" %>
 		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %>" value="true" />
@@ -96,10 +102,15 @@ bind_guards("<% p %>", <% guards.$p %>);
 	<% END %>
 <% END %>
 
+
+
 <% BLOCK input_file_field %>
-	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" /> or <a href="#TODO">use a file from a previous job</a>
+	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" /><br /> 
+or <span class="browseropen" id="browser_<% param.name %>">use a file from a previous job</span>
 
 <% END %>
+
+
 
 <% BLOCK output_file_field %>
 	<input type="text" id="field_<% param.name %>" name="<% param.name %>" size="40" /> <% param.extension %>

@@ -124,14 +124,23 @@ td.value {
 }
 
 
-/* styles for file browsingn */
+/* styles for file browsing */
 
+span.browseropen {
+    cursor:pointer;
+    color: blue;
+}
 
+div.filebrowser {
+    border: 1px pink solid;
+}
 
-div.filejob {
+div.filebrowser_job {
     font-weight: bold;
+    color: darkblue;
     padding-top: .2em;
     cursor: pointer;
+    border: 1px yellow solid;
 }
 
 div.files {
@@ -149,7 +158,7 @@ div.file {
     font-family: monospace;
     font-weight: normal;
     font-style: normal;
-    font-size: 80%
+    font-size: 100%;
     padding-left: 2em;
     color: blue;
     cursor: pointer;

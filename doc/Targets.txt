@@ -1,3 +1,30 @@
+Targets 25/7/13
+---------------
+
+Get the file browser working again and make it embeddable
+
+Add file browsing to app forms (as an alternative to upload)
+
+Add file browsing to the jobs list (as a shortcut for a user to 
+get their files)
+
+
+Targets 23/7/13
+---------------
+
+Tidy up the file-browser - include 'other' files as anonymous output files
+
+Add the file-browser tool to the jobs list
+
+Allow the app form to use the file-browser as an alternative to uploading
+
+---
+
+Sbg's email thing.
+
+List of tasks we need to get the test records for DC18 to ANDS
+
+
 Targets 22/7/13
 ---------------
 

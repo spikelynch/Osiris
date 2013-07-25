@@ -1,14 +1,34 @@
-<h2> Rudimentary file browser </h2>
 
-<div id="jobs">
+<p><span class="browseropen" id="browser1ctrl">Browse jobs and files</span></p>
 
-<% FOR id IN jobs.keys %>
-<div class="filejob" id="job<% id %>">Job <% id %> <% jobs.$id.appname %></div>
-<% END %>
-
+<div id="filebrowser1" class="filebrowser">
 </div>
 
+<p><span class="browseropen" id="browser2ctrl">Browse jobs and files</span></p>
+
+<div id="filebrowser2" class="filebrowser">
+</div>
+
+
+<p>The file: <span id="result"></span></p>
+
 <script lang="javascript">
-$("div.filejob").click(files_browse);
+filebrowser_init(
+    "filebrowser1",
+    "browser1ctrl",
+    function (value) {
+        $("#result").empty();
+        $("#result").text(value);
+    });
+
+filebrowser_init(
+    "filebrowser2",
+    "browser2ctrl",
+    function (value) {
+        $("#result").empty();
+        $("#result").text(value);
+    });
+
+
 </script>
    

@@ -447,6 +447,15 @@ Returns all the files associated with this job as a hashref:
     output => [ { name => $field, file => $filename } , ... ]
 }
 
+{
+    print => $PRINTCONTENTS,
+    inputs => [ { file => $filename, param => $param } ]
+    outputs => [ { file => $filename, [ param => $param ] } ]
+}  
+
+
+
+
 Note that there may be more than one file associated with a given
 output field (ie FILENAME.odd.cub and FILENAME.even.cub) - this routine
 tries to guess which ones match based on the job parameters.
@@ -513,11 +522,7 @@ sub files {
         }
     }
     
-    # Anything left over gets presented as 'other'
-
-    $self->{log}->debug(Dumper({remaining => $files}));
-
-    push @{$f->{other}}, sort keys %$files; 
+    push @{$f->{outputs}{_ANON_}}, sort keys %$files; 
 
 
     return $f;

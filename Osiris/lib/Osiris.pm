@@ -192,7 +192,6 @@ get '/job/:id' => sub {
         $vars->{command} =~ s/$dir//g;
         $job->{app} = get_app(name => $job->{appname});
         $vars->{files} = $job->files;
-        debug("Files: " , $vars->{files});
         template job => $vars
     }
 };
@@ -234,6 +233,21 @@ get '/files' => sub {
 
 # Ajax handler for browsing a user's working directory.  Returns a 
 # JSON object with files broken down by input, output and other.
+
+ajax '/jobs' => sub {
+    my $user = get_user();
+    my $joblist = $user->jobs(reload => 1);
+    
+    my $jobs = {};
+
+    for my $id ( keys %$joblist ) {
+        $jobs->{$id} = { appname => $joblist->{$id}->{appname} }
+    };
+
+
+    to_json($jobs);
+};
+
 
 
 ajax '/files/:id' => sub {
