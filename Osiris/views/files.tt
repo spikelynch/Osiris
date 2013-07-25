@@ -4,29 +4,33 @@
 <div id="filebrowser1" class="filebrowser">
 </div>
 
+<p>The file: <span id="result1"></span></p>
+
+
 <p><span class="browseropen" id="browser2ctrl">Browse jobs and files</span></p>
 
 <div id="filebrowser2" class="filebrowser">
 </div>
 
 
-<p>The file: <span id="result"></span></p>
+<p>The file: <span id="result2"></span></p>
+
 
 <script lang="javascript">
 filebrowser_init(
     "filebrowser1",
     "browser1ctrl",
-    function (value) {
-        $("#result").empty();
-        $("#result").text(value);
+    function (job, file) {
+        $("#result1").empty();
+        $("#result1").text("Job " + job + ": " + file);
     });
 
 filebrowser_init(
     "filebrowser2",
     "browser2ctrl",
-    function (value) {
-        $("#result").empty();
-        $("#result").text(value);
+    function (job, file) {
+        $("#result2").empty();
+        $("#result2").text("Job " + job + ": " + file);
     });
 
 

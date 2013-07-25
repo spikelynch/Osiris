@@ -128,11 +128,10 @@ td.value {
 
 span.browseropen {
     cursor:pointer;
-    color: blue;
+    color: darkblue;
 }
 
 div.filebrowser {
-    border: 1px pink solid;
 }
 
 div.filebrowser_job {
@@ -140,7 +139,6 @@ div.filebrowser_job {
     color: darkblue;
     padding-top: .2em;
     cursor: pointer;
-    border: 1px yellow solid;
 }
 
 div.files {
@@ -160,6 +158,11 @@ div.file {
     font-style: normal;
     font-size: 100%;
     padding-left: 2em;
-    color: blue;
+    color: darkblue;
     cursor: pointer;
+}
+
+div.selected {
+    color: blue;
+    background-color: #bef;
 }
