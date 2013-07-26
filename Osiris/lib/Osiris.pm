@@ -114,7 +114,7 @@ get '/app/:name' => sub {
 
 		template 'app' => {
             user => $user->{id}, 
-            javascripts => [ 'app', 'guards' ],
+            javascripts => [ 'app', 'guards', 'files' ],
 			app => $app->name,
 			brief => $app->brief,
 			form => $app->form,
@@ -283,8 +283,6 @@ post '/app/:name' => sub {
         send_error('Not found', 404);
     }
 
-    my $params = {};
-
 	my $app = Osiris::App->new(
         dir => $conf->{isisdir},
         app => $name,
@@ -293,30 +291,23 @@ post '/app/:name' => sub {
 
     my $job = $user->create_job(app => $app);
 
-    for my $u ( $app->input_params ) {
-        my $upload = upload($u);
-        my $filename = $upload->filename;
-        my $to_file = $job->working_dir(file => $filename);
+    # input_files sets the input file parameters.
 
-        if( ! $upload->copy_to($to_file) ) {
-            error("Couldn't copy upload to $filename");
-            template 'error' => {
-                user => $user->{id}, 
-                error => "Couldn't create Osiris::Job"
-            };
-        } else {
-            debug("Copied to $to_file");
-            $params->{$u} = $to_file;
-        }
-    }
+    my $params = input_files(
+        app => $app,
+        job => $job,
+        user => $user
+        );
 
-    # any params which aren't uploads are regular params
+    # The rest can be copied directly from the form.
 
     for my $p ( $app->params ) {
         if( !$params->{$p} ) {
             $params->{$p} = param($p);
         }
     }
+
+    debug('params ', $params);
 
     $job->add_parameters(parameters => $params);
 
@@ -336,6 +327,56 @@ post '/app/:name' => sub {
         
 };
 
+
+# input_files - does the juggling around file uploads v existing
+# files on the system
+
+
+sub input_files {
+    my %params = @_;
+    
+    my $job = $params{job};
+    my $app = $params{app};
+    my $user = $params{user};
+    my $par = $params{params};
+
+    my $p = {};
+    my $parents = {};
+
+    for my $u ( $app->input_params ) {
+        my $existing_file = param($u . '_alt');
+        my $upload = upload($u);
+        if( $existing_file && !$upload ) {
+            debug("$u: using existing file $existing_file");
+            my ( $type, $job, $file ) = split('/', $existing_file);
+            $p->{$u} = '../' . $job . '/' . $file;
+            debug("Result $type, $job, $file, = $p->{$u}");
+            if( $type eq 'output' ) {
+                $parents->{$u} = $job;
+            }
+        } else {
+            my $filename = $upload->filename;
+            my $to_file = $job->working_dir(file => $filename);
+
+            if( ! $upload->copy_to($to_file) ) {
+                error("Couldn't copy upload to $filename");
+                template 'error' => {
+                    user => $user->{id}, 
+                    error => "Couldn't create Osiris::Job"
+                };
+            } else {
+                debug("Copied to $to_file");
+                $p->{$u} = $to_file;
+            }
+        }
+    }
+
+    for my $pp ( keys %$parents ) {
+        $p->{_annotations}{$pp}{parent} = $parents->{$pp};
+    }
+
+    return $p;
+}
 
 
 

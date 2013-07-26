@@ -142,6 +142,27 @@ sub working_dir {
 }
 
 
+=item file_exists(file => $relfile)
+
+Given a filepath relative to this job's working directory, check that
+the file exists.  (Jobs can have input files from other jobs - this 
+method needs to work for those too.);
+
+=cut
+
+sub file_exists {
+    my ( $self, %params ) = @_;
+
+    my $f = $self->working_dir(%params);
+
+    if( -f $f ) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
 
 
 =item write()
@@ -168,11 +189,17 @@ sub write {
     my $parameters = [];
 
     for my $p ( $self->{app}->params ) {
-        push @$parameters, {
+        my $ph = {
             name => $p,
             value => $self->{parameters}{$p}
         };
+        if( $self->{annotations}{$p} ) {
+            $ph->{annotations} = $self->{annotations}{$p};
+        }
+        push @$parameters, $ph;
     }
+
+    $self->{log}->debug(Dumper({paramlist => $parameters}));
 
     $self->{created} = $self->timestamp;
     
@@ -186,7 +213,15 @@ sub write {
     <parameters>
 EOXML
     for my $parameter ( @$parameters ) {
-        $self->{xml} .= "<parameter name=\"$parameter->{name}\">$parameter->{value}</parameter>\n";
+        $self->{xml} .= "<parameter name=\"$parameter->{name}\"";
+        if( $parameter->{annotations} ) {
+            for my $a ( keys %{$parameter->{annotations}} ) {
+                if( $a ne 'name' ) {
+                    $self->{xml} .= " $a=\"$parameter->{annotations}{$a}\"";
+                }
+            }
+        }
+        $self->{xml} .= ">$parameter->{value}</parameter>\n";
     }
     $self->{xml} .= <<EOXML;
     </parameters>
@@ -241,6 +276,9 @@ output files don't already exist etc.
 This is now used for ALL parameters, as copying the input files
 now happens outside this object.
 
+The parameter '_annotations' can be used to store notes against
+parameters.  Currently used to store 'parent' = job id from which
+an input value was derived.
 
 =cut
 
@@ -267,7 +305,7 @@ sub add_parameters {
         }
         
         if( $app_p->{field_type} eq 'input_file_field' ) {
-            if( !-f $phash->{$p} ) {
+            if( !$self->file_exists(file => $phash->{$p}) ) {
                 $errors->{$p} = "File $p: $phash->{$p} not found";
                 $self->{log}->error($errors->{$p});
             }
@@ -281,6 +319,11 @@ sub add_parameters {
             $self->{from} = $self->{parameters}{$p};
         }
     }
+
+    if( $phash->{_annotations} ) {
+        $self->{annotations} = $phash->{_annotations};
+    } 
+            
 
     if( keys %$errors ) {
         return undef;

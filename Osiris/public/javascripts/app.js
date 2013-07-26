@@ -18,6 +18,23 @@ function toggle_description(event) {
     }
 }
 
+// appfile_select - called when the user chooses a previously used
+// or created file via the file browser.
 
+function appfile_select(param, job, file, type) {
+    var fid = '#field_' + param + '_alt';
+
+    var t = 'input';
+    if( type ) {
+        t = 'output';
+    }
+
+    var elt = $(fid);
+    if( elt ) {
+        elt.val(t + '/' + job + '/' + file);
+    } else {
+        console.log("No field with id = " + fid);
+    }
+}
 
     

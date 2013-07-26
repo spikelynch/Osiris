@@ -2,7 +2,14 @@
 
 /* filebrowser_init(s) - bid is the id of the containing element.
    selected is a function to be called when the user selects a file. 
-   It should take two arguments - jobid and filename */
+   Three arguments are passed to this- jobid, filename and output.
+   output is a boolean indicating whether the file selected was an
+   output of the job - this is used to build workflows.
+
+   Note that bid should not contain underscores (which sucks)
+
+*/
+
 
 function filebrowser_init(bid, ctrlid, selected) {
     var elt = $('#' + bid);
@@ -63,7 +70,7 @@ function filebrowser_job(event) {
 /* filebrowser_files - write each set of files (Input / Output) */
 
 function filebrowser_files(id, data) {
-    var elt = $("#" + id);
+    var elt = $("#" + id + "_files");
     filebrowser_filelist(elt, id, 'Inputs', data.inputs);
     filebrowser_filelist(elt, id, 'Outputs', data.outputs);
     elt.children('.file').click(filebrowser_select);
@@ -72,14 +79,21 @@ function filebrowser_files(id, data) {
 
 /* filebrowser_filelist - write a list of files */
 
+/* A bit of a hack here - output files get an extra class, 'output',
+   because that's simpler than storing a jquery data against each file - 
+   the '.' in filenames stuffs up jQuery selectors */
+
 function filebrowser_filelist(elt, id, header, files) {
     elt.append('<div class="fhead">' + header + '</div>');
     for ( var p in files ) {
         for ( var i in files[p] ) {
             var file = files[p][i];
             var fileid = id + '_' + file;
-            elt.append('<div class="file" id="' + fileid + '">' + p + '=' + file + '</div>');
-            
+            var cl = "file";
+            if( header == 'Outputs' ) {
+                cl = cl + ' output';
+            }
+            elt.append('<div class="' + cl + '" id="' + fileid + '">' + p + '=' + file + '</div>');
         }
     }
 }
@@ -92,15 +106,19 @@ function filebrowser_select(event) {
     var fileid = $(this).attr('id');
     var targetid = event.target.id;
     var browser = $(this).parents('.filebrowser');
-    
+
     browser.find('.file').removeClass('selected');
     $(this).addClass('selected');
-    var selected = browser.data('selected');
-    if( selected ) {
-        // browserID_files_filename
+    var callback = browser.data('selected');
+    if( callback ) {
+        var output = false;
+
+        if( $(this).hasClass('output') ) {
+            output = true;
+        }
+
         var fields = fileid.split('_');
-        
-        selected(fields[1], fields[2]);
+        callback(fields[1], fields[2], output);
     }
 }
 

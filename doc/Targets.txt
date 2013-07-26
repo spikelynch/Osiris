@@ -1,9 +1,40 @@
+Targets 26/7/13
+---------------
+
+File-browser-input-file    <== DONE
+
+Three column layout:
+
+nav | body of page | files
+
+
+--other issues to take care of--
+
+If a job has input files from previous jobs, they are not showing up
+in that file's directory.  Should we be copying the file?  Probably.
+
+
+--bugs--
+
+After starting a job, the job details page looks a bit empty.
+
+--features--
+
+When the output from a previous job is used, insert a link to it in
+the new job.  That way a job can potentially refer back to the entire
+sequence of commands which generated it   <= DONE
+
+
 Targets 25/7/13
 ---------------
 
-Get the file browser working again and make it embeddable
+Get the file browser working again and make it embeddable <-- DONE
 
 Add file browsing to app forms (as an alternative to upload)
+
+Issues => Repeated clicks on the Job heading don't toggle it.
+
+
 
 Add file browsing to the jobs list (as a shortcut for a user to 
 get their files)
