@@ -1,3 +1,13 @@
+Target 29/7/13
+--------------
+
+New layout.
+
+"publish" button on job view, write out metadata record to harvest
+directory
+
+
+
 Targets 26/7/13
 ---------------
 

@@ -1,52 +1,6 @@
 
-body {
-    background-color: #024;
-    padding: 2em;
-    font-family: Helvetica, Arial, sans-serif;
-}
-
-#header {
-    background-color: #ddd;
-    padding-left: 2em;
-    padding-right: 2em;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-}
-
-#login {
-    float: right;
-    font-size: 9pt;
-    font-weight: bold;
-}
-
-h1 {
-    font-size: 12pt;
-    color: #000;
-}
-
-h2 {
-    font-size: 14pt;
-    font-weight: bold;
-}
-
-#page {
-    background-color: #ddd;
-    padding-left: 2em;
-    padding-right: 2em;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-}
-
-#footer {
-    text-align: right;
-    font-size: 8pt
-}
 
 
-#sidebar {
-float: right;
-width: 175px;
-}
 
 tr.groupheader {
     font-weight: bold;

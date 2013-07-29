@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
-<title>Osiris</title>
+<title>Osiris | <% title %></title>
+<link rel="stylesheet" href="<% request.uri_base %>/css/layout.css" />
 <link rel="stylesheet" href="<% request.uri_base %>/css/style.css" />
 
 <script src="<% request.uri_base %>/javascripts/jquery-1.10.1.min.js" type="text/javascript"></script>
@@ -19,26 +20,37 @@
 </head>
 <body>
 <div id="header">
-<h1>Osiris - a web interface to Isis</h1>
+<h1>Osiris/Isis</h1>
 <div id="login">Logged in as <strong><% user %></strong> [<a href="/logout">Log out</a>]</div>
 </div>
 
-<div id="sidebar">
-<ul class="sidebar">
-<li class="sidebar"><a href="/">Home</a></li>
-<li class="sidebar"><a href="/browse">Isis commands</a></li>
-</ul>
+<div id="container">
 
+<div id="page_col" class="column">
+
+<% content %>
+
+</div>
+
+<div id="nav_col" class="column">
+<% INCLUDE layouts/nav.tt %>
 
 </div>
 
 
-<div id="page">
-<% content %>
+<div id="files_col" class="column">
+<div id="filebrowser">
+</div>
+
+</div>
+
+</div>
+
 <div id="footer">
+Osiris <% osiris_version %> - Funded by <a href="http://www.ands.org.u/">ANDS</a><br />
 Powered by <a href="http://perldancer.org/">Dancer</a> <% dancer_version %>
 </div>
-</div>
+
 
 </body>
 </html>

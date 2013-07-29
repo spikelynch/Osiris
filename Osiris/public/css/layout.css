@@ -1,0 +1,82 @@
+/* Styles for the overall page layout */
+
+/* Adapted from A List Apart: http://alistapart.com/article/holygrail */
+
+/* Left nav   : 160px full width, 20px padding
+ * Right files: 160px full width, 20px padding
+ * Center                         20px padding
+*/
+ 
+body {
+    background-color: #fff;
+    font-family: Helvetica, Arial, sans-serif;
+    min-width: 500px;      /* 2 x (LCfull + CCpad) + RC full */
+
+}
+
+
+#header {
+    background-color: #ddd;
+    padding: 10px;
+    height: 2em;
+    margin: 10px 0 10px 0;
+}
+
+h1 {
+    float: left;
+    font-size: 12pt;
+    color: #000;
+}
+
+#login {
+    float: right;
+    font-size: 9pt;
+    font-weight: bold;
+}
+
+
+
+
+#container {
+    padding-left: 160px;   /* LC fullwidth */
+    padding-right: 180px;  /* RC fullwidth + CC padd */
+}
+
+#container .column {
+    position: relative;
+    float: left;
+}
+
+#page_col {
+    padding: 10px;
+    width: 100%;
+    background-color: #ddd;
+}
+
+#nav_col {
+    width: 140px;          /* LC width */
+    padding: 10px;         /* LC padding */
+    right: 180px;          /* LC fullwidth + CC padding */
+    margin-left: -100%;
+    background-color: #999;
+}
+
+#files_col {
+    width: 140px;          /* RC width */
+    padding: 10px;         /* RC padding */
+    margin-right: -180px;  /* RC fullwidth + CC padding */
+    background-color: #999;
+}
+
+#footer {
+  clear: both;
+  background-color: #999;
+  padding: 10px;
+  font-size: 8pt;
+}
+
+/*** IE6 Fix ***/
+* html #left {
+  left: 160px;           /* RC width */
+}
+
