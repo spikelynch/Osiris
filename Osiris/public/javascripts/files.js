@@ -33,7 +33,7 @@ function filebrowser(event, bid) {
             function(jobs) {
                 for ( var jid in jobs ) {
                     var id = bid + '_' + jid;
-                    browser.append('<div class="filebrowser_job" id="' + id + '">Job ' + jid + ': ' + jobs[jid].appname + '</div>');
+                    browser.append('<div class="filebrowser_job" id="' + id + '">Job ' + jobs[jid].label + '</div>');
                     $('#' + id).click(filebrowser_job).data("jid", jid);
                 }
                 browser.data("status", "open");

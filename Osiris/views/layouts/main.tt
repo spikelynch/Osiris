@@ -9,6 +9,8 @@
 
 <script src="<% request.uri_base %>/javascripts/jquery-1.10.1.min.js" type="text/javascript"></script>
 
+<script src="<% request.uri_base %>/javascripts/nav.js" type="text/javascript"></script>
+
 <% IF javascripts %>
 <% FOR js in javascripts %>
 
@@ -20,7 +22,7 @@
 </head>
 <body>
 <div id="header">
-<h1>Osiris/Isis</h1>
+<h1>Osiris: Isis on the web</h1>
 <div id="login">Logged in as <strong><% user %></strong> [<a href="/logout">Log out</a>]</div>
 </div>
 

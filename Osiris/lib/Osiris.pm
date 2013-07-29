@@ -11,6 +11,8 @@ use Osiris::App;
 use Osiris::Job;
 use Osiris::User;
 
+
+
 =head NAME
 
 Osiris
@@ -22,7 +24,7 @@ Dancer interface to the Isis planetary imaging toolkit
 =cut
 
 
-our $VERSION = '0.1';
+our $VERSION = '0.1 Narmer';
 
 my $conf = config;
 
@@ -40,7 +42,7 @@ hook 'before' => sub {
 };
 
 get '/login' => sub {
-    template 'login', { path => vars->{requested_path} };
+    template 'login', { title => 'Log In', path => vars->{requested_path} };
 };
 
 post '/login' => sub {
@@ -60,14 +62,151 @@ get '/logout' => sub {
     redirect '/login';
 };
 
+
+###### Routes for starting jobs, looking at the job list and 
+#      accessing results
+
+# Default page: current user's job list
+
+get '/' => sub {
+    my $user = get_user();
+
+    template jobs => {
+        title => 'My jobs',
+        user => $user->{id},
+    };
+
+};
+
+
+
+# job/$id - details for a job
+
+get '/job/:id' => sub {
+    my $user = get_user();
+    
+    my $id = param('id');
+    my $jobhash = $user->jobs(reload => 1);
+    my $job = $jobhash->{$id};
+    if( ! $job ) {
+        forward '/jobs';
+    } else {
+        
+        $job->load_xml;
+        my $vars =  {
+            user => $user->{id},
+            job => $job,
+            joblist => 'true'
+        };
+        my $command = $job->command;
+        $vars->{command} = join(' ', @$command);
+        my $dir = $job->working_dir;
+        $vars->{command} =~ s/$dir//g;
+        $job->{app} = get_app(name => $job->{appname});
+        $vars->{files} = $job->files;
+        $vars->{title} = 'Job ' . $job->{id};
+        template job => $vars
+    }
+};
+
+
+# job/$id/files/$file - pass through a link to a file
+
+get '/job/:id/files/:file' => sub {
+    my $user = get_user();
+    my $id = param('id');
+    my $jobhash = $user->jobs(reload => 1);
+    my $job = $jobhash->{$id};
+    if( ! $job ) {
+        forward '/jobs';
+    } else {
+        my $file = param('file');
+        my $path = $job->working_dir(file => $file);
+        if( -f $path ) {
+            send_file($path, system_path => 1);
+        } else {
+            send_error('Not found', 404);
+        }
+    }
+};
+    
+
+get '/files' => sub {
+    my $user = get_user();
+    my $jobs = $user->jobs(reload => 1);
+
+    template files => {
+        javascripts => [ 'files' ],
+        jobs => $jobs
+    };
+};
+
+
+
+
+# Ajax handler for browsing a user's working directory.  Returns a 
+# JSON object with files broken down by input, output and other.
+
+ajax '/jobs' => sub {
+    my $user = get_user();
+    my $joblist = $user->jobs(reload => 1);
+    
+    my $jobs = {};
+
+    for my $id ( keys %$joblist ) {
+        $jobs->{$id} = {
+            id => $id,
+            appname => $joblist->{$id}->{appname},
+            label => $joblist->{$id}->label
+        }
+    }
+
+    to_json($jobs);
+};
+
+
+
+ajax '/files/:id' => sub {
+    my $user = get_user();
+    my $id = param('id');
+    my $jobhash = $user->jobs(reload => 1);
+    my $job = $jobhash->{$id};
+
+    if( ! $job ) {
+        send_error("Not found", 404);
+    } else {
+        
+        $job->load_xml;
+        $job->{app} = get_app(name => $job->{appname});
+
+        my $files = $job->files;
+
+        debug("files: ", $files);
+
+        to_json($files);
+    }
+};
+
+
+
 ###### Routes for browsing/searching apps
 #
-# /  a list of app categories and missions
 
-get '/browse' => sub {
-    my $user = get_user();
-    template 'index' => { user => $user->{id}, browse => $cats };
+get '/browse/:by' => sub {
+    my $by = param('by');
+    if( $cats->{$by} ) {
+        my $user = get_user();
+        template 'browse' => {
+            user => $user->{id}, browse => $cats->{$by}
+        };
+    } else {
+        send_error("Not found", 404);
+    }       
 };
+
+
+
+
 
 # /browse -  a list of applications for a category or mission
 
@@ -129,147 +268,14 @@ get '/app/:name' => sub {
 
 
 
-#
-#
-#get '/apps/search/:str' => sub {
-#	template 'search';
-#};
-#
-#
-#
-#
-
-
-
-
-###### Routes for starting jobs, looking at the job list and 
-#      accessing results
-
-# Default page: current user's job list
-
-get '/' => sub {
+get '/search/:str' => sub {
     my $user = get_user();
-    
-    my $jobhash = $user->jobs(reload => 1);
+    my $search = param('str');
 
-    my $jobs = [];
-
-    if( $jobhash ) {
-        for my $id ( sort keys %$jobhash ) {
-            push @$jobs, $jobhash->{$id};
-        }
-    }
-
-    template jobs => {
-        user => $user->{id},
-        jobs => $jobs
-    };
+    send_error('Not found', 404);
 
 };
 
-
-
-# job/$id - details for a job
-
-get '/job/:id' => sub {
-    my $user = get_user();
-    
-    my $id = param('id');
-    my $jobhash = $user->jobs(reload => 1);
-    my $job = $jobhash->{$id};
-    if( ! $job ) {
-        forward '/jobs';
-    } else {
-        
-        $job->load_xml;
-        my $vars =  {
-            user => $user->{id},
-            job => $job,
-        };
-        my $command = $job->command;
-        $vars->{command} = join(' ', @$command);
-        my $dir = $job->working_dir;
-        $vars->{command} =~ s/$dir//g;
-        $job->{app} = get_app(name => $job->{appname});
-        $vars->{files} = $job->files;
-        template job => $vars
-    }
-};
-
-
-# job/$id/files/$file - pass through a link to a file
-
-get '/job/:id/files/:file' => sub {
-    my $user = get_user();
-    my $id = param('id');
-    my $jobhash = $user->jobs(reload => 1);
-    my $job = $jobhash->{$id};
-    if( ! $job ) {
-        forward '/jobs';
-    } else {
-        my $file = param('file');
-        my $path = $job->working_dir(file => $file);
-        if( -f $path ) {
-            send_file($path, system_path => 1);
-        } else {
-            send_error('Not found', 404);
-        }
-    }
-};
-    
-
-get '/files' => sub {
-    my $user = get_user();
-    my $jobs = $user->jobs(reload => 1);
-
-    template files => {
-        javascripts => [ 'files' ],
-        jobs => $jobs
-    };
-};
-
-
-
-
-# Ajax handler for browsing a user's working directory.  Returns a 
-# JSON object with files broken down by input, output and other.
-
-ajax '/jobs' => sub {
-    my $user = get_user();
-    my $joblist = $user->jobs(reload => 1);
-    
-    my $jobs = {};
-
-    for my $id ( keys %$joblist ) {
-        $jobs->{$id} = { appname => $joblist->{$id}->{appname} }
-    };
-
-
-    to_json($jobs);
-};
-
-
-
-ajax '/files/:id' => sub {
-    my $user = get_user();
-    my $id = param('id');
-    my $jobhash = $user->jobs(reload => 1);
-    my $job = $jobhash->{$id};
-
-    if( ! $job ) {
-        send_error("Not found", 404);
-    } else {
-        
-        $job->load_xml;
-        $job->{app} = get_app(name => $job->{appname});
-
-        my $files = $job->files;
-
-        debug("files: ", $files);
-
-        to_json($files);
-    }
-};
 
 
 
@@ -390,6 +396,8 @@ sub get_user {
         basedir => $conf->{workingdir}
         );
 }
+
+
 
 
 sub get_app {

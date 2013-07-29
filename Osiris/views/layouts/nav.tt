@@ -1,2 +1,27 @@
 <!-- Navigation panel -->
 
+<ul>
+    <li id="myjobs"><span class="navmenu">My Jobs</span>
+    </li>
+    <li>Programs
+        <ul>
+            <li><a href="/browse/categories">By Category</a>
+                 </li>
+                
+            <li><a href="/browse/missions">By Mission</a>
+                 </li>
+        </ul>
+    </li>
+</ul>
+
+<form id="searchform" name="search" method="GET" action="/search">
+<input id="searchtext" type="text" name="search" size="10" value="" />
+<input id="searchbtn" type="submit" value="Search" />
+</form>
+
+<script>
+$('#myjobs span.navmenu').click(navtogglejobs);
+if( <% joblist %> ) {
+    $('#myjobs span.navmenu').click();
+}
+</script>

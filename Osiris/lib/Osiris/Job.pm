@@ -366,11 +366,16 @@ sub summary {
         from => $self->{from}, 
         to => $self->{to}
         };
-    return $s;
-
-                 
+    return $s;      
 }
 
+
+
+sub label {
+    my ( $self ) = @_;
+    
+    return $self->{id} . ': ' . $self->{appname};
+}
 
 
 

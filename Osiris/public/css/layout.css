@@ -80,3 +80,41 @@ h1 {
   left: 160px;           /* RC width */
 }
 
+
+/* Nav list styles here too */
+
+#nav_col ul {
+    list-style-type: none;
+    padding: 0; 
+    margin-left: 0px
+}
+
+
+
+#nav_col li {
+    list-style-type: none;
+    text-indent: 0;
+    padding:0;
+    margin-left: 5px;
+    font-weight: bold;
+    font-size: 9pt;
+}
+
+#nav_col a {
+    text-decoration: none;
+    color: #024;
+}
+
+#nav_col a:visited {
+    color: #024;
+}
+
+#nav_col a:hover {
+    background-color: #ddd;
+}
+
+#nav_col span {
+   cursor: pointer;
+} 
+
+/* Notes: jobs are classed by job status */
