@@ -1,16 +1,22 @@
-<h2><% browseby.ucfirst %>: <% class %></h2>
-
-<table id="applist">
-
-<% FOREACH app IN apps.keys.sort %>
-
-<tr>
-	<td class="appname"><a href="/app/<% app %>"><% app %></a></td>
-	<td class="appdesc"><% apps.$app %></td>
-</tr>
-
+<table id="columns">
+<tbody>
+<tr><td id="categories">
+<h2>Categories</h2>
+<ul>
+<% FOREACH cat IN browse.category.keys.sort %>
+	<li><a href="browse/category/<% cat %>"><% cat %></a></li> 
 <% END %>
-
+</ul>    
+</td>
+<td id="missions">
+<div id="missions">
+<h2>Missions</h2>
+<ul>
+<% FOREACH mission IN browse.mission.keys.sort %>
+	<li><a href="browse/mission/<% mission %>"><% mission %></a></li> 
+<% END %>
+</ul>
+</td>
+</tr>
+</tbody>
 </table>
-
-<p><a href="/">Back</a></p>

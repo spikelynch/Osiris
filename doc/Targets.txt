@@ -1,3 +1,22 @@
+Target 31/7/13
+--------------
+
+This morning: get CoataGlue and Damyata installed on Paul's vms, along
+with Perl dependencies
+
+This afternoon: make sure Osiris guards are working, tidy up the
+interface for a demo tomorrow.
+
+Also prepare a few notes for eresearch committee on overall ANDS
+progress.
+
+Target 30/7/13
+--------------
+
+Get the right menu working without javascript
+
+
+
 Target 29/7/13
 --------------
 

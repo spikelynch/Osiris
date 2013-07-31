@@ -32,13 +32,29 @@ my ( $toc, $cats ) = load_toc(%$conf);
 
 my $fakeuser = $conf->{fakeuser};
 
-# login stuff snarfed from Dancer::Cookbook and hit with a hammer
+# The before hook: if there's no session, redirect the user to the
+# login page.
+
+# If there is a user, get the Osiris::User object and load the joblist
+# because these are used in every route.
+
+my ( $user, $jobshash, $jobs );
 
 hook 'before' => sub {
     if (! session('user') && request->path_info !~ m{^/login}) {
         var requested_path => request->path_info;
         request->path_info('/login');
-    }
+    } else {
+        $user = Osiris::User->new(
+            id => session('user'),
+            basedir => $conf->{workingdir}
+        );
+        $jobshash = $user->jobs(reload => 1);
+        $jobs = [];
+        for my $id ( sort keys %$jobshash ) {
+            push $jobs, $jobshash->{$id};
+        }
+    }   
 };
 
 get '/login' => sub {
@@ -69,10 +85,11 @@ get '/logout' => sub {
 # Default page: current user's job list
 
 get '/' => sub {
-    my $user = get_user();
+#    my $user = get_user();
 
     template jobs => {
         title => 'My jobs',
+        jobs => $jobs,
         user => $user->{id},
     };
 
@@ -83,11 +100,11 @@ get '/' => sub {
 # job/$id - details for a job
 
 get '/job/:id' => sub {
-    my $user = get_user();
+#    my $user = get_user();
     
     my $id = param('id');
-    my $jobhash = $user->jobs(reload => 1);
-    my $job = $jobhash->{$id};
+#    my $jobhash = $user->jobs(reload => 1);
+    my $job = $jobshash->{$id};
     if( ! $job ) {
         forward '/jobs';
     } else {
@@ -96,7 +113,7 @@ get '/job/:id' => sub {
         my $vars =  {
             user => $user->{id},
             job => $job,
-            joblist => 'true'
+            jobs => $jobs
         };
         my $command = $job->command;
         $vars->{command} = join(' ', @$command);
@@ -113,10 +130,10 @@ get '/job/:id' => sub {
 # job/$id/files/$file - pass through a link to a file
 
 get '/job/:id/files/:file' => sub {
-    my $user = get_user();
+
     my $id = param('id');
-    my $jobhash = $user->jobs(reload => 1);
-    my $job = $jobhash->{$id};
+
+    my $job = $jobshash->{$id};
     if( ! $job ) {
         forward '/jobs';
     } else {
@@ -132,10 +149,9 @@ get '/job/:id/files/:file' => sub {
     
 
 get '/files' => sub {
-    my $user = get_user();
-    my $jobs = $user->jobs(reload => 1);
 
     template files => {
+        user => $user,
         javascripts => [ 'files' ],
         jobs => $jobs
     };
@@ -148,29 +164,27 @@ get '/files' => sub {
 # JSON object with files broken down by input, output and other.
 
 ajax '/jobs' => sub {
-    my $user = get_user();
-    my $joblist = $user->jobs(reload => 1);
     
-    my $jobs = {};
+    my $ajobs = {};
 
-    for my $id ( keys %$joblist ) {
-        $jobs->{$id} = {
+    for my $id ( keys %$jobshash ) {
+        $ajobs->{$id} = {
             id => $id,
-            appname => $joblist->{$id}->{appname},
-            label => $joblist->{$id}->label
+            appname => $jobshash->{$id}->{appname},
+            label => $jobshash->{$id}->label
         }
     }
 
-    to_json($jobs);
+    to_json($ajobs);
 };
 
 
 
 ajax '/files/:id' => sub {
-    my $user = get_user();
+#    my $user = get_user();
     my $id = param('id');
-    my $jobhash = $user->jobs(reload => 1);
-    my $job = $jobhash->{$id};
+#    my $jobhash = $user->jobs(reload => 1);
+    my $job = $jobs->{$id};
 
     if( ! $job ) {
         send_error("Not found", 404);
@@ -195,7 +209,7 @@ ajax '/files/:id' => sub {
 get '/browse/:by' => sub {
     my $by = param('by');
     if( $cats->{$by} ) {
-        my $user = get_user();
+#        my $user = get_user();
         template 'browse' => {
             user => $user->{id}, browse => $cats->{$by}
         };
@@ -211,7 +225,7 @@ get '/browse/:by' => sub {
 # /browse -  a list of applications for a category or mission
 
 get '/browse/:by/:class' => sub {
-    my $user = get_user();
+#    my $user = get_user();
 	my $by = param('by');
 	my $class = param('class');
 	if( my $apps = $cats->{$by}{$class} ) {
@@ -234,7 +248,7 @@ get '/browse/:by/:class' => sub {
 
 
 get '/app/:name' => sub {
-    my $user = get_user();
+#    my $user = get_user();
 	my $name = param('name');
 	if( $toc->{$name} ) {
 		my $app = Osiris::App->new(
@@ -269,7 +283,7 @@ get '/app/:name' => sub {
 
 
 get '/search/:str' => sub {
-    my $user = get_user();
+#    my $user = get_user();
     my $search = param('str');
 
     send_error('Not found', 404);
@@ -282,7 +296,7 @@ get '/search/:str' => sub {
 # post /app - start a job.
 
 post '/app/:name' => sub {
-    my $user = get_user();
+#    my $user = get_user();
 	my $name = param('name');
 
 	if( !$toc->{$name} ) {
@@ -391,10 +405,6 @@ sub input_files {
 
 
 sub get_user {
-    return Osiris::User->new(
-        id => session->{user},
-        basedir => $conf->{workingdir}
-        );
 }
 
 

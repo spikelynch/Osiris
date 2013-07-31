@@ -1,0 +1,14 @@
+<h2><% browseby.ucfirst %>: <% class %></h2>
+
+<table id="applist">
+
+<% FOREACH app IN apps.keys.sort %>
+
+<tr>
+	<td class="appname"><a href="/app/<% app %>"><% app %></a></td>
+	<td class="appdesc"><% apps.$app %></td>
+</tr>
+
+<% END %>
+
+</table>

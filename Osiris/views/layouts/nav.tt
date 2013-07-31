@@ -2,13 +2,20 @@
 
 <ul>
     <li id="myjobs"><span class="navmenu">My Jobs</span>
+        <% IF jobs.size > 0 %>
+            <ul>
+            <% FOR job IN jobs %>
+                <li><a title="<% job.description %>" href="/job/<% job.id %>"><% job.id %>: <% job.appname %></a></li>
+            <% END %>
+            </ul>
+        <% END %>
     </li>
     <li>Programs
         <ul>
-            <li><a href="/browse/categories">By Category</a>
+            <li><a href="/browse/category">By Category</a>
                  </li>
                 
-            <li><a href="/browse/missions">By Mission</a>
+            <li><a href="/browse/mission">By Mission</a>
                  </li>
         </ul>
     </li>
@@ -19,9 +26,4 @@
 <input id="searchbtn" type="submit" value="Search" />
 </form>
 
-<script>
-$('#myjobs span.navmenu').click(navtogglejobs);
-if( <% joblist %> ) {
-    $('#myjobs span.navmenu').click();
-}
 </script>
