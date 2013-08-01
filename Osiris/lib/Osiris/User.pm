@@ -190,9 +190,9 @@ sub _load_joblist {
     my ( $self ) = @_;
 
     my $joblistfile = $self->_joblistfile;
+
+    $self->{log}->warn("_load_joblist: " . join(' ', caller));
  
-    $self->{log}->debug("Reading joblist for user $self->{id}");
-   
     $self->{jobs} = {};
    
     if( -f $joblistfile ) {

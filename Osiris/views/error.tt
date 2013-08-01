@@ -1,4 +1,4 @@
 
 <h2>Damnit!</h2>
 
-<p>Error: "<% error %>"</p>
+<p><% error %></p>

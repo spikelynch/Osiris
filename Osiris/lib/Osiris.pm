@@ -85,12 +85,11 @@ get '/logout' => sub {
 # Default page: current user's job list
 
 get '/' => sub {
-#    my $user = get_user();
 
     template jobs => {
         title => 'My jobs',
-        jobs => $jobs,
         user => $user->{id},
+        jobs => $jobs,
     };
 
 };
@@ -100,17 +99,17 @@ get '/' => sub {
 # job/$id - details for a job
 
 get '/job/:id' => sub {
-#    my $user = get_user();
     
     my $id = param('id');
-#    my $jobhash = $user->jobs(reload => 1);
     my $job = $jobshash->{$id};
+
     if( ! $job ) {
         forward '/jobs';
     } else {
         
         $job->load_xml;
         my $vars =  {
+            title => "Job $id - $job->{appname}", 
             user => $user->{id},
             job => $job,
             jobs => $jobs
@@ -207,14 +206,18 @@ ajax '/files/:id' => sub {
 #
 
 get '/browse/:by' => sub {
+
     my $by = param('by');
     if( $cats->{$by} ) {
-#        my $user = get_user();
         template 'browse' => {
-            user => $user->{id}, browse => $cats->{$by}
+            title => "Apps by $by",
+            user => $user->{id},
+            jobs => $jobs,
+            browseby => $by,
+            browse => $cats->{$by}
         };
     } else {
-        send_error("Not found", 404);
+        forward '/';
     }       
 };
 
@@ -225,31 +228,33 @@ get '/browse/:by' => sub {
 # /browse -  a list of applications for a category or mission
 
 get '/browse/:by/:class' => sub {
-#    my $user = get_user();
+
 	my $by = param('by');
 	my $class = param('class');
 	if( my $apps = $cats->{$by}{$class} ) {
-		template 'browse' => {
+		template 'browse_apps' => {
+            title => "Apps by $by / $class",
             user => $user->{id}, 
+            jobs => $jobs,
 			browseby => $by,
 			class => $class,
 			apps => $apps
 		};
 	} else {
-		template 'index' => {
-            user => $user->{id}, 
-            toc => $cats
-        }
+        forward "/browse/$by";
 	}
 };
 
 
 # /app - the web form for an app
+# URLs can be of the form app/[mission or category]/app
+#                      or app/$app
 
 
-get '/app/:name' => sub {
-#    my $user = get_user();
-	my $name = param('name');
+
+get '/app/:app' => sub {
+    
+	my $name = param('app');
 	if( $toc->{$name} ) {
 		my $app = Osiris::App->new(
 			dir => $conf->{isisdir},
@@ -258,36 +263,59 @@ get '/app/:name' => sub {
 		);
 
         my @p = $app->params;
-        my $guards = $app->guards;
-        for my $p ( keys %$guards ) {
-            $guards->{$p} = encode_json($guards->{$p});
+        
+        if( !@p ) {
+            template 'error' => {
+                title => 'Error',
+                user => $user->{id},
+                jobs => $jobs,
+                error => "The app '$name' can't be operated via the web."
+            };
+        } else {
+
+            my $guards = $app->guards;
+            for my $p ( keys %$guards ) {
+                $guards->{$p} = encode_json($guards->{$p});
+            }
+            
+            #my $debugmsg = "Guards: \n" . Dumper({guards => $guards});
+            
+            
+            template 'app' => {
+                title => $name,
+                user => $user->{id},
+                jobs => $jobs,
+                javascripts => [ 'app', 'guards', 'files' ],
+                app => $app->name,
+                brief => $app->brief,
+                form => $app->form,
+                guards => $guards,
+                description => $app->description,
+                #           debugmsg => $debugmsg,
+            };
         }
-
-        my $debugmsg = "Guards: \n" . Dumper({guards => $guards});
-
-		template 'app' => {
-            user => $user->{id}, 
-            javascripts => [ 'app', 'guards', 'files' ],
-			app => $app->name,
-			brief => $app->brief,
-			form => $app->form,
-            guards => $guards,
-			description => $app->description,
-            debugmsg => $debugmsg,
-		};
-	} else {
-		send_error("Not found", 404);
-	}
+    } else {
+        forward('/browse');
+    }
 };
 
 
 
-get '/search/:str' => sub {
-#    my $user = get_user();
-    my $search = param('str');
+get '/search' => sub {
 
-    send_error('Not found', 404);
+    my $search = param('q');
 
+    if( $search ) {
+        my $results = search_toc(search => $search);
+        template 'search' => {
+            user => $user,
+            jobs => $jobs,
+            search => $search,
+            results => $results
+        };
+    } else {
+        forward('/browse');
+    }
 };
 
 
@@ -327,21 +355,20 @@ post '/app/:name' => sub {
         }
     }
 
-    debug('params ', $params);
-
-    $job->add_parameters(parameters => $params);
+    if( !$job->add_parameters(parameters => $params) ) {
+        # invalid parameters: 
+    }
 
     if( $user->write_job(job => $job) ) {
-        
-        template 'job' => {
-            user => $user->{id},
-            job => $job 
-        }
+        debug("Forwarding to /job/$job->{id}");
+        forward "/job/$job->{id}", {}, { method => 'GET' };
     } else {
         error("Couldn't write job");
         template 'error' => {
-            user => $user->{id}, 
-            error => "Couldn't create Osiris::Job"
+            title => 'Job error',
+            user => $user->{id},
+            jobs => $jobs,
+            error => "Couldn't start job."
         };
     }
         
@@ -366,6 +393,9 @@ sub input_files {
     for my $u ( $app->input_params ) {
         my $existing_file = param($u . '_alt');
         my $upload = upload($u);
+        if( !$upload && !$existing_file ) {
+            return undef;
+        }
         if( $existing_file && !$upload ) {
             debug("$u: using existing file $existing_file");
             my ( $type, $job, $file ) = split('/', $existing_file);
@@ -400,12 +430,6 @@ sub input_files {
 
 
 
-
-
-
-
-sub get_user {
-}
 
 
 
@@ -466,7 +490,44 @@ sub load_toc {
 		}
 		$apps->{$app} = $desc;
 	}
+
 	return ( $apps, $browse );
+}
+
+
+# search the table of contents.  Returns a list of results as
+# { app => $app, description => $desc } hashes. Alphabetical order.
+
+sub search_toc {
+    my %params = @_;
+    
+    my $search = $params{search};
+    my $results = {};
+
+    my @toks = split(/ /, $search);
+    my $re = '(' . join('|', @toks) . ')';
+    $re = qr/$re/i;
+
+    for my $app ( keys %$toc ) {
+        if( $app =~ $re || $toc->{$app} =~ $re ) {
+            $results->{$app} = 1;
+        }
+    }
+
+    my $r = [];
+
+    for my $app ( sort keys %$results ) {
+        push @$r, {
+            app => $app,
+            description => $toc->{$app}
+        }; 
+    }
+    if( @$r ) {
+        return $r;
+    } else {
+        return undef;
+    }
+
 }
 
 

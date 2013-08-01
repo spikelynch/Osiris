@@ -1,7 +1,8 @@
 // Guards code
 
-// bind_guards(guards) - takes an array of guards settings by parameter
-// name and bind them to the form fields' onChange event
+// bind_guards(param, guards)
+
+// bind a hash of guard settings to a single form field.
 
 function bind_guards(param, guards) {
     var id = "#field_" + param
@@ -9,9 +10,6 @@ function bind_guards(param, guards) {
     $(id).data("guards", guards);
     $(id).focusout(function(e) { apply_guards(this)});
     $(id).change(function(e) { apply_guards(this)});
-    $('#isisapp').submit(function(event) {
-        return apply_all_guards(this);
-    } );
 }
 
 // shortcut to jquery for an input element by param name
@@ -31,8 +29,16 @@ function guard_event(event) {
 
 function apply_all_guards(form) {
     var valid = true;
+    console.log(">>> applying all guards");
     $('input').each(function() {
-        if( !apply_guards(this.name) ) {
+        if( this.name.substr(-4) == '_alt' ) {
+            console.log("Skipping " + this.name);
+            return;
+        } else {
+            console.log("Applying guards to " + this.name); 
+        }
+        if( !apply_guards(this) ) {
+            console.log("...failed");
             valid = false;
         }
     });
@@ -47,11 +53,13 @@ function apply_guards(elt) {
     var g = $(elt).data("guards");
 
     if( !g ) {
+        console.log("No guard");
         return true;
     }
 
     var error = run_guards(g, val);
 
+    console.log("Error msg " + error);
     if( error != '' ) {
         show_error(elt, error);
         return false;

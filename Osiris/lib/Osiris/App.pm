@@ -127,8 +127,12 @@ sub params {
 	if( !$self->{api} ) {
 		$self->parse_api;
 	}
-	
-	return @{$self->{param_fields}};
+
+	if( $self->{param_fields} ) {
+        return @{$self->{param_fields}};
+    } else {
+        return ();
+    }
 }
 
 

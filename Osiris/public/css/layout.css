@@ -50,7 +50,7 @@ h1 {
 #page_col {
     padding: 10px;
     width: 100%;
-    background-color: #ddd;
+    background-color: #fff;
 }
 
 #nav_col {
@@ -58,14 +58,13 @@ h1 {
     padding: 10px;         /* LC padding */
     right: 180px;          /* LC fullwidth + CC padding */
     margin-left: -100%;
-    background-color: #999;
+    background-color: #ddd;
 }
 
 #files_col {
     width: 140px;          /* RC width */
     padding: 10px;         /* RC padding */
     margin-right: -180px;  /* RC fullwidth + CC padding */
-    background-color: #999;
 }
 
 #footer {

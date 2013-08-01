@@ -1,3 +1,34 @@
+Target 1/8/13
+-------------
+
+Stuff that needs fixing:
+
+* Fix the input file browser.
+
+ - it's not loading jobs.
+
+* Bug: showing a newly-created job via forward() is broken.  <=FIXED
+
+
+* Job list should have app name and live links to input and output 
+  files
+
+* tidy up style sheets <= ENOUGH
+
+* warning when navving away from an app form 
+
+* Metadata flag for 'share this' which opens up a web service to 
+  fetch the datasets
+
+Deferred: the nav menu expanding into categories/missions?
+
+Survey of apps to find out which ones are unsuited for the 
+web forms
+
+Make app names in commands be links to that app's form (with default
+values?)
+
+
 Target 31/7/13
 --------------
 

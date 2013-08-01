@@ -72,6 +72,14 @@ setup_help_transitions();
 bind_guards("<% p %>", <% guards.$p %>);
 <% END %>
 
+$('#isisapp').submit(function(event) {
+    event.preventDefault();
+    apply_all_guards(this);
+    return false;
+} );
+
+
+
 </script>
 
 
@@ -105,7 +113,7 @@ bind_guards("<% p %>", <% guards.$p %>);
 
 
 <% BLOCK input_file_field %>
-	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" /><br />
+	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" />
     <input type="hidden" id="field_<% param.name %>_alt" name="<% param.name %>_alt" value="" />
 or <span class="browseropen" id="browserctrl_<% param.name %>">use a file from a previous job</span>
     <div id="browser<% param.name %>"></div>

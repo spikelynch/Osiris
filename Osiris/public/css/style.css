@@ -40,7 +40,7 @@ input {
 
 
 input.error_highlight {
-    background-color: #fd8;
+    background-color: #fec;
     border: 1px solid red;
 }
 
