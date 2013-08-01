@@ -5,7 +5,13 @@ Stuff that needs fixing:
 
 * Fix the input file browser.
 
- - it's not loading jobs.
+ - it's not loading jobs.  <= DONE
+
+BUT now that guards are working, it's not recognising FROM_alt as a
+valid input.  Guards on files need a 'type' value that lets the
+code in guards.js know to check the _alt field.
+
+
 
 * Bug: showing a newly-created job via forward() is broken.  <=FIXED
 

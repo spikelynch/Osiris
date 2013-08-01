@@ -180,10 +180,9 @@ ajax '/jobs' => sub {
 
 
 ajax '/files/:id' => sub {
-#    my $user = get_user();
+
     my $id = param('id');
-#    my $jobhash = $user->jobs(reload => 1);
-    my $job = $jobs->{$id};
+    my $job = $jobshash->{$id};
 
     if( ! $job ) {
         send_error("Not found", 404);
@@ -193,8 +192,6 @@ ajax '/files/:id' => sub {
         $job->{app} = get_app(name => $job->{appname});
 
         my $files = $job->files;
-
-        debug("files: ", $files);
 
         to_json($files);
     }
