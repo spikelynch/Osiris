@@ -83,9 +83,15 @@ ok(copy($INPUT_FILE, $to_file), "Copied $INPUT_FILE to $to_file") || do {
     die("Bailing out");
 };
 
-$params{FROM} = $to_file;
+$params{FROM} = $INPUT_FILENAME;
 
-ok($job->add_parameters(parameters => \%params), "Added parameters");
+if( ! ok($job->add_parameters(parameters => \%params), "Added parameters") ) {
+    diag("Parameter errors: ");
+    for my $p ( keys %{$job->{errors}} ) {
+        diag("$p: $job->{errors}{$p}");
+    }
+    die("Bailing out");
+}
 
 ok($user->write_job(job => $job), "Wrote job");
 

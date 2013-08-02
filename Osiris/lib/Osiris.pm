@@ -413,7 +413,8 @@ sub input_files {
                 };
             } else {
                 debug("Copied to $to_file");
-                $p->{$u} = $to_file;
+                debug("Setting input parameter as $filename");
+                $p->{$u} = $filename;
             }
         }
     }

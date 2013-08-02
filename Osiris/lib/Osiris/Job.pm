@@ -40,10 +40,25 @@ NOTE: in this class, 'app' refers to an Osiris::App object, and
 'appname' refers to the object's name (the actual command line program's
 name.  When passing back a summary for the job, 'appname' is called 'app'.
 
-Terminology for file uploads:
+All filenames are now relative to the working directory for this job.
+This includes filenames used from previous jobs, which will have relative
+paths like '../$OLD_JOB_ID/$FILENAME'
 
-FILE     = the full path to the actual file
-FILENAME = the filename (minus full path)  
+
+=head METADATA
+
+Each job has the following metadata fields:
+
+    id
+    status
+    app
+    user
+    from 
+    to
+    created
+    started
+    finished
+    harvest
 
 =cut
 
@@ -154,7 +169,9 @@ sub file_exists {
     my ( $self, %params ) = @_;
 
     my $f = $self->working_dir(%params);
-
+    
+    $self->{log}->debug("Testing file $f");
+    
     if( -f $f ) {
         return 1;
     } else {
@@ -208,8 +225,15 @@ sub write {
 <?xml version="1.0" encoding="UTF-8"?>
 <job app="$self->{app}{app}">
     <metadata>
-    <created>$self->{created}</created>
+EOXML
+
+    for my $mf ( qw(id app user status created started finished to from harvest) ) {
+        $self->{xml} .= "<$mf>$self->{$mf}</$mf>\n";
+    }
+
+    $self->{xml} .= <<EOXML;
     </metadata>
+
     <parameters>
 EOXML
     for my $parameter ( @$parameters ) {
@@ -289,7 +313,7 @@ sub add_parameters {
 
     $self->{parameters} = {};
 
-    my $errors = {};
+    $self->{errors} = {};
 
     for my $p ( $self->{app}->params  ) {
         $self->{parameters}{$p} = $phash->{$p};
@@ -306,8 +330,7 @@ sub add_parameters {
         
         if( $app_p->{field_type} eq 'input_file_field' ) {
             if( !$self->file_exists(file => $phash->{$p}) ) {
-                $errors->{$p} = "File $p: $phash->{$p} not found";
-                $self->{log}->error($errors->{$p});
+                $self->{errors}{$p} = "File $p: $phash->{$p} not found";
             }
         }
 
@@ -325,7 +348,7 @@ sub add_parameters {
     } 
             
 
-    if( keys %$errors ) {
+    if( keys %{$self->{errors}} ) {
         return undef;
     }
     return $self->{parameters};
@@ -349,7 +372,10 @@ sub timestamp {
 =item summary 
 
 Returns a list of ( id, created, status, app, from, to ) for this job.
-These are the fields stored in the jobs.txt file
+These are the fields stored in the joblist file.  They also get
+written as a metadata header into the job's file.
+
+TODO: parent and child jobs?
 
 =cut
 
@@ -532,16 +558,15 @@ sub files {
     my $files = $self->_read_dir;
 
     for my $param ( $self->{app}->input_params ) {
-        my $path = $self->{parameters}{$param};
-        if( $path =~ /\/([^\/]+)$/ ) {
-            my $ifile = $1;
-            $self->{log}->debug("Matching input file ($param) $ifile");
-            if( $files->{$ifile} ) {
-                $self->{log}->debug("Matched $ifile");
-                push @{$f->{inputs}{$param}}, $ifile;
+        my $ifile = $self->{parameters}{$param};
+        $self->{log}->debug("Matching input file ($param) $ifile");
+        if( $files->{$ifile} ) {
+            $self->{log}->debug("Matched $ifile");
+            push @{$f->{inputs}{$param}}, $ifile;
                 
-                delete $files->{$ifile};
-            }
+            delete $files->{$ifile};
+        } else {
+            $self->{log}->warn("Input param $param matched no files");
         }
     }
 

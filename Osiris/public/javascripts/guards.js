@@ -56,6 +56,19 @@ function apply_guards(elt) {
         console.log("No guard");
         return true;
     }
+    
+    // use the alt filebrowser value if it is set
+    
+    if( g.input_file ) {
+        var pid = elt.id;
+        var alt = $('#' + pid + '_alt');
+        if( alt ) {
+            if( alt.val() ) {
+                val = alt.val()l
+                console.log("using _alt value");
+            }
+        }
+    }
 
     var error = run_guards(g, val);
 

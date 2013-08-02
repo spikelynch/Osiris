@@ -1,5 +1,4 @@
-Target 1/8/13
--------------
+Targets 2/8/13
 
 Stuff that needs fixing:
 
@@ -9,7 +8,24 @@ Stuff that needs fixing:
 
 BUT now that guards are working, it's not recognising FROM_alt as a
 valid input.  Guards on files need a 'type' value that lets the
-code in guards.js know to check the _alt field.
+code in guards.js know to check the _alt field.   <== DONE
+
+* Make sure all metadata is working (job create, start and end timestamps,
+  shareability)
+
+* Make the filenames look nice (and standardised with filebrowser) in the 
+  job list.  Maybe a distinctive style: 
+    - input files
+    - output filenames (ghosted, before a job has finished)
+    - output files (once finished)
+
+* remove _ANON_ heading from job page - this is the problem
+  with counting files in a parameter
+
+
+Target 1/8/13
+-------------
+
 
 
 
@@ -22,9 +38,6 @@ code in guards.js know to check the _alt field.
 * tidy up style sheets <= ENOUGH
 
 * warning when navving away from an app form 
-
-* Metadata flag for 'share this' which opens up a web service to 
-  fetch the datasets
 
 Deferred: the nav menu expanding into categories/missions?
 

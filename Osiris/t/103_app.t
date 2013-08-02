@@ -25,6 +25,8 @@ my $napps = scalar(@appfiles) - 2;
 
 plan tests => $napps * 4;
 
+open(my $fh, ">output.txt") || die;
+
 for my $appfile ( @appfiles ) {
 	next unless $appfile =~ /^([a-zA-Z0-2]+)\.xml$/;
 	my $appname = $1;
@@ -49,12 +51,17 @@ for my $appfile ( @appfiles ) {
 
     ok($guards, "Got app's guards");
 
+    print $fh Dumper({ form => $form }) . "\n\n";
+
+
+    print $fh Dumper({ guards => $guards }) . "\n\n";
+
     my $guards_json = encode_json($guards);
 
     ok($guards_json, "Encoded guards to JSON");
 
-    print Dumper({guards => $guards});
-
 }
+
+close $fh;
 
 diag("FIXME this isn't really much of a test script.");

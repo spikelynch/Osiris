@@ -25,6 +25,36 @@ A class representing an Isis app.  Has the code for parsing the Isis
 XML specifying the App's API, for generating a job file, and
 (eventually) for generating the command line to be run.
 
+=head API
+
+Here is the structure of the form API:
+
+form = ARRAYREF of groups:
+    { 
+        name => GROUPNAME
+        parameters => ARRAYREF of parameters:
+            [
+                {
+                    name => NAME
+                    field_type => FIELD_TYPE
+                    type => DATA_TYPE
+                    description => DESCRIPTION
+                    default => DEFAULT
+                    ... (more) ...
+                },                  
+                ...
+            ]
+    }
+    ...
+
+FIELD_TYPE is one of text_field
+                     list_field
+                     boolean_field
+                     input_file_field 
+                     output_file_field
+
+TYPE is one of string/integer/double/boolean
+
 =cut
 
 
@@ -285,12 +315,6 @@ sub parse_api {
             for my $value ( keys %$ch ) {
                 for my $cp ( @{$ch->{$value}} ) {
                     $guards->{$cp}{$clusioned}{$pname}{$value} = 1;
-                    # if( ! $guards->{$cp} ) {
-                    #     $guards->{$cp} = {};
-                    # }
-                    # if( ! $guards->{$cp}{$clusioned} ) {
-                    #     $guards->{$cp}{$clusioned} = {};
-                    # }                    
                 }
             }
         }
@@ -566,7 +590,7 @@ for this as a Perl data structure.
 
 To fetch an app's guards as a hash by parameter, call $app->guards().
 
-To apply the guards to an job, call $job->assert_guards();
+To apply the guards to an job, call $job->assert_guards() (NOT YET)
 
 Conversion to JSON used to be done here but now it's left to the
 Dancer framework
@@ -588,12 +612,14 @@ sub make_guard {
         $guards->{mandatory} = 0;
     }
 
-    # only filter input files by extension, because we are automatically
-    # adding the extension to output files.
-    if( $p->{filter} && $p->{field_type} eq 'input_file_field' ) {
-        
-        $guards->{filepattern} = $self->_make_filter(filter => $p->{filter});
-        $guards->{label} = $p->{filter};
+    if( $p->{field_type} eq 'input_file_field' ) {
+        $guards->{input_file} = 1;
+        if( $p->{filter} ) {
+            $guards->{filepattern} = $self->_make_filter(
+                filter => $p->{filter}
+                );
+            $guards->{label} = $p->{filter};
+        }
     } elsif( $p->{type} =~ /integer|double|string/ ) {
         $guards->{type} = $p->{type};
         if( $p->{type} ne 'string' ) {
