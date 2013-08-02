@@ -4,7 +4,7 @@
 # via ptah) and then checks to see that the job can associate all the
 # output files. (Capturing stdout and stderr is left to the ptah tests).
 
-use Test::More tests => 26;
+use Test::More tests => 28;
 
 use strict;
 use Data::Dumper;
@@ -107,6 +107,8 @@ ok($job->set_status(status => 'processing'), "Updated job status");
 
 cmp_ok($job->{status}, 'eq', 'processing', "Job's status is 'processing'");
 
+ok($job->{started}, "Job has a 'started' timestamp: $job->{started}");
+
 my $dir = $job->working_dir;
 
 ok($dir, "Got working directory");
@@ -148,3 +150,5 @@ ok($job->set_status(status => 'done'), "Updated job status to 'done'");
 
 
 cmp_ok($job->{status}, 'eq', 'done', "Job's status is 'done'");
+
+ok($job->{started}, "Job has a 'finished' timestamp: $job->{finished}");

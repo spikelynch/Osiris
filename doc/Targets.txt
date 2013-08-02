@@ -11,7 +11,10 @@ valid input.  Guards on files need a 'type' value that lets the
 code in guards.js know to check the _alt field.   <== DONE
 
 * Make sure all metadata is working (job create, start and end timestamps,
-  shareability)
+  shareability)  <== ALMOST THERE
+
+What are we going to do with split output files from the file list?
+Use an ajax call to update the job list when they click on it!
 
 * Make the filenames look nice (and standardised with filebrowser) in the 
   job list.  Maybe a distinctive style: 

@@ -64,7 +64,9 @@ Each job has the following metadata fields:
 
 my $TIME_FORMAT = "%d %b %Y %I:%M:%S %p";
 my $PRINT_PRT = 'print.prt';
-
+my @METADATA_FIELDS = qw(
+    user id app from to status created started finished harvest
+);
 
 =head METHODS
 
@@ -91,9 +93,12 @@ sub new {
     $self->{user} = $params{user};
     $self->{status} = $params{status};
 
+	$self->{log} = Log::Log4perl->get_logger($class);
+
+
     if( my $s = $params{summary} ) {
         # job is being created from the job list
-        for ( qw(created started completed status to from) ) {
+        for ( qw(created started finished status to from app) ) {
             $self->{$_} = $s->{$_};
         }
         $self->{appname} = $s->{app};
@@ -102,9 +107,12 @@ sub new {
         # job is being created via the web app (or a test script)
         $self->{app} = $params{app};
         $self->{appname} = $params{app}->{app};
+        if( $self->{status} eq 'new' or !$self->{status} ) {
+            $self->{log}->warn("Starting new job");
+            $self->{status} = 'new';
+            $self->{created} = $self->timestamp;
+        }
 	} 
-
-	$self->{log} = Log::Log4perl->get_logger($class);
 
 
 	return $self;
@@ -188,6 +196,10 @@ Writes out this job's XML
 
 FIXME - this has to create the parameter and file lists itself
 
+WARNING: this method was originally only used to create a job.  I am
+adjusting things so that it can be used to rewrite a job (to update the
+status etc) but am a bit worried that this will break a bunch of things.
+
 =cut
 
 
@@ -216,10 +228,7 @@ sub write {
         push @$parameters, $ph;
     }
 
-    $self->{log}->debug(Dumper({paramlist => $parameters}));
-
-    $self->{created} = $self->timestamp;
-    
+    my $metadata = $self->summary;
 
     $self->{xml} =<<EOXML;
 <?xml version="1.0" encoding="UTF-8"?>
@@ -227,8 +236,12 @@ sub write {
     <metadata>
 EOXML
 
-    for my $mf ( qw(id app user status created started finished to from harvest) ) {
-        $self->{xml} .= "<$mf>$self->{$mf}</$mf>\n";
+    for my $f ( @METADATA_FIELDS ) {
+        if( $metadata->{$f} ) {
+            $self->{xml} .= "        <$f>$metadata->{$f}</$f>\n";
+        } else {
+            $self->{xml} .= "        <$f />\n";
+        }
     }
 
     $self->{xml} .= <<EOXML;
@@ -237,7 +250,7 @@ EOXML
     <parameters>
 EOXML
     for my $parameter ( @$parameters ) {
-        $self->{xml} .= "<parameter name=\"$parameter->{name}\"";
+        $self->{xml} .= "        <parameter name=\"$parameter->{name}\"";
         if( $parameter->{annotations} ) {
             for my $a ( keys %{$parameter->{annotations}} ) {
                 if( $a ne 'name' ) {
@@ -274,6 +287,13 @@ Writes this job's status to its user's job queue.  Note that this updates
 the status for this object, but refers to the job by ID when saving the
 joblist - trying to cover all bases.
 
+It also sets timestamps as follows:
+
+'processing' => sets the 'started' timestamp
+'done'       => sets the 'finished' timestamp
+
+It now rewrites the job's XML file.
+
 =cut
 
 sub set_status {
@@ -282,6 +302,17 @@ sub set_status {
     my $status = $params{status} || die( "set_status needs a status");
 
     $self->{status} = $status;
+
+    if( $status eq 'processing' ) {
+        $self->{started} = $self->timestamp;
+    } elsif( $status eq 'done' ) {
+        $self->{finished} = $self->timestamp;
+    }
+
+    if( !$self->write() ) {
+        # something went wrong, don't update job list
+        return undef;
+    }
 
     return $self->{user}->update_joblist(
         job => $self->{id},
@@ -389,6 +420,7 @@ sub summary {
         finished => $self->{finished},
         status => $self->{status},
         app => $self->{appname},
+        user => $self->{user}{id},
         from => $self->{from}, 
         to => $self->{to}
         };
@@ -453,7 +485,7 @@ sub load_xml {
     return undef unless $xmlfile;
 
     $self->{parameters} = {};
-    $self->{metadata} = {};
+    my $metadata;
 
     my $tw = XML::Twig->new(
         twig_handlers => {
@@ -463,7 +495,7 @@ sub load_xml {
             },
             metadata => sub {
                 for my $child ( $_->children ) {
-                     $self->{metadata}{$child->tag} = $child->text;
+                     $metadata->{$child->tag} = $child->text;
                 }
             }
         }
@@ -474,6 +506,16 @@ sub load_xml {
     if( $@ ) {
         $self->{log}->error("Parse $xmlfile failed $@");
         return undef;
+    }
+    
+    for my $f ( keys %$metadata ) {
+        if( $f eq 'app' ) {
+            $self->{appname} = $metadata->{$f};
+        } elsif( $f eq 'user' ) {
+            $self->{userid} = $metadata->{$f}
+        } else {
+            $self->{$f} = $metadata->{$f};
+        }
     }
 
     return 1;
