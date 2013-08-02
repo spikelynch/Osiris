@@ -2,6 +2,9 @@ Targets 2/8/13
 
 Stuff that needs fixing:
 
+*** You broke PTAH - it's getting app names, not apps, and breaking when it calls 'params' on them.,  <== DONE
+
+
 * Fix the input file browser.
 
  - it's not loading jobs.  <= DONE
@@ -13,14 +16,21 @@ code in guards.js know to check the _alt field.   <== DONE
 * Make sure all metadata is working (job create, start and end timestamps,
   shareability)  <== ALMOST THERE
 
+Shareability
+
 What are we going to do with split output files from the file list?
 Use an ajax call to update the job list when they click on it!
+<=== Much simpler fix: when a job is updated to status 'done' it 
+automatically does ->files to find what the real filenames were and
+writes the resuts into the XML.
+
+
 
 * Make the filenames look nice (and standardised with filebrowser) in the 
   job list.  Maybe a distinctive style: 
     - input files
     - output filenames (ghosted, before a job has finished)
-    - output files (once finished)
+    - output files (once finished)  <== DONE
 
 * remove _ANON_ heading from job page - this is the problem
   with counting files in a parameter

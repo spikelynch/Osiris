@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 15;
+use Test::More tests => 17;
 
 use strict;
 use Data::Dumper;
@@ -23,7 +23,6 @@ my $appdir = realpath("$FindBin::Bin/..");
 my $TESTAPP = 'thm2isis';
 
 
-
 Dancer::Config::setting('appdir', $appdir);
 Dancer::Config::load();
 
@@ -36,12 +35,17 @@ my ( $apps, $browse ) = Osiris::load_toc(%$conf);
 
 ok($apps, "Initialised list of Isis apps");
 
+diag("isisdir: $conf->{isisdir}");
+
 my $user = Osiris::User->new(
     id => $conf->{fakeuser},
     basedir => $conf->{workingdir},
+    isisdir => $conf->{isisdir}
 );
 
-ok($user, "Initialised user");
+diag("user = $user");
+
+ok($user, "Initialised user $conf->{fakeuser}");
 
 my $job = $user->jobs->{1};
 
@@ -50,6 +54,8 @@ ok($job, "Got job from the joblist");
 ok($job->{id}, "Job has an id");
 
 cmp_ok($job->{status}, 'eq', 'new', "Job's status is 'new'");
+
+ok($job->load_xml, "Loaded full job from XML");
 
 ok($job->set_status(status => 'processing'), "Updated job status");
 
@@ -82,3 +88,4 @@ ok($xmlfile, "Job has an xmlfile");
 
 ok(-f $xmlfile, "xmlfile $xmlfile exists");
 
+ok($job->load_xml, "Loaded job XML");

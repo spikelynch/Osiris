@@ -9,6 +9,9 @@ use POSIX qw(strftime);
 use Data::Dumper;
 use Log::Log4perl;
 
+use Osiris::App;
+
+
 =head NAME
 
 Osiris::Job
@@ -38,12 +41,11 @@ the following values:
 
 NOTE: in this class, 'app' refers to an Osiris::App object, and 
 'appname' refers to the object's name (the actual command line program's
-name.  When passing back a summary for the job, 'appname' is called 'app'.
+name.)  When passing back a summary for the job, 'appname' is called 'app'.
 
 All filenames are now relative to the working directory for this job.
 This includes filenames used from previous jobs, which will have relative
 paths like '../$OLD_JOB_ID/$FILENAME'
-
 
 =head METADATA
 
@@ -98,7 +100,7 @@ sub new {
 
     if( my $s = $params{summary} ) {
         # job is being created from the job list
-        for ( qw(created started finished status to from app) ) {
+        for ( qw(created started finished status to from) ) {
             $self->{$_} = $s->{$_};
         }
         $self->{appname} = $s->{app};
@@ -147,7 +149,7 @@ sub create_dir {
 
 
 =item working_dir([file => $file])
-
+xd
 Returns the directory in which this job will be run.  If a file param is
 passed in, returns the complete path to a file in the directory.
 
@@ -216,6 +218,13 @@ sub write {
     }
 
     my $parameters = [];
+
+    if( !$self->{app} ) {
+        if( !$self->load_app ) {
+            $self->{log}->error("App load failed");
+            return undef;
+        }
+    }
 
     for my $p ( $self->{app}->params ) {
         my $ph = {
@@ -292,6 +301,10 @@ It also sets timestamps as follows:
 'processing' => sets the 'started' timestamp
 'done'       => sets the 'finished' timestamp
 
+When the status is set to 'done' it also scans the working dir for
+files and updates the 'TO' field in the metadata if there is more than
+one output file
+
 It now rewrites the job's XML file.
 
 =cut
@@ -307,6 +320,10 @@ sub set_status {
         $self->{started} = $self->timestamp;
     } elsif( $status eq 'done' ) {
         $self->{finished} = $self->timestamp;
+        my $files = $self->files;
+        if( $files->{outputs}{TO} ) {
+            $self->{to} = join(' ', @{$files->{outputs}{TO}});
+        }
     }
 
     if( !$self->write() ) {
@@ -474,7 +491,9 @@ sub xml {
 
 =item read_xml
 
-Reads a job from the XML file in the user's working directory
+Reads a job from the XML file in the user's working directory.
+
+This also creates an App object.
 
 =cut
 
@@ -522,6 +541,39 @@ sub load_xml {
 }
 
 
+=item load_app
+
+Load the job's App.
+
+=cut
+
+sub load_app {
+    my ( $self ) = @_;
+    
+    if( !$self->{app} ) {
+        
+        my $isisdir = $self->{user}{isisdir};
+        if( !$isisdir ) {
+            print Dumper({user => $self->{user}});
+            die("$self->{user} has no isisdir");
+        }
+        $self->{app} = Osiris::App->new(
+			dir => $isisdir,
+			app => $self->{appname}
+            ) || do {
+                $self->{log}->error("App initialisation failed");
+                return undef;
+            };
+    }
+
+    return $self->{app};
+}
+
+    
+
+
+
+        
 
 
 =item command
@@ -555,13 +607,6 @@ sub command {
 =item files
 
 Returns all the files associated with this job as a hashref:
-
-
-{
-    print => ${CONTENTS},
-    input => [ { name => $field, file => $filename } , ... ],
-    output => [ { name => $field, file => $filename } , ... ]
-}
 
 {
     print => $PRINTCONTENTS,
@@ -636,7 +681,7 @@ sub files {
             }
         }
     }
-    
+    ### FIX ME
     push @{$f->{outputs}{_ANON_}}, sort keys %$files; 
 
 

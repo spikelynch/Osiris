@@ -7,7 +7,6 @@ use XML::Twig;
 use Log::Log4perl;
 
 
-use Osiris::App;
 use Osiris::Job;
 
 =head NAME
@@ -44,9 +43,9 @@ sub new {
 	
 	$self->{id} = $params{id};
    	$self->{basedir} = $params{basedir};
+    $self->{isisdir} = $params{isisdir};
 
     $self->{dir} = join('/', $self->{basedir}, $self->{id});
-
     $self->{log} = Log::Log4perl->get_logger($class);
 
 

@@ -11,8 +11,11 @@ use lib '/home/mike/workspace/DC18C Osiris/Osiris/lib';
 
 use Data::Dumper;
 use Log::Log4perl;
+use YAML::XS;
 
 Log::Log4perl::init('/home/mike/workspace/DC18C Osiris/Osiris/environments/log4perl.conf');
+
+my $ISIS_DIR = '/home/mike/Isis/isis/bin/xml';
 
 use Osiris::User;
 use Osiris::Job;
@@ -44,6 +47,7 @@ my $WORKING_DIR = '/home/mike/workspace/DC18C Osiris/working/';
 
 my $log = Log::Log4perl->get_logger('ptah');
 
+my $conf = 
 
 
 
@@ -109,7 +113,8 @@ sub scan_users {
         next ITEM if ! -d "$WORKING_DIR/$id";
         my $user = Osiris::User->new(
             id => $id,
-            basedir => $WORKING_DIR
+            basedir => $WORKING_DIR,
+            isisdir => $ISIS_DIR
             );
         $log->debug("Got user $id");
         push @{$heap->{users}}, $user;
@@ -195,7 +200,10 @@ sub run_jobs {
             $kernel->yield('fatal');
         }
         $log->debug("Marking job status 'processing'");
-        $job->set_status(status => 'processing') || die("Couldn't set status");
+        $job->set_status(status => 'processing') || do {
+            $log->error("Error setting job status");
+            die;
+        };
         $log->debug("Starting job for user $job->{user}{id}");
         $log->debug("Command string: " . join(' ', @$command));
         my $task = POE::Wheel::Run->new(

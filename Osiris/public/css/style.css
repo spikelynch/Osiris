@@ -1,6 +1,68 @@
+/* Styles for the user's job list */
+
+a {
+    color: #138;
+    text-decoration: none;
+}
+
+a:followed {
+    color: #138;
+}
+
+
+table.joblist {
+    border-collapse: collapse;
+}
+
+table.joblist td {
+   padding: .25em;
+   border-top: 1px dotted #999
+}
+
+table.joblist td.new {
+    background-color: #ff9;
+}
+
+table.joblist td.processing {
+    background-color: #fa9;
+}
+
+
+table.joblist td.done {
+    background-color: #dfa;
+}
+
+
+a.job { 
+    text-decoration:none;
+}
+
+a.app {
+    text-decoration:none;
+    font-weight: bold;
+}
+
+td.input {
+    background-color: #adf;
+    font-weight: bold;
+    color: #138;
+    padding: 0 0.5em 0 0.5em;
+}
+
+table.joblist td.outputghost {
+    background-color: #eee;
+    color: #888;
+}
+
+table.joblist td.output {
+    background-color: #dfa;
+    font-weight: bold;
+    color: #138;
+}
 
 
 
+/* Styles for the app form */
 
 tr.groupheader {
     font-weight: bold;
@@ -35,6 +97,7 @@ div.paramdesc {
 
 
 input {
+
     border: 1px solid #888;
 }
 
@@ -63,7 +126,7 @@ div#debug {
 td.header {
     font-weight: bold;
     font-size: 115%;
-    border-top: 1px solid #888;
+    border-top: 1px dotted #999;
     padding-bottom: 1em;
 }
 
@@ -76,6 +139,8 @@ td.label {
 td.value {
     vertical-align: top;
 }
+
+
 
 
 /* styles for file browsing */

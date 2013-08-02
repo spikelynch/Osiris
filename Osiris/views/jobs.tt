@@ -6,8 +6,8 @@
 <table class="joblist">
 <thead>
 <tr>
-        <th>Job ID</th><th>Created</th><th>Status</th>
-        <th>Command</th><th>Input</th><th>Output</th>
+        <th>Job</th><th>App</th><th>Status</th>
+        <th>Created</th><th>Input</th><th>Output</th>
 </tr>
 </thead>
 <tbody>
@@ -20,13 +20,29 @@
  
 <% FOR job IN jobs %>
 
-<tr class="job"<% job.status %>">
+<tr class="job">
     <td><% job.id %></td>
+    <td><a class="app" href="/app/<% job.appname %>" title="Start a new job with <% job.appname %>"><% job.appname %></a></td>
+    <td class="<% job.status %>"><a class="job" href="/job/<% job.id %>"><% job.status %></a></td>
     <td><% job.created %></td>
-    <td><a href="/job/<% job.id %>"><% job.status %></a></td>
-    <td><% job.app.app %></td>
-    <td><% job.from %></td>
-    <td><% job.to %></td>
+    <td class="input">
+       <a href="<% INCLUDE link file=job.from %>"><% job.from %></a>
+    </td>
+
+    <% IF job.status == "done" %>
+    <td class="output">
+        <% FOR file IN job.to.split(' ') %>
+        <a href="<% INCLUDE link %>"><% file %></a><br />
+        <% END %>        
+    </td>
+    <% ELSE %>
+    <td class="outputghost">
+        <% FOR file IN job.to.split(' ') %>
+        <% file %><br />
+        <% END %>        
+    </td>        
+    <% END %>
+
 </tr>
 
 <% END %>
@@ -38,5 +54,4 @@
 </form>
 
 
-<p><a href="/">Back</a></p>
-
+<% BLOCK link %>/job/<% job.id %>/files/<% file %><% END %>
