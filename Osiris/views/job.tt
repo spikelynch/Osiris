@@ -1,6 +1,6 @@
 <h2>Job <% job.id %></h2>
 
-<table>
+<table class="job">
 <tbody>
 
 
@@ -10,37 +10,43 @@
 </tr>
 
 <tr>
+<td class="label">Created</td>
+<td class="value"><% job.created %></td>
+</tr>
+
+<tr>
 <td class="label">Started</td>
 <td class="value"><% job.started %></td>
 </tr>
 
-<% IF job.status == "done" %>
-
 <tr>
-<td class="label">Completed</td>
-<td class="value"><% job.completed %></td>
+<td class="label">Finished</td>
+<td class="value"><% job.finished %></td>
 </tr>
 
-<% END %>
+<tr>
+<td class="label">Isis app</td>
+<td class="value"><a class="app" href="/app/<% job.appname %>"><% job.appname %></a></td>
+</tr>
 
 <tr>
-<td class="label">Command</td>
+<td class="label">Full command</td>
 <td class="value"><pre><% command %></pre></td></tr>
 
-<tr><td class="header" colspan="2"">Input files</td></tr>
+<% INCLUDE links list=files.inputs class="input" %>
 
-<% INCLUDE links list=files.inputs %>
+<% IF job.status == "done"  %>
 
-<% IF job.status == "done" %>
-
-    <tr><td class="header" colspan="2"">Output files</td></tr>
-
-    <% INCLUDE links list=files.outputs %>
+    <% INCLUDE links list=files.outputs class="output" %>
 
     <tr>
         <td class="label">print.prt</td>
         <td><pre id="printprt"><% files.print %></pre></td>
     </tr>
+
+<% ELSE %>
+    <% INCLUDE links list=files.outputs class="outputghost" %>
+
 
 <% END %>
 
@@ -52,12 +58,18 @@
 
 <% BLOCK links %>
     <% FOR param IN list.keys %>
-    <tr><td class="label"><% param %></td>
+    <% IF list.$param.size() > 0 %>
+    <tr><td class="label">
+    <% IF param.substr(0, 1) != '_' %>
+    <% param %>
+    <% END %>
+        </td>
         <td class="value">
         <% FOR file IN list.$param %>
-        <p class="filelink"><a href="/job/<% job.id %>/files/<% file %>"><% file %></a></p>
+        <a class="<% class %>" href="/job/<% job.id %>/files/<% file %>"><% file %></a><br />
         <% END %>
         </td>
     </tr>
+    <% END %>
     <% END %>
 <% END %>

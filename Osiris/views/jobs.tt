@@ -43,6 +43,8 @@
     </td>        
     <% END %>
 
+    <td class="<% job.status %>"><a class="job" href="/job/<% job.id %>">View job details</a></td>
+
 </tr>
 
 <% END %>
