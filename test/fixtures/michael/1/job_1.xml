@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <job app="thm2isis">
     <metadata>
+        <user>michael</user>
+        <id>1</id>
+        <app>thm2isis</app>
+        <from>V03537002EDR.QUB</from>
+        <to>OUTPUT.cub</to>
+        <status>new</status>
+        <created>02 Aug 2013 01:56:12 PM</created>
+        <started />
+        <finished />
+        <harvest />
     </metadata>
+
     <parameters>
-        <parameter name="FROM">/home/mike/workspace/DC18C Osiris/working/michael/1/V03537002EDR.QUB</parameter>
-    
-        <parameter name="TO">V0000</parameter>
-    
+        <parameter name="FROM">V03537002EDR.QUB</parameter>
+        <parameter name="TO">OUTPUT.cub</parameter>
         <parameter name="TIMEOFFSET">0.0</parameter>
-    
     </parameters>
 </job>
-
-
-
-

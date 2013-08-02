@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <joblist user="michael">
-<job app="thm2isis" created="10 Jul 2013 10:21:27 AM" from="V03537002EDR.QUB" id="1" status="new" to="output.cub" />
+<job app="thm2isis" created="02 Aug 2013 01:56:12 PM" finished="" from="V03537002EDR.QUB" id="1" started="" status="new" to="OUTPUT.cub" user="michael" />
 </joblist>
