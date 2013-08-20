@@ -1,3 +1,28 @@
+Targets 5/8/13
+--------------
+
+This morning:
+
+     Deploy CoataGlue on namba, get the dependencies, pass all tests
+
+     Look into deployment options for Damyata
+
+This afternoon:
+
+     Extras for Osiris - 
+     
+         - Shareable option for publishing datasets
+
+         - Thumbnail graphics for datasets
+
+         - Description, title and location for shareable datasets.
+
+
+
+
+
+
+--------------
 Targets 2/8/13
 
 Stuff that needs fixing:
@@ -22,7 +47,7 @@ What are we going to do with split output files from the file list?
 Use an ajax call to update the job list when they click on it!
 <=== Much simpler fix: when a job is updated to status 'done' it 
 automatically does ->files to find what the real filenames were and
-writes the resuts into the XML.
+writes the resuts into the XML.  <== DONE
 
 
 
@@ -33,7 +58,7 @@ writes the resuts into the XML.
     - output files (once finished)  <== DONE
 
 * remove _ANON_ heading from job page - this is the problem
-  with counting files in a parameter
+  with counting files in a parameter  <== DONE
 
 
 Target 1/8/13
