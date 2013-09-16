@@ -11,7 +11,8 @@ body {
     background-color: #fff;
     font-family: Helvetica, Arial, sans-serif;
     min-width: 500px;      /* 2 x (LCfull + CCpad) + RC full */
-
+    margin: 0px;
+    padding: 0px;
 }
 
 
@@ -19,7 +20,7 @@ body {
     background-color: #ddd;
     padding: 10px;
     height: 2em;
-    margin: 10px 0 10px 0;
+    margin: 0px;
 }
 
 h1 {

@@ -86,12 +86,16 @@ get '/logout' => sub {
 
 get '/' => sub {
 
-    template jobs => {
-        title => 'My jobs',
-        user => $user->{id},
-        jobs => $jobs,
-    };
+    if( @$jobs ) {
 
+        template 'jobs' => {
+            title => 'My jobs',
+            user => $user->{id},
+            jobs => $jobs,
+        };
+    } else {
+        template 'getting_started';
+    }
 };
 
 

@@ -1,0 +1,18 @@
+<h3>Getting started</h3>
+
+<p>Welcome to Osiris, a web interface to the Isis family of planetary
+image utilities. Osiris lets you run most of the Isis programs and
+gives you a web form to enter the required parameters and upload input
+files.</p>
+
+<p>You're seeing this message because you haven't started any jobs
+yet. A 'job' is an Isis program together with your parameters and
+input files.</p>
+
+<p>To get started, you need to select an Isis program.  You can browse
+all of the available programs by category or by mission, by selecting
+the appropriate links in the navigation panel at the left of the
+page.</p>
+
+<p>You can also search for apps by entering keywords into the field at
+the bottom of the nav panel and clicking 'Search'.</p>
