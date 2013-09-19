@@ -1,19 +1,21 @@
 <!-- Navigation panel -->
 
 <ul>
-    <li id="myjobs"><span class="navmenu">My Jobs</span>
+    <% IF jobs %>
         <% IF jobs.size > 0 %>
+        <li id="myjobs"><span class="navmenu">My Jobs</span>
             <ul>
             <% FOR job IN jobs %>
                 <li><a title="<% job.description %>" href="/job/<% job.id %>"><% job.id %>: <% job.appname %></a></li>
             <% END %>
             </ul>
+        </li>
         <% END %>
-    </li>
+    <% END %>
     <li>Programs
         <ul>
             <li><a href="/browse/category">By Category</a>
-                 </li>
+</li>
                 
             <li><a href="/browse/mission">By Mission</a>
                  </li>
@@ -21,9 +23,20 @@
     </li>
 </ul>
 
-<form id="searchform" name="search" method="GET" action="/search">
-<input id="searchtext" type="text" name="q" size="10" value="" />
-<input id="searchbtn" type="submit" value="Search" />
+<form  id="searchform" name="search" method="GET" action="/search">
+<input id="searchtext" type="text" name="q" size="10" value="<% search %>" />
+<input id="searchbtn"  type="submit" value="Search" />
 </form>
 
+<script lang="javascript">
+$('#searchform').submit(function(event) {
+    event.preventDefault();
+    var search = $.trim($('#searchtext').val());
+    if( search == '' ) {
+        $('#searchtext').addClass('error_highlight');
+    } else {
+        $('#searchtext').val(search);
+        this.submit();
+    }
+ } );
 </script>

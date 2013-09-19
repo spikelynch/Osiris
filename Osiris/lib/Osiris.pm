@@ -299,7 +299,7 @@ get '/app/:app' => sub {
             };
         }
     } else {
-        forward('/browse');
+        forward('/');
     }
 };
 
@@ -319,7 +319,7 @@ get '/search' => sub {
             results => $results,
         };
     } else {
-        forward('/browse');
+        forward('/');
     }
 };
 
