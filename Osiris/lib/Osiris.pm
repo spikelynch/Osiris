@@ -94,7 +94,10 @@ get '/' => sub {
             jobs => $jobs,
         };
     } else {
-        template 'getting_started';
+        template 'getting_started' => {
+            title => 'Getting Started',
+            user => $user->{id}
+        };
     }
 };
 
@@ -506,7 +509,7 @@ sub search_toc {
     my $search = $params{search};
     my $results = {};
 
-    my @toks = split(/ /, $search);
+    my @toks = split(/ +/, $search);
     my $re = '(' . join('|', @toks) . ')';
     $re = qr/$re/i;
 
