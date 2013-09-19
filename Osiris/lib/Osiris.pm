@@ -127,6 +127,7 @@ get '/job/:id' => sub {
         $vars->{command} =~ s/$dir//g;
         $job->{app} = get_app(name => $job->{appname});
         $vars->{files} = $job->files;
+        debug("Job fles = " . Dumper({files => $vars->{files}}));
         $vars->{title} = 'Job ' . $job->{id};
         template job => $vars
     }

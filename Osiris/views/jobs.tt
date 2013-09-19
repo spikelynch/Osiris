@@ -6,7 +6,7 @@
 <table class="joblist">
 <thead>
 <tr>
-        <th>Job</th><th>App</th><th>Status</th>
+        <th>Job</th><th>Program</th><th>Status</th>
         <th>Created</th><th>Input</th><th>Output</th>
 </tr>
 </thead>

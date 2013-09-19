@@ -20,7 +20,7 @@ my $ISIS_DIR = '/home/mike/Isis/isis/bin/xml';
 use Osiris::User;
 use Osiris::Job;
 
-sub MAX_CONCURRENT_TASKS () { 3 }
+sub MAX_CONCURRENT_TASKS () { 10 }
 
 # Previous attempts to write ptah.pl keep getting a weird bug where
 # child processes don't report back via either closeEvent or SIG_CHLD.
@@ -46,9 +46,6 @@ my $WORKING_DIR = '/home/mike/workspace/DC18C Osiris/working/';
 
 
 my $log = Log::Log4perl->get_logger('ptah');
-
-my $conf = 
-
 
 
 # Start the session that will manage all the children.  The _start and
@@ -95,6 +92,7 @@ sub initialise {
 sub scan_users {
     my ( $kernel, $heap, $state, $sender, @caller ) = 
         @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
+
     $log->debug("___[scan_users]");
     $log->debug("    state = $state");
     $log->debug("    sender = $sender");
@@ -304,8 +302,15 @@ sub sig_child {
         my $job = $heap->{running}{$wid}{job};
         $log->debug("Job from POE heap = $job $job->{id}");
         delete $heap->{running}{$wid};
-        $log->debug("Setting job $job->{id} status to 'done'");
-        $job->set_status(status => "done"); 
+        
+        if( $exit_val ) {
+            # There was an error: should do more to interpret this
+            $log->debug("Job $job->{id} returned error ($exit_val)");
+            $job->set_status(status => "error");
+        } else {
+            $log->debug("Setting job $job->{id} status to 'done'");
+            $job->set_status(status => "done");
+        } 
     }
 }
 

@@ -14,9 +14,16 @@ table.joblist {
     border-collapse: collapse;
 }
 
+table.joblist th {
+   padding: .25em;
+   padding-right: 1em;
+}
+    
+
 table.joblist td {
    padding: .25em;
-   border-top: 1px dotted #999
+   border-top: 1px dotted #999;
+   padding-right: 1em;
 }
 
 table.joblist th {
@@ -36,6 +43,9 @@ table.joblist td.done {
     background-color: #dfa;
 }
 
+table.joblist td.error {
+    background-color: #f99
+}
 
 a.job { 
     text-decoration:none;
@@ -66,6 +76,14 @@ a.app {
 
 
 /* Styles for the app form */
+
+table.form {
+    border-collapse: collapse;
+}
+
+table.form tr:nth-child(odd) {
+    background-color: #eee;
+}
 
 tr.groupheader {
     font-weight: bold;
@@ -100,7 +118,6 @@ div.paramdesc {
 
 
 input {
-
     border: 1px solid #888;
 }
 
@@ -114,7 +131,7 @@ input.error_highlight {
 span.error_text {
     font-weight: bold;
     font-size: 9pt;
-    color: #400;
+    color: #800;
 }
 
 

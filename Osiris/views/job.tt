@@ -1,7 +1,12 @@
-<h2>Job <% job.id %></h2>
+<h2>Job <% job.id %>: <% job.appname %></h2>
 
 <table class="job">
 <tbody>
+
+<tr>
+<td class="label">Program</td>
+<td class="value"><a class="app" href="/app/<% job.appname %>"><% job.appname %></a></td>
+</tr>
 
 
 <tr>
@@ -25,11 +30,6 @@
 </tr>
 
 <tr>
-<td class="label">Isis app</td>
-<td class="value"><a class="app" href="/app/<% job.appname %>"><% job.appname %></a></td>
-</tr>
-
-<tr>
 <td class="label">Full command</td>
 <td class="value"><pre><% command %></pre></td></tr>
 
@@ -39,14 +39,17 @@
 
     <% INCLUDE links list=files.outputs class="output" %>
 
+<% ELSE %>
+    <% INCLUDE links list=files.outputs class="outputghost" %>
+
+<% END %>
+
+<% IF job.status == "done" || job.status == "error" %>
+
     <tr>
         <td class="label">print.prt</td>
         <td><pre id="printprt"><% files.print %></pre></td>
     </tr>
-
-<% ELSE %>
-    <% INCLUDE links list=files.outputs class="outputghost" %>
-
 
 <% END %>
 

@@ -74,8 +74,11 @@ bind_guards("<% p %>", <% guards.$p %>);
 
 $('#isisapp').submit(function(event) {
     event.preventDefault();
-    apply_all_guards(this);
-    return false;
+    if( apply_all_guards(this) ) {
+        this.submit();
+    } else {
+        return false;
+    }
 } );
 
 

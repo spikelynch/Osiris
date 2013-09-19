@@ -298,8 +298,9 @@ joblist - trying to cover all bases.
 
 It also sets timestamps as follows:
 
-'processing' => sets the 'started' timestamp
-'done'       => sets the 'finished' timestamp
+'processing'             => sets the 'started' timestamp
+'done' and 'error'       => set the 'finished' timestamp
+
 
 When the status is set to 'done' it also scans the working dir for
 files and updates the 'TO' field in the metadata if there is more than
@@ -318,6 +319,8 @@ sub set_status {
 
     if( $status eq 'processing' ) {
         $self->{started} = $self->timestamp;
+    } elsif( $status eq 'error' ) {
+        $self->{finished} = $self->timestamp;
     } elsif( $status eq 'done' ) {
         $self->{finished} = $self->timestamp;
         my $files = $self->files;
@@ -639,6 +642,8 @@ sub files {
     $f->{inputs} = {};
     $f->{outputs} = {};
     $f->{other} = [];
+
+    $self->{log}->debug("Job got print.prt: " . $f->{print});
 
     # Look for input files
 
