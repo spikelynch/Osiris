@@ -53,7 +53,6 @@ function apply_guards(elt) {
     var g = $(elt).data("guards");
 
     if( !g ) {
-        console.log("No guard");
         return true;
     }
     
@@ -64,15 +63,13 @@ function apply_guards(elt) {
         var alt = $('#' + pid + '_alt');
         if( alt ) {
             if( alt.val() ) {
-                val = alt.val()l
-                console.log("using _alt value");
+                val = alt.val();
             }
         }
     }
 
     var error = run_guards(g, val);
 
-    console.log("Error msg " + error);
     if( error != '' ) {
         show_error(elt, error);
         return false;
@@ -88,7 +85,13 @@ function run_guards(g, val) {
 
     if( g.mandatory ) {
         if( val == "" ) {
-            return "Must have a value.";
+            if( g.type == 'integer' ) {
+                return 'Must have an integer value';
+            }
+            if( g.type == 'double' ) {
+                return 'Must have a numeric value';
+            }
+            return 'Must have a value.';
         }
     }
 
