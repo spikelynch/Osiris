@@ -313,9 +313,10 @@ get '/search' => sub {
         my $results = search_toc(search => $search);
         template 'search' => {
             user => $user,
+            title => 'Search results',
             jobs => $jobs,
             search => $search,
-            results => $results
+            results => $results,
         };
     } else {
         forward('/browse');
