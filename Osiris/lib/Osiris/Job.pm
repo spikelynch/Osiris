@@ -369,7 +369,7 @@ sub add_parameters {
     for my $p ( $self->{app}->params  ) {
         $self->{parameters}{$p} = $phash->{$p};
 
-        my $app_p = $self->{app}->settings(parameter => $p);
+        my $app_p = $self->{app}->param(param => $p);
 
         if( $app_p->{filter} && $app_p->{field_type} eq 'output_file_field' ) {
             if( $app_p->{filter} =~ /^\*(\..*)$/ ) {
