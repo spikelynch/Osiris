@@ -55,7 +55,18 @@
 
 </table>
 
-<p><a href="/">Back</a></p>
+<p><a href="#" id="backlink">Back</a></p>
+
+<script lang="javascript">
+
+$('#backlink').click(
+    function(event) {
+        window.location = document.referrer;
+});
+
+
+</script>
+
 
 
 

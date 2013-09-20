@@ -29,7 +29,6 @@ function guard_event(event) {
 
 function apply_all_guards(form) {
     var valid = true;
-    console.log(">>> applying all guards");
     $('input').each(function() {
         if( this.name.substr(-4) == '_alt' ) {
             console.log("Skipping " + this.name);

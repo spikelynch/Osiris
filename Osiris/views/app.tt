@@ -62,8 +62,6 @@
 
 <% END %>
 
-<p><a href="/">Back</a></p>
-
 
 <script lang="javascript">
 setup_help_transitions();
@@ -71,6 +69,10 @@ setup_help_transitions();
 <% FOR p IN guards.keys %>
 bind_guards("<% p %>", <% guards.$p %>);
 <% END %>
+
+var touched = 0;
+
+$(':input').focus(function(event) { touched = 1; });
 
 $('#isisapp').submit(function(event) {
     event.preventDefault();
@@ -81,6 +83,14 @@ $('#isisapp').submit(function(event) {
     }
 } );
 
+$('#button_cancel').click(function(event) {
+    if( touched ) {
+        if( !confirm("Are you sure that you want to cancel?") ) {
+            return false;
+        }
+    }
+    window.location = document.referrer;
+});
 
 
 </script>
