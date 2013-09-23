@@ -204,6 +204,10 @@ sub _load_joblist {
             return undef;
         }
     }
+    my @ids = keys %{$self->{jobs}};
+
+    $self->{log}->debug("Job list keys = " . join(' ', @ids));
+    
     return $self->{jobs};
 }
 
@@ -221,14 +225,18 @@ XML::Twig handler to read a single job element
 sub _load_job {
     my ( $self, $elt ) = @_;
     my $s = $elt->atts;
-    if( $s->{id} =~ /^\d$/ ) {
+
+    $self->{log}->debug("_load_job $elt $s->{id}");
+
+    if( $s->{id} =~ /^\d+$/ ) {
         $self->{jobs}{$s->{id}} = Osiris::Job->new(
             id => $s->{id}, 
             user => $self,
             summary => $s
             ) || do {
-                $self->{log}->error("Couldn't create job")
+                $self->{log}->error("Couldn't create job for $s->{id}")
         };
+        $self->{log}->debug("Job $s->{id} created: $self->{jobs}{$s->{id}}");
     }
 }
 
