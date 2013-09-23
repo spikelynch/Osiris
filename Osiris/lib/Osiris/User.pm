@@ -155,7 +155,7 @@ Returns a new, unique job ID
 sub _new_jobid {
     my ( $self ) = @_;
 
-    my @ids = reverse sort keys %{$self->{jobs}};
+    my @ids = sort { $b <=> $a } keys %{$self->{jobs}};
     
     if( @ids ) {
         return $ids[0] + 1;
@@ -190,8 +190,6 @@ sub _load_joblist {
 
     my $joblistfile = $self->_joblistfile;
 
-    $self->{log}->warn("_load_joblist: " . join(' ', caller));
- 
     $self->{jobs} = {};
    
     if( -f $joblistfile ) {
@@ -206,8 +204,6 @@ sub _load_joblist {
     }
     my @ids = keys %{$self->{jobs}};
 
-    $self->{log}->debug("Job list keys = " . join(' ', @ids));
-    
     return $self->{jobs};
 }
 
@@ -226,8 +222,6 @@ sub _load_job {
     my ( $self, $elt ) = @_;
     my $s = $elt->atts;
 
-    $self->{log}->debug("_load_job $elt $s->{id}");
-
     if( $s->{id} =~ /^\d+$/ ) {
         $self->{jobs}{$s->{id}} = Osiris::Job->new(
             id => $s->{id}, 
@@ -236,7 +230,6 @@ sub _load_job {
             ) || do {
                 $self->{log}->error("Couldn't create job for $s->{id}")
         };
-        $self->{log}->debug("Job $s->{id} created: $self->{jobs}{$s->{id}}");
     }
 }
 
