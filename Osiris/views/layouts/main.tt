@@ -49,7 +49,7 @@
 </div>
 
 <div id="footer">
-Osiris <% osiris_version %> - Funded by <a href="http://www.ands.org.u/">ANDS</a><br />
+Osiris v 0.2 Hor-Aha - Funded by <a href="http://www.ands.org.u/">ANDS</a><br />
 Powered by <a href="http://perldancer.org/">Dancer</a> <% dancer_version %>
 </div>
 

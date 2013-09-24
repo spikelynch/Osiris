@@ -61,7 +61,7 @@ hook 'before' => sub {
         $jobshash = $user->jobs(reload => 1);
         $jobs = [];
         for my $id ( sort { $b <=> $a } keys %$jobshash ) {
-            push $jobs, $jobshash->{$id};
+            push @$jobs, $jobshash->{$id};
         }
     }   
 };
@@ -105,7 +105,7 @@ get '/' => sub {
     } else {
         template 'getting_started' => {
             title => 'Getting Started',
-            user => $user->{id}
+            user => $user->{id}, 
         };
     }
 };
