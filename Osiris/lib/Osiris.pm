@@ -24,7 +24,7 @@ Dancer interface to the Isis planetary imaging toolkit
 =cut
 
 
-our $VERSION = '0.1 Narmer';
+our $VERSION = '0.2 Hor-Aha';
 
 my $conf = config;
 
