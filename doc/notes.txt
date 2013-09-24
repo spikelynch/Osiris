@@ -1,4 +1,40 @@
-How Mike sees it working:
+Osiris
+------
 
-The students build a recipe in a wiki, and this has links to the
-web app for each step.
+Basic web wrapper for Isis using Dancer.
+
+Components
+----------
+
+A. - a searchable and browseable interface to all of the Isis commands  *
+
+B. - for each of the commands, a web page which allows the user to run the command
+     based on the XML spec, including file uploads
+     
+C. - From B, build a jobfile - an XML document with the selected command, parameters
+     and input file location - and add it to a queue.
+     
+D. - the queue - probably but not necessarily Fascinator - which actually runs the 
+     jobs.
+     
+     
+URL ROUTES
+----------
+
+/                    -> category list, search tool, browse link (A)
+
+/apps/$cat           -> list of apps in category (A)
+
+/apps/               -> List of all apps
+
+/app/$appname        -> Application page  (B)
+
+/job/$appname+query  -> Launch a job (C) (POST not GET)
+
+/job/                -> status of your jobs?
+
+
+QUESTIONS
+---------
+
+Sessions - for chaining apps together in a workflow
