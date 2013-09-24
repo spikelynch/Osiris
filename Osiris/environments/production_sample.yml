@@ -15,3 +15,11 @@ show_errors: 0
 # cache route resolution for maximum performance
 route_cache: 1
 
+# Osiris config
+
+isisdir: 	 /home/mike/Isis/isis/bin/xml/
+isistoc: 	 applicationTOC.xml
+isiscats: 	 applicationCategories.xml
+workingdir:  /home/mike/workspace/DC18C Osiris/working
+extrafields: /home/mike/Isis/extras/extra.xml
+fakeuser:    michael

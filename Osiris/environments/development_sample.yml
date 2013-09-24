@@ -28,8 +28,9 @@ auto_reload: 0
 
 # Osiris config
 
-isisdir: 	/home/mike/Isis/isis/bin/xml/
-isistoc: 	applicationTOC.xml
-isiscats: 	applicationCategories.xml
-workingdir: /home/mike/workspace/DC18C Osiris/working
-fakeuser:   michael
+isisdir: 	 /home/mike/Isis/isis/bin/xml/
+isistoc: 	 applicationTOC.xml
+isiscats: 	 applicationCategories.xml
+workingdir:  /home/mike/workspace/DC18C Osiris/working
+extras:      /home/mike/workspace/DC18C Osiris/Osiris/views/metadata_form.xml
+fakeuser:    michael
