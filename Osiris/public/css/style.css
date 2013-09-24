@@ -74,6 +74,13 @@ a.app {
 }
 
 
+.clickable {
+    text-weight: bold;
+    color: #138;
+    cursor: pointer;
+}
+
+
 
 /* Styles for the app form */
 
@@ -165,6 +172,10 @@ pre {
     margin: 0px
 }
 
+
+form#publish {
+    display: none;
+}
 
 
 /* styles for file browsing */

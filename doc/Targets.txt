@@ -1,3 +1,30 @@
+Targets 20/8/13
+---------------
+
+Need to push out metadata records for CoataGlue.
+
+Jobs should provide links to their input files before they've finished
+
+Search All My FILES
+
+Take the comment-y cruft out of Ptah
+
+
+Later TODOs -
+
+    Be able to get the complete history of a chain of jobs and
+    put this into the metadata
+
+    Capturing stderr and stdout
+
+
+
+
+
+
+
+
+
 Targets 5/8/13
 --------------
 

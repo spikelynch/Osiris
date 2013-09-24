@@ -30,6 +30,12 @@ my $conf = config;
 
 my ( $toc, $cats ) = load_toc(%$conf);
 
+my ( $extra_form, $extra_fields ) = undef;
+
+if( $conf->{extras} ) {
+    ( $extra_form, $extra_fields ) = load_extras($conf->{extras});
+}
+
 my $fakeuser = $conf->{fakeuser};
 
 # The before hook: if there's no session, redirect the user to the
@@ -41,17 +47,20 @@ my $fakeuser = $conf->{fakeuser};
 my ( $user, $jobshash, $jobs );
 
 hook 'before' => sub {
+
+    debug("Path: ", request->path_info);
     if (! session('user') && request->path_info !~ m{^/login}) {
         var requested_path => request->path_info;
         request->path_info('/login');
     } else {
         $user = Osiris::User->new(
             id => session('user'),
+            isisdir => $conf->{isisdir},
             basedir => $conf->{workingdir}
         );
         $jobshash = $user->jobs(reload => 1);
         $jobs = [];
-        for my $id ( sort keys %$jobshash ) {
+        for my $id ( sort { $b <=> $a } keys %$jobshash ) {
             push $jobs, $jobshash->{$id};
         }
     }   
@@ -103,7 +112,7 @@ get '/' => sub {
 
 
 
-# job/$id - details for a job
+# job/$id - view job details
 
 get '/job/:id' => sub {
     
@@ -111,25 +120,45 @@ get '/job/:id' => sub {
     my $job = $jobshash->{$id};
 
     if( ! $job ) {
-        forward '/jobs';
+        error("Warning: job $id not found!");
+        forward '/';
     } else {
         
         $job->load_xml;
+
+        debug(Dumper({ extras => $job->{extras} }));
+
+        my $command = $job->command;
+        $command = join(' ', @$command);
+        my $dir = $job->working_dir;
+        $command =~ s/$dir//g;
+
+        $job->{app} = get_app(name => $job->{appname});
+
         my $vars =  {
-            title => "Job $id - $job->{appname}", 
+            title => "Job: " . $job->label, 
             user => $user->{id},
             job => $job,
+            command => $command,
+            files => $job->files,
             jobs => $jobs
         };
-        my $command = $job->command;
-        $vars->{command} = join(' ', @$command);
-        my $dir = $job->working_dir;
-        $vars->{command} =~ s/$dir//g;
-        $job->{app} = get_app(name => $job->{appname});
-        $vars->{files} = $job->files;
-        debug("Job fles = " . Dumper({files => $vars->{files}}));
-        $vars->{title} = 'Job ' . $job->{id};
-        template job => $vars
+
+        if( $extra_form ) {
+            $vars->{extras} = $extra_form->groups;
+            debug("Filling in extra fields ");
+            for my $group ( @{$vars->{extras}} ) {
+                for my $param ( @{$group->{parameters}} ) {
+                    my $name = $param->{name};
+                    debug("Field = $name = $job->{extras}{$name}");
+                    $param->{default} = $job->{extras}{$name};
+                }
+            }
+            $vars->{publish_url} = uri_for('/job/' . $id);
+            $vars->{javascripts} = [ 'app', 'guards' ];
+        }
+
+        template job => $vars;
     }
 };
 
@@ -259,12 +288,12 @@ get '/browse/:by/:class' => sub {
 
 get '/app/:app' => sub {
     
-	my $name = param('app');
-	if( $toc->{$name} ) {
+	my $appname = param('app');
+	if( $toc->{$appname} ) {
 		my $app = Osiris::App->new(
 			dir => $conf->{isisdir},
-			app => $name,
-			brief => $toc->{$name}
+			app => $appname,
+			brief => $toc->{$appname}
 		);
 
         my @p = $app->params;
@@ -274,7 +303,7 @@ get '/app/:app' => sub {
                 title => 'Error',
                 user => $user->{id},
                 jobs => $jobs,
-                error => "The app '$name' can't be operated via the web."
+                error => "The app '$appname' can't be operated via the web."
             };
         } else {
 
@@ -283,20 +312,18 @@ get '/app/:app' => sub {
                 $guards->{$p} = encode_json($guards->{$p});
             }
             
-            #my $debugmsg = "Guards: \n" . Dumper({guards => $guards});
-            
-            
             template 'app' => {
-                title => $name,
+                title => $appname,
                 user => $user->{id},
+                url => uri_for('/app/' . $app->name),
+                back_url => uri_for('/'),
                 jobs => $jobs,
                 javascripts => [ 'app', 'guards', 'files' ],
                 app => $app->name,
                 brief => $app->brief,
                 form => $app->form,
                 guards => $guards,
-                description => $app->description,
-                #           debugmsg => $debugmsg,
+                description => $app->description
             };
         }
     } else {
@@ -330,7 +357,7 @@ get '/search' => sub {
 # post /app - start a job.
 
 post '/app/:name' => sub {
-#    my $user = get_user();
+
 	my $name = param('name');
 
 	if( !$toc->{$name} ) {
@@ -379,6 +406,49 @@ post '/app/:name' => sub {
     }
         
 };
+
+
+# post to job/n -> accept the extra form fields and write them 
+# into the job file.  In this version, this is the publication
+# metadata
+
+
+
+post '/job/:id' => sub {
+
+    my $id = param('id');
+    my $job = $jobshash->{$id};
+
+    if( ! $job ) {
+        error("Warning: job $id not found!");
+        forward '/';
+    } else {
+        
+        $job->load_xml;
+    
+        my $extras = {};
+        for my $field ( @$extra_fields ) {
+            $extras->{$field} = param($field);
+        }
+
+        $job->add_extras(%$extras);
+
+        if( $user->write_job(job => $job) ) {
+            debug("Forwarding to /job/$job->{id}");
+            forward "/job/$job->{id}", {}, { method => 'GET' };
+        } else {
+            error("Couldn't write job");
+            template 'error' => {
+                title => 'Job error',
+                user => $user->{id},
+                jobs => $jobs,
+                error => "Couldn't submit job for publishing"
+            };
+        }
+    }
+        
+};
+
 
 
 # input_files - does the juggling around file uploads v existing
@@ -436,11 +506,6 @@ sub input_files {
 }
 
 
-
-
-
-
-
 sub get_app {
     my %params = @_;
 
@@ -457,7 +522,6 @@ sub get_app {
         return undef;
     }
 }
-
 
 
 
@@ -537,7 +601,38 @@ sub search_toc {
 
 }
 
+# load the 'extras' form, which we're using to collect metadata
+# to push out to the RDC
 
+
+sub load_extras {
+    my ( $xml ) = @_;
+    
+    my $extras = Osiris::Form->new(xml => $xml);
+    
+    if( !$extras ) {
+        error("Error initialising extras file $xml"); 
+        return undef;
+    }
+    
+    if( !$extras->parse ) {
+        error("Error parsing extras file $xml");
+        return undef;
+    }
+    
+    debug("Loaded extras file $xml");
+
+    my $api = $extras->groups;
+
+    my @fields = ();
+
+    for my $group ( @$api ) {
+        for my $param ( @{$group->{parameters}} ) {
+            push @fields, $param->{name};
+        }
+    }
+    return ( $extras, \@fields );
+}
 
 
 

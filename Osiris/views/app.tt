@@ -1,140 +1,14 @@
 <h2><% app %></h2>
+
 <div id="brief"><% brief %></div>
+
 <div id="description"><% description %></div>
 
-<form id="isisapp"
-      name="isisapp"
-      method="post"
-      enctype="multipart/form-data" >
+<div>Target = <% url %></div>
 
-<table class="form">
-<tbody>
+<% INCLUDE form.tt url      = url
+                   formid   = "isisapp"
+                   api      = form 
+                   submit   = "Start job"
+                   cancel   = back_url %>
 
-
-
-<% FOR group IN form %>
-
-<tr class="groupheader"><td colspan="2"><% group.name %></td><tr>
-
-<% FOR param IN group.parameters %>
-
-<tr class="param">
-<td class="paramlabel">
-<% param.name %>
-</td>
-<td class="parambox" id="parambox_<% param.name %>">
-	<% INCLUDE $param.field_type %>
-    <span class="error_text" id="error_<% param.name %>"></span>
-</td>
-</tr>
-
-<tr class="paramhelp">
-<td></td>
-<td class="paramhelp">
-<div id="paramhelp_<% param.name %>" class="paramhelpswitch"><% param.brief %></div>
-<div class="paramdesc"><% param.description %></div>
-</td>
-</tr>
-<% END %>
-
-<% END %>
-
-<tr> <td colspan="2">
-<input id="button_cancel" type="button" value="Cancel" />
-<input id="button_submit" type="submit" value="Start job" />
-</td></tr>
-
-
-</tbody>
-
-</table>
-
-</form>
-
-<% IF debugmsg %>
-
-<div id="debug">
-<p><strong>Debug</strong></p>
-<pre>
-<% debugmsg %>
-</pre>
-</div>
-
-<% END %>
-
-
-<script lang="javascript">
-setup_help_transitions();
-
-<% FOR p IN guards.keys %>
-bind_guards("<% p %>", <% guards.$p %>);
-<% END %>
-
-var touched = 0;
-
-$(':input').focus(function(event) { touched = 1; });
-
-$('#isisapp').submit(function(event) {
-    event.preventDefault();
-    if( apply_all_guards(this) ) {
-        this.submit();
-    } else {
-        return false;
-    }
-} );
-
-$('#button_cancel').click(function(event) {
-    if( touched ) {
-        if( !confirm("Are you sure that you want to cancel?") ) {
-            return false;
-        }
-    }
-    window.location = document.referrer;
-});
-
-
-</script>
-
-
-<% BLOCK text_field %>
-	<input type="text" id="field_<% param.name %>" name="<% param.name %>" value="<% param.default %>" size="12" />
-<% END %>
-
-
-
-<% BLOCK list_field %>
-	<select id="field_<% param.name %>" name="<% param.name %>">
-        <option value=""></option>
-	<% FOR option IN param.list %>
-		<option value="<% option.value %>"<% IF option.value == param.default %>selected<% END %> >
-			<% option.value %>: <% option.brief %>
-		</option>
-	<% END %>
-	</select>
-<% END %>
-
-
-
-<% BLOCK boolean_field %>
-	<% IF param.default == "false" %>
-		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %>" value="true" />
-	<% ELSE %>
-		<input type="checkbox" id="field_<% param.name %>" name="<% param.name %>" value="true" checked />
-	<% END %>
-<% END %>
-
-
-
-<% BLOCK input_file_field %>
-	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" />
-    <input type="hidden" id="field_<% param.name %>_alt" name="<% param.name %>_alt" value="" />
-or <span class="browseropen" id="browserctrl_<% param.name %>">use a file from a previous job</span>
-    <div id="browser<% param.name %>"></div>
-    <script>filebrowser_init("browser<% param.name %>", "browserctrl_<% param.name %>", function(job, file, type) { appfile_select("<% param.name %>", job, file, type) })</script>
-<% END %>
-
-
-
-<% BLOCK output_file_field %>
-	<input type="text" id="field_<% param.name %>" name="<% param.name %>" size="40" /> <% param.extension %>
-<% END %>

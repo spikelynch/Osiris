@@ -70,6 +70,8 @@ my @METADATA_FIELDS = qw(
     user id app from to status created started finished harvest
 );
 
+my %METADATA_HASH = map { $_ => 1 } @METADATA_FIELDS;
+
 =head METHODS
 
 =over 4
@@ -97,14 +99,12 @@ sub new {
 
 	$self->{log} = Log::Log4perl->get_logger($class);
 
-
     if( my $s = $params{summary} ) {
         # job is being created from the job list
         for ( qw(created started finished status to from) ) {
             $self->{$_} = $s->{$_};
         }
         $self->{appname} = $s->{app};
-
     } else{
         # job is being created via the web app (or a test script)
         $self->{app} = $params{app};
@@ -114,9 +114,8 @@ sub new {
             $self->{status} = 'new';
             $self->{created} = $self->timestamp;
         }
+        $self->{log}->debug("Created new job $self->{id}");
 	} 
-
-
 	return $self;
 }
 
@@ -250,6 +249,12 @@ EOXML
             $self->{xml} .= "        <$f>$metadata->{$f}</$f>\n";
         } else {
             $self->{xml} .= "        <$f />\n";
+        }
+    }
+
+    if( $self->{extras} ) {
+        for my $f ( sort keys %{$self->{extras}} ) {
+            $self->{xml} .= "        <$f>$self->{extras}{$f}</$f>\n";
         }
     }
 
@@ -406,6 +411,25 @@ sub add_parameters {
 }
 
 
+=item add_extras(%params)
+
+Adds one or more 'extra' parameters (like publication metadata)
+
+=cut
+
+sub add_extras {
+    my ( $self, %extras ) = @_;
+
+    for my $field ( keys %extras ) {
+        if( $METADATA_HASH{$field} ) {
+            $self->{log}->error("Extra metadata field '$field' is reserved: ignoring");
+        } else {
+            $self->{extras}{$field} = $extras{$field};
+        }
+    }
+}
+
+
 
 =item timestamp
 
@@ -508,6 +532,7 @@ sub load_xml {
 
     $self->{parameters} = {};
     my $metadata;
+    my $extras;
 
     my $tw = XML::Twig->new(
         twig_handlers => {
@@ -517,7 +542,12 @@ sub load_xml {
             },
             metadata => sub {
                 for my $child ( $_->children ) {
-                     $metadata->{$child->tag} = $child->text;
+                    my $tag = $child->tag;
+                    if( $METADATA_HASH{$tag} ) {
+                        $metadata->{$tag} = $child->text;
+                    } else {
+                        $extras->{$tag} = $child->text;
+                    }
                 }
             }
         }
@@ -540,6 +570,10 @@ sub load_xml {
         }
     }
 
+    if( keys %$extras ) {
+        $self->{extras} = $extras;
+    }
+
     return 1;
 }
 
@@ -557,8 +591,10 @@ sub load_app {
         
         my $isisdir = $self->{user}{isisdir};
         if( !$isisdir ) {
-            print Dumper({user => $self->{user}});
-            die("$self->{user} has no isisdir");
+            $self->{log}->debug(Dumper({user => $self->{user}}));
+            warn("$self->{user} has no isisdir");
+            warn("Called from " . join(' ', caller));
+            die;
         }
         $self->{app} = Osiris::App->new(
 			dir => $isisdir,
@@ -642,8 +678,6 @@ sub files {
     $f->{inputs} = {};
     $f->{outputs} = {};
     $f->{other} = [];
-
-    $self->{log}->debug("Job got print.prt: " . $f->{print});
 
     # Look for input files
 

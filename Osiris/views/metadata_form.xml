@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<form name="datacapture" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://isis.astrogeology.usgs.gov/Schemas/Application/application.xsd">
+
+  <brief>
+    Metadata extensions for UTS Data Capture
+  </brief>
+
+  <groups>
+    <group name="Metadata">
+      <parameter name="title">
+        <type>string</type>
+        <brief>
+          A title for this dataset
+        </brief>
+        <description>
+          Will appear as the dataset's title in the Research Data Catalogue
+          and RDA
+        </description>
+      </parameter>
+
+      <parameter name="description">
+        <type>textarea</type>
+        <brief>
+          A short description of this dataset
+        </brief>
+        <description>
+          A paragraph describing the dataset.
+        </description>
+      </parameter>
+
+      <parameter name="project">
+        <type>string</type>
+        <brief>
+          A single-line description of the project or program.
+        </brief>
+        <description>
+          Can be a UTS or external grant number, or your own description
+        </description>
+      </parameter>
+
+      <parameter name="supervisor">
+        <type>string</type>
+        <brief>
+          The name of your supervisor, if you are an HDR student.
+        </brief>
+        <description>
+          The name of your supervisor, if you are an HDR student.
+        </description>
+      </parameter>
+
+      <parameter name="coverage">
+        <type>textarea</type>
+        <brief>
+          The spatial coverage of the dataset
+        </brief>
+        <description>
+          A brief textual description of the spatial coverage of this 
+          dataset.
+        </description>
+      </parameter>
+
+
+      <parameter name="public">
+        <type>boolean</type>
+        <brief>
+          Auto-publish
+        </brief>
+        <description>
+          If this box is checked, the dataset will be published to 
+          <a href="http://researchdata.ands.org.au/">Research Data Australia</a>,
+          where it will be discoverable by other researchers and the public.
+        </description>
+      </parameter>
+
+    </group>
+   </groups>
+</form>

@@ -50,12 +50,16 @@ form = ARRAYREF of groups:
     ...
 
 FIELD_TYPE is one of text_field
+                     textarea_field
                      list_field
                      boolean_field
                      input_file_field 
                      output_file_field
 
 TYPE is one of string/integer/double/boolean
+
+Note that textarea_fields are not in the Isis XML but I've added them
+to support textareas in the additional metadata fields.
 
 =cut
 
@@ -347,6 +351,7 @@ sub xml_parameter {
 			$parameter->{$_} = $child->trimmed_text;
 		}
 	}
+
 	if( exists $parameter->{fileMode} ) {
 		$parameter->{is_file} = $parameter->{fileMode};
 		if( $parameter->{fileMode} eq 'input' ) {
@@ -355,14 +360,18 @@ sub xml_parameter {
 			$parameter->{field_type} = 'output_file_field';
             $parameter->{extension} = substr($parameter->{filter}, 1);
 		}
+
 	} elsif( $parameter->{is_list} ) {
 		$parameter->{field_type} = 'list_field';
+
 	} elsif( $parameter->{type} eq 'boolean' ) {
 		$parameter->{field_type} = 'boolean_field';
 		$parameter->{default} = $self->xml_fix_boolean(
             raw => $parameter->{default}
             );
-	} else {
+	} elsif( $parameter->{type} eq 'textarea' ) {
+        $parameter->{field_type} = 'textarea_field';
+    } else {
 		$parameter->{field_type} = 'text_field';
 	}
 	return $parameter;

@@ -8,7 +8,6 @@
 <td class="value"><a class="app" href="/app/<% job.appname %>"><% job.appname %></a></td>
 </tr>
 
-
 <tr>
 <td class="label">Job status</td>
 <td class="value"><strong><% job.status %></strong></td>
@@ -41,6 +40,35 @@
 
 <% ELSE %>
     <% INCLUDE links list=files.outputs class="outputghost" %>
+
+<% END %>
+
+<% IF job.status == "done" && extras %>
+
+<tr>
+   <td class="label">Publish</td>
+   <td><span class="clickable" id="ctrl_publish">Click to publish this dataset</span>
+<script lang="javascript">
+$('#ctrl_publish').click(function(event) {
+    if( $('#publish').is(':hidden') ) {
+        $('#publish').slideDown();
+    } else {
+        $('#publish').slideUp();
+    }
+});
+</script>
+
+
+
+<% INCLUDE form.tt url      = publish_url
+                   formid   = "publish"
+                   api      = extras 
+                   submit   = "Publish"
+                   cancel   = "#publish" %>
+
+</td>
+</tr>
+
 
 <% END %>
 

@@ -123,7 +123,7 @@ sub form {
 	my ( $self ) = @_;
 	
     if( $self->read_form ) {
-        return $self->{form}->groups;
+       return $self->{form}->groups;
     }
 }
 
