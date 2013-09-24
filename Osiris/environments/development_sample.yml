@@ -1,4 +1,6 @@
-# configuration file for development environment
+# Sample configuration file for development environment
+
+# copy this to development.yml and configure for your site
 
 # the logger engine to use
 
@@ -17,20 +19,13 @@ warnings: 0
 # should Dancer show a stacktrace when an error is caught?
 show_errors: 1
 
-# auto_reload is a development and experimental feature
-# you should enable it by yourself if you want it
-# Module::Refresh is needed 
-# 
-# Be aware it's unstable and may cause a memory leak.
-# DO NOT EVER USE THAT FEATURE IN PRODUCTION 
-# OR TINY KITTENS SHALL DIE WITH LOTS OF SUFFERING
 auto_reload: 0
 
 # Osiris config
 
-isisdir: 	 /home/mike/Isis/isis/bin/xml/
+isisdir:     /path/to/your/isis/bin/xml
 isistoc: 	 applicationTOC.xml
 isiscats: 	 applicationCategories.xml
-workingdir:  /home/mike/workspace/DC18C Osiris/working
-extras:      /home/mike/workspace/DC18C Osiris/Osiris/views/metadata_form.xml
+workingdir:  /where/the/users/files/are/kept
+extras:      /path/to/the/extra/form/spec/metadata_form.xml
 fakeuser:    michael
