@@ -7,15 +7,32 @@ use strict;
 sub POE::Kernel::ASSERT_DEFAULT () { 1 };
 use POE qw(Wheel::Run);
 
-use lib '/home/mike/workspace/DC18C Osiris/Osiris/lib';
+
+
+my $missing = 0;
+
+for my $ev ( qw(OSIRIS_LIB OSIRIS_PTAHLOG OSIRIS_WORKING ISISROOT) ) {
+	if( !$ENV{$ev} ) {
+		warn("Missing environment variable $ev\n");
+		$missing = 1;
+	}
+}
+
+if( $missing ) {
+	die("One or more missing environment variables.\n");
+}
+    
+
+
+use lib $ENV{OSIRIS_LIB};
 
 use Data::Dumper;
 use Log::Log4perl;
-use YAML::XS;
+#use YAML::XS;
 
-Log::Log4perl::init('/home/mike/workspace/DC18C Osiris/Osiris/environments/log4perl.conf');
+Log::Log4perl::init($ENV{OSIRIS_PTAHLOG});
 
-my $ISIS_DIR = '/home/mike/Isis/isis/bin/xml';
+my $ISIS_DIR = "$ENV{ISISROOT}/bin/xml";
 
 use Osiris::User;
 use Osiris::Job;
@@ -42,7 +59,7 @@ sub MAX_CONCURRENT_TASKS () { 10 }
 
 # if {user} is empty, rescan the working dir and start again.
 
-my $WORKING_DIR = '/home/mike/workspace/DC18C Osiris/working/';
+my $WORKING_DIR = $ENV{OSIRIS_WORKING};
 
 
 my $log = Log::Log4perl->get_logger('ptah');
@@ -71,7 +88,7 @@ POE::Session->create(
 sub initialise {
     my ( $kernel, $heap ) = @_[KERNEL, HEAP];
 
-    $log->debug("[initialise]");
+    $log->info("[initialise]");
 
     $heap->{jobs} = [];
     $heap->{users} = [];
@@ -216,7 +233,7 @@ sub run_jobs {
             StderrEvent  => "task_debug",
             CloseEvent   => "task_done",
             );
-        $log->debug("Launched task " . $task->ID . " with pid " . $task->PID);
+        $log->info("Launched task " . $task->ID . " with pid " . $task->PID);
         $heap->{running}{$task->ID} = {
             task => $task,
             job => $job
@@ -247,7 +264,7 @@ sub stop_ptah {
     my ( $kernel, $heap, $state, $sender ) = 
         @_[KERNEL, HEAP, STATE, SENDER];
 
-    $log->debug("___[_stop_ptah]");
+    $log->info("___[_stop_ptah]");
     $log->debug("    state = $state");
     $log->debug("    sender = $sender");
     print "End.\n";
@@ -290,7 +307,7 @@ sub handle_task_done {
 sub sig_child {
     my ($heap, $sig, $pid, $exit_val) = @_[HEAP, ARG0, ARG1, ARG2];
 
-    $log->debug("sig_child caught for PID $pid");
+    $log->info("sig_child caught for PID $pid");
 
     my $wid = $heap->{pid_to_wid}{$pid};
 
