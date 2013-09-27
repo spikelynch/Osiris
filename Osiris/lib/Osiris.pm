@@ -154,8 +154,8 @@ get '/job/:id' => sub {
                     $param->{default} = $job->{extras}{$name};
                 }
             }
-            # NOTE: took uri_for out of publish_url
-            $vars->{publish_url} = '/job/' . $id;
+
+            $vars->{publish_url} = kludge_uri_for('/job/' . $id);
             $vars->{javascripts} = [ 'app', 'guards' ];
         }
 
@@ -318,8 +318,8 @@ get '/app/:app' => sub {
             template 'app' => {
                 title => $appname,
                 user => $user->{id},
-                url => '/app/' . $app->name,
-                back_url => '/',
+                url => kludge_uri_for('/app/' . $app->name),
+                back_url => kludge_uri_for('/'),
                 jobs => $jobs,
                 javascripts => [ 'app', 'guards', 'files' ],
                 app => $app->name,
@@ -638,6 +638,18 @@ sub load_extras {
 }
 
 
+
+sub kludge_uri_for {
+    my ( $path ) = @_;
+    
+    my $uri = uri_for($path);
+    if( $conf->{forceprotocol} ) {
+        $uri =~ s/^https?/$conf->{forceprotocol}/;
+        debug("Forced protocol: $path => $uri");
+    }
+
+    return $uri;
+}
 
 
 true;
