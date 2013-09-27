@@ -48,7 +48,6 @@ my ( $user, $jobshash, $jobs );
 
 hook 'before' => sub {
 
-    debug("Path: ", request->path_info);
     if (! session('user') && request->path_info !~ m{^/login}) {
         var requested_path => request->path_info;
         request->path_info('/login');
@@ -67,7 +66,11 @@ hook 'before' => sub {
 };
 
 get '/login' => sub {
-    template 'login', { title => 'Log In', path => vars->{requested_path} };
+    template 'login', {
+        title => 'Log In',
+        path => vars->{requested_path},
+        login_url => kludge_uri_for('/login')
+    };
 };
 
 post '/login' => sub {

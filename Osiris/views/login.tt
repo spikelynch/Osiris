@@ -1,5 +1,5 @@
 <h2>Log in</h2>
-<form name="login" method="post">
+<form name="login" method="post" action="<% login_url %>">
 
 <table>
 <tr><td>User name</td>
