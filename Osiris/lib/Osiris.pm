@@ -154,7 +154,8 @@ get '/job/:id' => sub {
                     $param->{default} = $job->{extras}{$name};
                 }
             }
-            $vars->{publish_url} = uri_for('/job/' . $id);
+            # NOTE: took uri_for out of publish_url
+            $vars->{publish_url} = '/job/' . $id;
             $vars->{javascripts} = [ 'app', 'guards' ];
         }
 
@@ -311,12 +312,14 @@ get '/app/:app' => sub {
             for my $p ( keys %$guards ) {
                 $guards->{$p} = encode_json($guards->{$p});
             }
-            
+
+            # NOTE: took uri_for out of url and back_url
+
             template 'app' => {
                 title => $appname,
                 user => $user->{id},
-                url => uri_for('/app/' . $app->name),
-                back_url => uri_for('/'),
+                url => '/app/' . $app->name,
+                back_url => '/',
                 jobs => $jobs,
                 javascripts => [ 'app', 'guards', 'files' ],
                 app => $app->name,
