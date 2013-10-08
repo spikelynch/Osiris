@@ -8,8 +8,6 @@ use JSON::WebToken;
 use Fcntl qw(:flock SEEK_END);
 
 
-Use Osiris::Job;
-
 =head NAME
 
 Osiris::AAF
@@ -28,9 +26,11 @@ See https://rapid.aaf.edu.au/developers for details.
 
 Create a new Osiris::AAF object with the given config.
 
-$file is the full path to the file used to store JITs.
 
 =cut
+
+my @CONFIG_VARS = qw(iss aud jtistore secret);
+
 
 sub new {
 	my ( $class, %params ) = @_;
@@ -45,32 +45,29 @@ sub new {
         die;
     }
 
-    for my $val ( keys %{$params{config}} ) {
-        $self->{log}->debug("Config $val = $params{$val}");
-        $self->{$val} = $params{config}->{$val};
+    my $missing = 0;
+
+    for my $val ( @CONFIG_VARS ) {
+        $self->{log}->debug("Config $val = $params{config}->{$val}");
+        $self->{$val} = $params{config}->{$val} || do {
+            $self->{log}->error("Missing config parameter $val");
+            $missing = 1;
+        }
     }
 
-    if( !$params{jitstore} ) {
-        $self->{log}->error("No JIT jitstore for $class");
-        die;
-    }
-
-    $self->{jitstore} = $params{jitstore};
-
-    if( ! -f $self->{jitstore} ) {
-        $self->{log}->error("jitstore $self->{jistore} not found");
+    if( $missing ) {
+        $self->{log}->error("Incomplete config");
         return undef;
     }
-
 
 	return $self;
 }
 
-=item encode(claim => { ... claim ... }, secret => $key)
+=item encode(claims => { ... claim1 => value ... })
 
-Encode a claim passed in as a hashref.  This is used to create web tokens
-locally to test this library and the Osiris endpoint before registration
-with the AAF.
+Encode a claims set passed in as a hashref.  This is used to create
+web tokens locally to test this library and the Osiris endpoint before
+registration with the AAF.
 
 =cut
 
@@ -78,15 +75,16 @@ with the AAF.
 sub encode {
     my ( $self, %params ) = @_;
     
-    my $claim = $params{claim};
-    my $secret = $params{secret};
+    my $claims = $params{claims};
 
-    if( !$claim || !$secret ) {
-        $self->{log}->error("encode method needs 'claim' and 'secret' parameters");
+    if( !$claims ) {
+        $self->{log}->error(
+            "encode method needs 'claims' parameter"
+            );
         return undef;
     }
 
-    my $jwt = encode_jwt($claim, $secret);
+    my $jwt = encode_jwt($claims, $self->{secret});
 
     return $jwt;
 }
@@ -94,7 +92,7 @@ sub encode {
 
 
 
-=item decode(jwt => $assertion, secret => $key)
+=item decode(jwt => $assertion)
 
 Attempt to decode a JWT assertion with the secret key.  If successful,
 returns the claims as a hashref
@@ -105,23 +103,20 @@ returns the claims as a hashref
 sub decode {
     my ( $self, %params ) = @_;
     
-    my $jwt = $params{jwt);
-    my $secret = $params{secret};
+    my $jwt = $params{jwt};
 
-    if( !$jwt || !$secret ) {
-        $self->{log}->error("encode method needs 'jwt' and 'secret' parameters");
+    if( !$jwt ) {
+        $self->{log}->error("encode method needs 'jwt'");
         return undef;
     }
 
-    my $claims = decode_jwt($jwt, $secret);
-
-    return $claims;
+    return decode_jwt($jwt, $self->{secret});
 }
 
 =item verify(claims => $claims)
 
 Verify the claims hashref against the config values, the current time
-and the jit store.  Writes errors into the logs for any mismatches.
+and the jti store.  Writes errors into the logs for any mismatches.
 
 
 =cut
@@ -160,7 +155,7 @@ sub verify {
     }
 
     if( !$self->store_jti(jti => $claims->{jti}) ) {
-        $self->{log}->error("Duplicate jti = $claims->{jti}");
+        $self->{log}->error("JTI storage failed");
         $success = 0;
     } 
 
@@ -192,30 +187,37 @@ sub store_jti {
 
     my $new_jti = $params{jti};
 
-    open(my $fh, "<$self->{jtistore}") || do {
-        $self->{log}->error("Couldn't open $self->{jtistore}: $!");
-        return undef;
-    };
-
-    flock($fh, LOCK_SH) || do { 
-        $self->{log}->error("Can't lock $self->{jtistore}: $!");
-        return undef;
-    };
-
     my %jtis;
 
-    while( my $l = <$fh> ) { 
-        chomp $l;
-        my ( $jti, $timestamp ) = split(/ /, $l);
-        if( $jti eq $new_jti ) {
-            $self->{log}->error("Warning: duplicate jti: $jti $timestamp");
-            close($fh);
-            return undef;
-        }
-        $jtis{$jti} = $timestamp;
-    }
+    if( ! -f $self->{jtistore} ) {
+        $self->{log}->warn("JTI store $self->{jtistore} not found: creating");
+        %jtis = ();
+    } else {
 
-    close($fh);
+        open(my $fh, "<$self->{jtistore}") || do {
+            $self->{log}->error("Couldn't open $self->{jtistore}: $!");
+            return undef;
+        };
+        
+        flock($fh, LOCK_SH) || do { 
+            $self->{log}->error("Can't lock $self->{jtistore}: $!");
+            return undef;
+        };
+        
+        
+        while( my $l = <$fh> ) { 
+            chomp $l;
+            my ( $jti, $timestamp ) = split(/ /, $l);
+            if( $jti eq $new_jti ) {
+                $self->{log}->error("Duplicate jti: $jti $timestamp");
+                close($fh);
+                return undef;
+            }
+            $jtis{$jti} = $timestamp;
+        }
+        
+        close($fh);
+    }
     
     $jtis{$new_jti} = time;
 
@@ -229,7 +231,7 @@ sub store_jti {
         return undef;
     };
 
-    for my $k ( sort { $a <=> $b } keys %jtis ) {
+    for my $k ( sort { $a cmp $b } keys %jtis ) {
         print $fh "$k $jtis{$k}\n";
     }
 
