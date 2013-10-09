@@ -80,6 +80,8 @@ it starts with '/auth'.
 If there is a session and user, we set up the $user, $jobs and $jobshash
 global variables, as they are used in every other page.
 
+If the user can't be created, destroy the session and go back to the login page
+
 =cut
 
 hook 'before' => sub {
@@ -100,6 +102,8 @@ hook 'before' => sub {
         );
         if( !$user ) {
             error("Couldn't create Osiris::User object");
+            session->destroy;
+            redirect kludge_uri_for('/auth/login');
         }
         $jobshash = $user->jobs(reload => 1);
         $jobs = [];

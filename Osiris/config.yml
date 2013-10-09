@@ -34,6 +34,7 @@ template: "template_toolkit"
 #     end_tag:   '%]'
 
 session: YAML
+session_expires: "2 hours"
 
 plugins:
     'Ajax':
