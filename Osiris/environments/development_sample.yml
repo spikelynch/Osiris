@@ -29,3 +29,35 @@ isiscats: 	 applicationCategories.xml
 workingdir:  /where/the/users/files/are/kept
 extras:      /path/to/the/extra/form/spec/metadata_form.xml
 fakeuser:    michael
+
+# AAF Rapid config
+
+# This is for local testing, where we have a fake authentication
+# URL that posts back to our auth point.  This has values for nbf, exp
+# and jti, which are not part of config in the real examples.
+
+aaftest:
+    iss: https://rapid.test.aaf.edu.au
+    aud: https://osiris.science.uts.edu.au
+    secret: "GIVEMEMYRANDOMCHARACTERSYOUSILLY"
+    jtistore: /usually/this/would/be/in/the/working/dir/jti.txt
+    attributes: https://aaf.edu.au/attributes
+
+
+aaftestatts:
+    cn:                         Joe Blow
+    mail:                       Joe.Blow@inst.edu.au
+    displayname:                Joe Reginald Blow
+    edupersontargetedid:        this_is_a_fake_id
+    edupersonscopedaffiliation: probablyanemail
+
+
+# These are the real credentials:
+
+aaf:
+    url: https://aaf.edu.au/
+    iss: https://rapid.test.aaf.edu.au
+    aud: https://osiris.science.uts.edu.au
+    secret: "GIVEMEMYRANDOMCHARACTERSYOUSILLY"
+    attributes: https://aaf.edu.au/attributes
+
