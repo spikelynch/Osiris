@@ -133,6 +133,8 @@ sub verify {
         return undef;
     }
 
+    $self->{log}->debug("Claims = " . Dumper({claims => $claims}));
+
     my $now = time;
     my $success = 1;
 
