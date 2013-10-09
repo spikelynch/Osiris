@@ -2,7 +2,7 @@
 
 # Standalone test of the AAF code
 
-use Test::More tests => 13;
+use Test::More tests => 18;
 
 use strict;
 use Data::Dumper;
@@ -16,6 +16,17 @@ use lib "$FindBin::Bin/../lib";
 
 use Osiris;
 use Osiris::AAF;
+
+my %ATTRIBUTES = (
+    cn => 'Joe Blow',
+    mail => 'Joe.Blow@inst.edu.au',
+    displayname => 'Joe Reginald Blow',
+    edupersontargetedid => 'anid',
+    edupersonscopedaffiliation => 'probablyanemail'
+    );
+
+
+
 
 
 use_ok 'Osiris::AAF';
@@ -35,7 +46,8 @@ my $claims = {
     aud => $aaf->{aud},
     nbf => $now - 100000,
     exp => $now + 100000,
-    jti => "JTI$now"
+    jti => "JTI$now",
+    $aaf->{attributes} => \%ATTRIBUTES
 };
 
 # Create a JWT
@@ -57,7 +69,17 @@ if( ok($decoded, "Decoded JWT") ) {
     cmp_ok($decoded->{nbf}, '<', $now, "nbf < $now");
     cmp_ok($decoded->{exp}, '>', $now, "exp > $now");
 
-    ok($oaaf->verify(claims => $decoded), "Claims verified");
+    my $atts = $oaaf->verify(claims => $decoded);
+
+    ok($atts, "Claims verified");
+
+    for my $attname ( keys %ATTRIBUTES ) {
+        cmp_ok(
+            $atts->{$attname}, 'eq', $ATTRIBUTES{$attname},
+            "Attributes: $attname"
+            );
+    }
+    
 }
 
 # Try a replay (claim with an existing JTI);

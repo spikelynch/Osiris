@@ -29,7 +29,7 @@ Create a new Osiris::AAF object with the given config.
 
 =cut
 
-my @CONFIG_VARS = qw(iss aud jtistore secret);
+my @CONFIG_VARS = qw(iss aud jtistore secret attributes);
 
 
 sub new {
@@ -48,7 +48,6 @@ sub new {
     my $missing = 0;
 
     for my $val ( @CONFIG_VARS ) {
-        $self->{log}->debug("Config $val = $params{config}->{$val}");
         $self->{$val} = $params{config}->{$val} || do {
             $self->{log}->error("Missing config parameter $val");
             $missing = 1;
@@ -118,6 +117,9 @@ sub decode {
 Verify the claims hashref against the config values, the current time
 and the jti store.  Writes errors into the logs for any mismatches.
 
+The AAF attributes (cn, mail, displayname etc) are returned as a claim
+called 'https://aaf.edu.au/attributes' - the URL to use for looking this
+up is configured as aaf.attributes.
 
 =cut
 
@@ -163,7 +165,12 @@ sub verify {
         $self->{log}->error("JWT authentication failed.");
     }
 
-    return $success;
+    if( $success ) {
+        return $claims->{$self->{attributes}};
+    } else {
+        return undef;
+    }
+
 }
 
 
