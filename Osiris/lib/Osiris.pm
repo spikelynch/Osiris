@@ -168,9 +168,9 @@ post '/auth/aaf' => sub {
 
                 if( $conf->{aafmode} eq 'test' ) {
                     debug("In local test mode: show user info");
-                    redirect '/auth/showaaf';
+                    redirect kludge_uri_for('/auth/showaaf');
                 } else {
-                    redirect '/';
+                    redirect kludge_uri_for('/');
                 }
             } else {
                 template 'error' => {
@@ -257,7 +257,7 @@ get '/auth/showaaf' => sub {
 
 get '/auth/logout' => sub {
     session->destroy;
-    redirect '/auth/login';
+    redirect kludge_uri_for('/auth/login');
 };
 
 
