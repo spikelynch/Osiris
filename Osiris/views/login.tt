@@ -1,20 +1,11 @@
 <h2>Log in</h2>
-<form name="login" method="post" action="<% login_url %>">
 
-<table>
-<tr><td>User name</td>
- <td><input name="user" type="text" size="10" /></td>
-</tr>
+<% IF fake %>
 
-<tr><td>Password</td>
- <td><input name="pass" type="password" size="10" /></td>
-</tr>
+<a href="<% login_url %>">Local JWT authentication test</a>
 
-<tr><td></td>
- <td><input type="submit" value="Log in" /></td>
-</tr>
+<% ELSE %>
 
-</table>
-<input type="hidden" name="path" value="<% path %>" />
+<a href="<% login_url %>">Authenticate with the Australian Access Federation</a>
 
-</form>
+<% END %>

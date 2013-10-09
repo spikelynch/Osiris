@@ -23,8 +23,10 @@
 <body>
 <div id="header">
 <h1><a href="/">Osiris: Isis on the web</a></h1>
-<div id="login">Logged in as <strong><% user %></strong> [<a href="/logout">Log out</a>]</div>
+<% IF user %>
+<div id="login">Logged in as <strong><% user %></strong> [<a href="/auth/logout">Log out</a>]</div>
 </div>
+<% END %>
 
 <div id="container">
 

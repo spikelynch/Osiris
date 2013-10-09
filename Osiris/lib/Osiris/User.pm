@@ -16,7 +16,8 @@ Osiris::User
 =head DESCRIPTION
 
 A class representing a user.  It maintains the user's working
-directory and list of jobs and their status.
+directory and list of jobs and their status, and contains their
+login attributes
 
 =cut
 
@@ -44,14 +45,18 @@ sub new {
 	$self->{id} = $params{id};
    	$self->{basedir} = $params{basedir};
     $self->{isisdir} = $params{isisdir};
+    $self->{mail} = $params{mail};
+    $self->{name} = $params{name};
 
     $self->{dir} = join('/', $self->{basedir}, $self->{id});
     $self->{log} = Log::Log4perl->get_logger($class);
 
 
 	if( !-d $self->{dir} ) {
-        $self->{log}->error("User $self->{id} has no working directory ($self->{dir}).");
-        return undef;
+        $self->{log}->info("User $self->{id} has no working directory ($self->{dir}).");
+        if( ! $self->_make_working_dir ) {
+            return undef;
+        }
     }
 
     if( $self->_load_joblist ) {
@@ -72,6 +77,30 @@ sub working_dir {
     my ( $self ) = @_;
     
     return $self->{dir};
+}
+
+
+=item _make_working_dir()
+
+Create a working directory for this user
+
+=cut
+
+sub _make_working_dir {
+    my ( $self ) = @_;
+
+    if ( -d $self->{dir} ) {
+        $self->{log}->warn("User $self->{id} already has a working dir");
+        return 1;
+    }
+
+    if( mkdir($self->{dir}) ) {
+        $self->{log}->info("Created working dir $self->{dir}");
+        return 1;
+    } else {
+        $self->{log}->error("Couldn't create $self->{dir} $!");
+    }
+    return undef;
 }
 
 =item jobs

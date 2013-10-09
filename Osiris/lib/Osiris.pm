@@ -4,12 +4,15 @@ use Dancer ':syntax';
 use Dancer::Plugin::Ajax;
 
 use XML::Simple;
+
 use JSON;
+
 use Data::Dumper;
 
 use Osiris::App;
 use Osiris::Job;
 use Osiris::User;
+use Osiris::AAF;
 
 
 
@@ -20,6 +23,28 @@ Osiris
 =head DESCRIPTION
 
 Dancer interface to the Isis planetary imaging toolkit
+
+=head VARIABLES
+
+=over 4
+
+=item $VERSION - release name and number
+
+=item $toc - Isis table of contents - hash by command name
+
+=item $cats - Isis apps as a hash by category
+
+=item $extra_form - optional extra form for the job page
+
+=item $extra_fields - list of field names for the extra form
+
+=item $user - Osiris::User if there's a current user session
+
+=item $jobshash - user's jobs as a hashref by job ID
+
+=item $jobs - user's jobs as an arrayref
+
+=back
 
 =cut
 
@@ -36,59 +61,211 @@ if( $conf->{extras} ) {
     ( $extra_form, $extra_fields ) = load_extras($conf->{extras});
 }
 
-my $fakeuser = $conf->{fakeuser};
-
-# The before hook: if there's no session, redirect the user to the
-# login page.
-
-# If there is a user, get the Osiris::User object and load the joblist
-# because these are used in every route.
-
 my ( $user, $jobshash, $jobs );
 
-hook 'before' => sub {
+=head HOOKS
 
-    if (! session('user') && request->path_info !~ m{^/login}) {
-        var requested_path => request->path_info;
-        request->path_info('/login');
-    } else {
+=over 4
+
+=item before
+
+The 'before' hook checks if there is a user session active.  If there
+isn't, it tests to see if this request is part of the authentication process.
+If it's not, it redirects the user to either the AAF login URL, or, if
+we are running in 'fake_AAF' mode, to the fake AAF login page.
+
+To make things simpler, a route is part of the authentication process iff
+it starts with '/auth'.
+
+If there is a session and user, we set up the $user, $jobs and $jobshash
+global variables, as they are used in every other page.
+
+=cut
+
+hook 'before' => sub {
+    
+    if (! session('user') && request->path_info !~ m{^/auth}) {
+        request->path_info('/auth/login');
+    } elsif ( session('user') ) {
+        my $atts = session('aaf');
+        if( !$atts ) {
+            error("No AAF atts");
+        }
         $user = Osiris::User->new(
             id => session('user'),
             isisdir => $conf->{isisdir},
-            basedir => $conf->{workingdir}
+            basedir => $conf->{workingdir},
+            mail => $atts->{mail},
+            name => $atts->{cn}
         );
+        if( !$user ) {
+            error("Couldn't create Osiris::User object");
+        }
         $jobshash = $user->jobs(reload => 1);
         $jobs = [];
         for my $id ( sort { $b <=> $a } keys %$jobshash ) {
             push @$jobs, $jobshash->{$id};
         }
-    }   
-};
-
-get '/login' => sub {
-    template 'login', {
-        title => 'Log In',
-        path => vars->{requested_path},
-        login_url => kludge_uri_for('/login')
-    };
-};
-
-post '/login' => sub {
-    
-    # Validate the username and password they supplied
-    if (params->{user} eq $fakeuser && params->{pass} eq $fakeuser ) {
-        debug("Logged in as $fakeuser");
-        session user => params->{user};
-        redirect params->{path} || '/';
-    } else {
-        redirect '/login?failed=1';
     }
 };
 
-get '/logout' => sub {
-    session->destroy;
-    redirect '/login';
+
+
+get '/auth/login' => sub {
+
+    my $target = $conf->{aaf}{url};
+    my $fake = 0;
+    if( $conf->{aafmode} eq 'test' ) {
+        $target = kludge_uri_for('/auth/fakeaaf');
+        $fake = 1;
+    }
+
+    template 'login', {
+        fake => $fake,
+        title => 'Log In',
+        login_url => $target
+    };
 };
+
+
+# AAF JWT code adapted from https://gist.github.com/bradleybeddoes/6154072
+#
+# See https://rapid.aaf.edu.au/developers for full details.
+#
+# This is the callback endpoint: after users authenticate via AAF, an
+# encrypted JSON web token is POSTed to this URL.
+#
+# the 'is_fake' param is used to test this with a fake JSON we generated
+# ourselves.,
+
+post '/auth/aaf' => sub {
+    my $jwt = params->{assertion};
+    my $fake = params->{is_fake};
+
+    my $aafcf;
+
+    if( $fake ) {
+        $aafcf = $conf->{aaftest};
+    } else {
+        $aafcf = $conf->{aaf};
+    }
+
+    if( !$jwt ) {
+        send_error("System error", 500);
+    }
+
+    my $oaaf = Osiris::AAF->new( config => $aafcf );
+    
+    my $claims = $oaaf->decode(jwt => $jwt);
+
+    if( $claims ) {
+        if( my $attributes = $oaaf->verify(claims => $claims) ) {
+            if( my $user_id = aaf_to_user($attributes) ) {
+                debug("Got user id $user_id");
+                session aaf => $attributes;
+                session jwt => $jwt;
+                session user => $user_id;
+
+                if( $conf->{aafmode} eq 'test' ) {
+                    debug("In local test mode: show user info");
+                    redirect '/auth/showaaf';
+                } else {
+                    redirect '/';
+                }
+            } else {
+                template 'error' => {
+                    title => 'Error',
+                    error => 'Authentication failed.'
+                };
+            }
+        } else {
+            warn("AAF JWT authentication failed");
+            send_error(403, "Not allowed");
+        }
+    } else {
+        warn("AAF JWT decryption failed");
+        send_error(403, "Not allowed");
+    }
+};
+
+
+# this is a URL for preliminary testing of AAF, before we send 
+# our endpoint for registration.  It encodes a JWT from the config
+# values, which will definitely match when it gets to the auth
+# endpoint.
+
+
+get '/auth/fakeaaf' => sub {
+
+    if( $conf->{aafmode} ne 'test' ) {
+        redirect $conf->{aaf}{url};
+    }
+    my $test_conf = $conf->{aaftest};
+
+    my $oaaf = Osiris::AAF->new(config => $test_conf);
+
+    my $time = time;
+
+    my $claims = {
+        iss => $test_conf->{iss},
+        aud => $test_conf->{aud},
+        nbf => $time - 1000000,
+        exp => $time + 1000000,
+        jti => 'FAKEJTI' . $time,
+        $test_conf->{attributes} => $conf->{aaftestatts}
+    };
+
+    my $jwt = $oaaf->encode(claims => $claims);
+    debug("Encoded claims as jwt ", $jwt);
+
+    template 'fake_aaf' => {
+        jwt => $jwt,
+        aaf_endpoint => '/auth/aaf'
+    }
+};
+
+=item get /auth/showaaf
+
+=cut
+
+
+get '/auth/showaaf' => sub {
+    my $atts = session('aaf');
+    template 'fake_aaf' => {
+        user => $user->{name},
+        aaf_user => $atts
+    };
+};
+
+
+# this is the old authentication
+
+# post '/login' => sub {
+    
+#     Validate the username and password they supplied
+#     if (params->{user} eq $fakeuser && params->{pass} eq $fakeuser ) {
+#         debug("Logged in as $fakeuser");
+#         session user => params->{user};
+#         redirect params->{path} || '/';
+#     } else {
+#         redirect '/login?failed=1';
+#     }
+# };
+
+
+
+
+get '/auth/logout' => sub {
+    session->destroy;
+    redirect '/auth/login';
+};
+
+
+
+
+
+
+
 
 
 ###### Routes for starting jobs, looking at the job list and 
@@ -102,13 +279,13 @@ get '/' => sub {
 
         template 'jobs' => {
             title => 'My jobs',
-            user => $user->{id},
+            user => $user->{name},
             jobs => $jobs,
         };
     } else {
         template 'getting_started' => {
             title => 'Getting Started',
-            user => $user->{id}, 
+            user => $user->{name}, 
         };
     }
 };
@@ -129,8 +306,6 @@ get '/job/:id' => sub {
         
         $job->load_xml;
 
-        debug(Dumper({ extras => $job->{extras} }));
-
         my $command = $job->command;
         $command = join(' ', @$command);
         my $dir = $job->working_dir;
@@ -140,7 +315,7 @@ get '/job/:id' => sub {
 
         my $vars =  {
             title => "Job: " . $job->label, 
-            user => $user->{id},
+            user => $user->{name},
             job => $job,
             command => $command,
             files => $job->files,
@@ -162,7 +337,7 @@ get '/job/:id' => sub {
             $vars->{javascripts} = [ 'app', 'guards' ];
         }
 
-        template job => $vars;
+        template 'job' => $vars;
     }
 };
 
@@ -190,8 +365,8 @@ get '/job/:id/files/:file' => sub {
 
 get '/files' => sub {
 
-    template files => {
-        user => $user,
+    template 'files' => {
+        user => $user->{name},
         javascripts => [ 'files' ],
         jobs => $jobs
     };
@@ -249,7 +424,7 @@ get '/browse/:by' => sub {
     if( $cats->{$by} ) {
         template 'browse' => {
             title => "Apps by $by",
-            user => $user->{id},
+            user => $user->{name},
             jobs => $jobs,
             browseby => $by,
             browse => $cats->{$by}
@@ -272,7 +447,7 @@ get '/browse/:by/:class' => sub {
 	if( my $apps = $cats->{$by}{$class} ) {
 		template 'browse_apps' => {
             title => "Apps by $by / $class",
-            user => $user->{id}, 
+            user => $user->{name}, 
             jobs => $jobs,
 			browseby => $by,
 			class => $class,
@@ -305,7 +480,7 @@ get '/app/:app' => sub {
         if( !@p ) {
             template 'error' => {
                 title => 'Error',
-                user => $user->{id},
+                user => $user->{name},
                 jobs => $jobs,
                 error => "The app '$appname' can't be operated via the web."
             };
@@ -320,7 +495,7 @@ get '/app/:app' => sub {
 
             template 'app' => {
                 title => $appname,
-                user => $user->{id},
+                user => $user->{name},
                 url => kludge_uri_for('/app/' . $app->name),
                 back_url => kludge_uri_for('/'),
                 jobs => $jobs,
@@ -346,7 +521,7 @@ get '/search' => sub {
     if( $search ) {
         my $results = search_toc(search => $search);
         template 'search' => {
-            user => $user,
+            user => $user->{name},
             title => 'Search results',
             jobs => $jobs,
             search => $search,
@@ -405,7 +580,7 @@ post '/app/:name' => sub {
         error("Couldn't write job");
         template 'error' => {
             title => 'Job error',
-            user => $user->{id},
+            user => $user->{name},
             jobs => $jobs,
             error => "Couldn't start job."
         };
@@ -446,7 +621,7 @@ post '/job/:id' => sub {
             error("Couldn't write job");
             template 'error' => {
                 title => 'Job error',
-                user => $user->{id},
+                user => $user->{name},
                 jobs => $jobs,
                 error => "Couldn't submit job for publishing"
             };
@@ -493,7 +668,7 @@ sub input_files {
             if( ! $upload->copy_to($to_file) ) {
                 error("Couldn't copy upload to $filename");
                 template 'error' => {
-                    user => $user->{id}, 
+                    user => $user->{name}, 
                     error => "Couldn't create Osiris::Job"
                 };
             } else {
@@ -640,6 +815,17 @@ sub load_extras {
     return ( $extras, \@fields );
 }
 
+
+sub aaf_to_user {
+    my ( $atts ) = @_;
+
+    if( my $id = $atts->{edupersontargetedid} ) {
+        return $id;
+    } else {
+        error("Couldn't get eduPersonTargetedID");
+        return undef;
+    }
+}
 
 
 sub kludge_uri_for {
