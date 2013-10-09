@@ -1,0 +1,51 @@
+AAF Authentication.
+
+Have tangled myself into knots getting AAF integration going.  Starting 
+to untangle.
+
+
+AAF Rapid process:
+
+1:     Arrive at any Osiris page without a session/user.
+
+2:     Redirect to the AAF with the correct URL
+
+3:     User authenticates at the AAF+their institution
+
+4:     AAF sends a POST to our /auth/aaf endpoint, which decrypts
+       and verifies it, and then redirects to the home page.
+
+
+ALSO:
+
+1:     Arrive at Osiris without a session
+
+2:     We are running in fake_aaf mode, so redirect to our own fake AAF page
+
+3:     (no counterpart)
+
+4:     the fake AAF page posts to /auth/aaf, which knows that we are 
+       running in fake_aaf mode, so it just shows the decrypted attributes,
+
+
+So the logic in the before clause has to be:
+
+* Do they have a session? If so - do nothing, let em go through
+
+* Is this request going to /auth/aaf? If so - part of authentication
+
+* Are we in fake_aaf mode, and is this a reqeust to the fake AAF page? - pass
+
+* no session, and not part of an authentication process, so redirect
+  to either the fake aaf page or the actual AAF page.
+
+
+
+
+
+
+NOTE
+In 4 - the original code stashed the original path from 1 and redirected
+the user back there once they'd logged in.  But I don't think we can send
+the path on the trip to the AAF and back, so now they always go back to 
+the front page after authentication.

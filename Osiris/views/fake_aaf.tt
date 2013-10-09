@@ -1,0 +1,25 @@
+<h2>Fake AAF login</h2>
+
+<p>This is for testing JWT decoding for the AAF Rapid login.
+
+<% IF user %>
+
+<% FOREACH field IN aaf_user.keys %>
+
+<p><b><% field %></b> = "<% aaf_user.$field %>"</p>
+
+<% END %>
+
+<% ELSE %>
+
+
+<form name="login" method="post" action="<% aaf_endpoint %>">
+
+<input type="hidden" name="assertion" value="<% jwt %>" />
+<input type="hidden" name="is_fake" value="1" />
+
+<input id="button_submit" type="submit" value="Submit" />
+
+</form>
+
+<% END %>

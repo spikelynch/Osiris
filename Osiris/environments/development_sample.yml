@@ -29,6 +29,7 @@ isiscats: 	 applicationCategories.xml
 workingdir:  /where/the/users/files/are/kept
 extras:      /path/to/the/extra/form/spec/metadata_form.xml
 fakeuser:    michael
+aafmode:     live
 
 # AAF Rapid config
 
