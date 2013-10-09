@@ -6,6 +6,8 @@
 
 <% ELSE %>
 
-<a href="<% login_url %>">Authenticate with the Australian Access Federation</a>
+<p><a href="<% login_url %>">Log in via the Australian Access Federation</a></p>
+
+<a href="https://www.aaf.edu.au/"><img src="/images/aaf_service_223x54.png" width="223" height="54" alt="Australian Access Federation" /></a>
 
 <% END %>

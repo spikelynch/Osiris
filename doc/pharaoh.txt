@@ -1,6 +1,6 @@
-Narmer
-Hor-Aha
-Djer
+Narmer                  0.1
+Hor-Aha                 0.2
+Djer                    0.3
 Djet
 Merneith
 Den

@@ -1,3 +1,8 @@
+Release 0.3 Djer
+----------------
+
+New feature: AAF authentication
+
 Release 0.2 Hor-Aha
 -------------------
 
