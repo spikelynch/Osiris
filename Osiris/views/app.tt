@@ -4,8 +4,6 @@
 
 <div id="description"><% description %></div>
 
-<div>Target = <% url %></div>
-
 <% INCLUDE form.tt url      = url
                    formid   = "isisapp"
                    api      = form 
