@@ -51,14 +51,6 @@ sub new {
     $self->{dir} = join('/', $self->{basedir}, $self->{id});
     $self->{log} = Log::Log4perl->get_logger($class);
 
-
-	if( !-d $self->{dir} ) {
-        $self->{log}->info("User $self->{id} has no working directory ($self->{dir}).");
-        if( ! $self->_make_working_dir ) {
-            return undef;
-        }
-    }
-
     if( $self->_load_joblist ) {
         return $self;
     } else {
@@ -79,18 +71,18 @@ sub working_dir {
     return $self->{dir};
 }
 
+=item _ensure_working_dir()
 
-=item _make_working_dir()
-
-Create a working directory for this user
+Checks if the working directory exists, and tries to create it if it 
+doesn't.  If the directory exists or was created successfully, returns
+1, otherwise undef.
 
 =cut
 
-sub _make_working_dir {
+sub _ensure_working_dir {
     my ( $self ) = @_;
 
-    if ( -d $self->{dir} ) {
-        $self->{log}->warn("User $self->{id} already has a working dir");
+    if( -d $self->{dir} ) {
         return 1;
     }
 
@@ -98,10 +90,11 @@ sub _make_working_dir {
         $self->{log}->info("Created working dir $self->{dir}");
         return 1;
     } else {
-        $self->{log}->error("Couldn't create $self->{dir} $!");
+        $self->{log}->error("Error creating working dir $self->{dir} $!");
     }
     return undef;
 }
+    
 
 =item jobs
 
@@ -135,6 +128,10 @@ Job.
 
 sub create_job {
     my ( $self, %params ) = @_;
+
+    if( !$self->_ensure_working_dir ) {
+        return undef;
+    }
 
     my $id = $self->_new_jobid;
 
@@ -210,7 +207,7 @@ sub _joblistfile {
 
 =item _load_joblist
 
-Load the storable job list, if it exists
+Load the user's job list, if it exists.
 
 =cut
 
@@ -274,6 +271,10 @@ Saves the storable job list, if it exists
 
 sub _save_joblist {
     my ( $self ) = @_;
+
+    if( !$self->_ensure_working_dir ) {
+        return undef;
+    }
 
     my $joblistfile = $self->_joblistfile;
     

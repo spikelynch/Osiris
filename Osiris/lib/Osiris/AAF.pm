@@ -5,6 +5,7 @@ use strict;
 use Data::Dumper;
 use Log::Log4perl;
 use JSON::WebToken;
+use Digest::SHA qw(sha256_hex);
 use Fcntl qw(:flock SEEK_END);
 
 
@@ -175,6 +176,36 @@ sub verify {
 
 }
 
+
+=item user_id(attributes => $atts)
+
+Takes a set of user attributes and returns a unique string that can
+be used as a user ID (and to create working directories).
+
+On AAF's recommendation, we're using a SHA-256 hex digest of the complete
+EduPersonTargetedID string.
+
+=cut
+
+sub user_id {
+    my ( $self, %params ) = @_;
+
+    my $atts = $params{attributes} || do {
+        $self->{log}->error("user_id needs an attributes hashref");
+        return undef;
+    };
+
+    my $id = $atts->{edupersontargetedid} || do {
+        $self->{log}->error("No edupersontargetedid in attributes");
+        return undef;
+    };
+
+    my $user_id = sha256_hex($id);
+
+    $self->{log}->debug("Hashed $id\n to $user_id");
+
+    return $user_id;
+}
 
 
 =item store_jti(jti => $jti) 

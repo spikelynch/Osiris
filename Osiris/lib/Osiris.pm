@@ -95,10 +95,10 @@ hook 'before' => sub {
         }
         $user = Osiris::User->new(
             id => session('user'),
+            name => $atts->{cn},
+            atts => $atts,
             isisdir => $conf->{isisdir},
-            basedir => $conf->{workingdir},
-            mail => $atts->{mail},
-            name => $atts->{cn}
+            basedir => $conf->{workingdir}
         );
         if( !$user ) {
             error("Couldn't create Osiris::User object");
@@ -164,7 +164,7 @@ post '/auth/aaf' => sub {
 
     if( $claims ) {
         if( my $attributes = $oaaf->verify(claims => $claims) ) {
-            if( my $user_id = aaf_to_user($attributes) ) {
+            if( my $user_id = $oaaf->user_id(attributes => $attributes) ) {
                 debug("Got user id $user_id");
                 session aaf => $attributes;
                 session jwt => $jwt;
@@ -819,17 +819,6 @@ sub load_extras {
     return ( $extras, \@fields );
 }
 
-
-sub aaf_to_user {
-    my ( $atts ) = @_;
-
-    if( my $id = $atts->{edupersontargetedid} ) {
-        return $id;
-    } else {
-        error("Couldn't get eduPersonTargetedID");
-        return undef;
-    }
-}
 
 
 sub kludge_uri_for {
