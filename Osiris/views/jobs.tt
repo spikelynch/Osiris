@@ -1,13 +1,26 @@
-<h2>Job list</h2>
+<h2>Your Jobs</h2>
 
-<form name="jobs"
-      method="post"  >
+<form name  ="jobs"
+      id    ="do_on_selected"
+      method="post"
+      action="/jobsop"  >
 
 <table class="joblist">
 <thead>
 <tr>
-        <th>Job</th><th>Program</th><th>Status</th>
-        <th>Created</th><th>Input</th><th>Output</th>
+        <th>Job</th>
+        <th>Program</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Input</th>
+        <th>Output</th>
+        <th colspan="2">
+        <select id="operation" name="operation">
+            <option value="">---</option>
+            <option value="delete">Delete</option>
+        </select>
+        <input id="button_operate" type="submit" value="Do" />  
+        </th>
 </tr>
 </thead>
 <tbody>
@@ -45,6 +58,8 @@
 
     <td class="<% job.status %>"><a class="job" href="/job/<% job.id %>">View job details</a></td>
 
+    <td class="<% job.status %>"><input type="checkbox" id="checkbox_<% job.id %>" name="checkbox_<% job.id %>" /></td>
+
 </tr>
 
 <% END %>
@@ -54,6 +69,28 @@
 </table>
 
 </form>
+
+<script lang="javascript">
+
+$('#do_on_selected').submit(
+        function(event) {
+            event.preventDefault();
+            var op = $('#operation').val();
+            if( !op ) {
+                alert("You need to select an operation.");
+                return false;
+            }
+            var nselected = $("input:checked").length;
+            if( nselected == 0 ) {
+                alert("You need to select at least one job.");
+                return false;
+            } else {
+                this.submit();
+            }
+        }
+);
+
+</script>
 
 
 <% BLOCK link %>/job/<% job.id %>/files/<% file %><% END %>

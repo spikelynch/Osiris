@@ -202,6 +202,11 @@ sub run_jobs {
     
     $log->debug("heap jobs = " . join(', ', $heap->{jobs}));
     $log->debug("running jobs " . scalar(keys %{$heap->{running}}));
+
+    # todo: need a new state to capture errors running jobs.
+    # at the moment, a serious error either dies or triggers 'fatal'.
+    # it needs to go to 'error' which sets the job status properly.
+
     CAPACITY: while ( keys(%{$heap->{running}}) < MAX_CONCURRENT_TASKS ) {
        
         my $job = shift @{$heap->{jobs}};
@@ -225,6 +230,7 @@ sub run_jobs {
             Program => sub {
                 $log->debug(">In subprocess");
                 my $dir = $job->working_dir;
+                $log->debug("chdir to $dir");
                 chdir $dir || die("Couldn't chdir to $dir");
                 $log->debug(">" . join(' ', @$command));
                 exec(@$command);
@@ -320,6 +326,9 @@ sub sig_child {
         $log->debug("Job from POE heap = $job $job->{id}");
         delete $heap->{running}{$wid};
         
+        # FIXME: not all errors end with a positive $exit_val,
+        # and job errors should be a separate state
+
         if( $exit_val ) {
             # There was an error: should do more to interpret this
             $log->debug("Job $job->{id} returned error ($exit_val)");
