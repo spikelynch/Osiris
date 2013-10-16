@@ -5,11 +5,6 @@
 # Your application's name
 appname: "Osiris"
 
-# General Osiris settings
-osiris:
-    maxjobs: 10
-
-
 
 # The default layout to use for your application (located in
 # views/layouts/main.tt)

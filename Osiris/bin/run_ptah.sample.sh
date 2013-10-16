@@ -3,6 +3,7 @@
 export OSIRIS=/path/to/Osiris
 export OSIRIS_LIB=$OSIRIS/lib
 export OSIRIS_PTAHLOG=$OSIRIS/environments/ptahlog.conf
+export OSIRIS_MAXTASKS=10
 
 # Note that the Osiris web service needs to be able to write to
 # OSIRIS_WORKING

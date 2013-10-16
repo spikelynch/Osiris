@@ -7,11 +7,17 @@ use strict;
 sub POE::Kernel::ASSERT_DEFAULT () { 1 };
 use POE qw(Wheel::Run);
 
+my @ENVARS = qw(OSIRIS_LIB
+                OSIRIS_PTAHLOG
+                OSIRIS_WORKING
+                OSIRIS_MAXTASKS
+                ISISROOT);
+
 
 
 my $missing = 0;
 
-for my $ev ( qw(OSIRIS_LIB OSIRIS_PTAHLOG OSIRIS_WORKING ISISROOT) ) {
+for my $ev ( @ENVARS ) {
 	if( !$ENV{$ev} ) {
 		warn("Missing environment variable $ev\n");
 		$missing = 1;
@@ -37,7 +43,8 @@ my $ISIS_DIR = "$ENV{ISISROOT}/bin/xml";
 use Osiris::User;
 use Osiris::Job;
 
-sub MAX_CONCURRENT_TASKS () { 10 }
+my $MAX_TASKS = $ENV{OSIRIS_MAXTASKS} || 10;
+
 
 # Previous attempts to write ptah.pl keep getting a weird bug where
 # child processes don't report back via either closeEvent or SIG_CHLD.
@@ -186,7 +193,7 @@ sub scan_jobs {
 
 # Pulls items off the job queue until either
 #
-# (a) MAX_CONCURRENT TASKS is reached, in which case it does nothing
+# (a) $MAX_TASKS is reached, in which case it does nothing
 #    (when a running job is finished it will call run_jobs again)
 # (b) there are no more jobs, in which case it calls scan_jobs to get more
 #    jobs from the next user.
@@ -202,7 +209,7 @@ sub run_jobs {
     
     $log->debug("heap jobs = " . join(', ', $heap->{jobs}));
     $log->debug("running jobs " . scalar(keys %{$heap->{running}}));
-    CAPACITY: while ( keys(%{$heap->{running}}) < MAX_CONCURRENT_TASKS ) {
+    CAPACITY: while ( keys(%{$heap->{running}}) < $MAX_TASKS ) {
        
         my $job = shift @{$heap->{jobs}};
         last CAPACITY unless defined $job;

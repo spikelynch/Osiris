@@ -22,3 +22,33 @@ isistoc: 	 applicationTOC.xml
 isiscats: 	 applicationCategories.xml
 workingdir:      /where/the/user/files/are
 extrafields: 	 /home/mike/Isis/extras/extra.xml
+
+# AAF Rapid config
+
+# These are the real credentials:
+
+aaf:
+    url: https://aaf.edu.au/
+    iss: https://rapid.test.aaf.edu.au
+    aud: https://osiris.science.uts.edu.au
+    secret: "GIVEMEMYRANDOMCHARACTERSYOUSILLY"
+    attributes: https://aaf.edu.au/attributes
+
+# a test set of claims and user details for local testing
+
+aaftest:
+    url: https://rapid.aaf.edu.au/jwt/authnrequest/research/XXXXXX
+    iss: https://rapid.test.aaf.edu.au
+    aud: https://osiris.science.uts.edu.au
+    secret: "GIVEMEMYRANDOMCHARACTERSYOUSILLY"
+    jtistore: /usually/this/would/be/in/the/working/dir/jti.txt
+    attributes: https://aaf.edu.au/attributes
+
+
+aaftestatts:
+    cn:                         Joe Blow
+    mail:                       Joe.Blow@inst.edu.au
+    displayname:                Joe Reginald Blow
+    edupersontargetedid:        this_is_a_fake_id
+    edupersonscopedaffiliation: probablyanemail
+
