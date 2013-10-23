@@ -3,7 +3,7 @@
 <ul>
     <% IF jobs %>
         <% IF jobs.size > 0 %>
-        <li id="myjobs"><span class="navmenu">My Jobs</span>
+        <li id="myjobs"><span class="navmenu"><a href="/">My Jobs</a></span>
             <ul>
             <% FOR job IN jobs %>
                 <li><a title="<% job.description %>" href="/job/<% job.id %>"><% job.id %>: <% job.appname %></a></li>
