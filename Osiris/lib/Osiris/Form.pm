@@ -504,12 +504,6 @@ sub make_guard {
 
     my $guards = {};
 
-    if( !$p->{default} ) {
-        $guards->{mandatory} = 1;
-    } else {
-        $guards->{mandatory} = 0;
-    }
-
     if( $p->{field_type} eq 'input_file_field' ) {
         $guards->{input_file} = 1;
         if( $p->{filter} ) {

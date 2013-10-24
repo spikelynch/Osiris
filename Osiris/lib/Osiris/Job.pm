@@ -634,8 +634,12 @@ sub command {
 
     my $command = [ $self->{appname} ];
 
+    # Leave out parameters with empty values
+
     for my $name ( sort keys %{$self->{parameters}} ) {
-        push @$command, join('=', $name, $self->{parameters}{$name});
+        if( $self->{parameters}{$name} ) {
+            push @$command, join('=', $name, $self->{parameters}{$name});
+        }
     }
 
     $self->{command} = $command;

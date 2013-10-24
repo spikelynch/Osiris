@@ -38,6 +38,7 @@ aafmode:     live
 # and jti, which are not part of config in the real examples.
 
 aaftest:
+    url: https://rapid.aaf.edu.au/jwt/authnrequest/research/XXXXXX
     iss: https://rapid.test.aaf.edu.au
     aud: https://osiris.science.uts.edu.au
     secret: "GIVEMEMYRANDOMCHARACTERSYOUSILLY"

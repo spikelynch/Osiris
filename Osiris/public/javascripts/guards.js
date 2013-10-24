@@ -51,9 +51,14 @@ function apply_guards(elt) {
     var val = elt.value;
     var g = $(elt).data("guards");
 
+    console.log("Applying guards to " + p);
+
     if( !g ) {
+        console.log('... no guards');
         return true;
     }
+
+
     
     // use the alt filebrowser value if it is set
     
@@ -66,6 +71,9 @@ function apply_guards(elt) {
             }
         }
     }
+
+
+    console.log("Running guards");
 
     var error = run_guards(g, val);
 
@@ -82,19 +90,11 @@ function apply_guards(elt) {
 
 function run_guards(g, val) {
 
-    if( g.mandatory ) {
-        if( val == "" ) {
-            if( g.type == 'integer' ) {
-                return 'Must have an integer value';
-            }
-            if( g.type == 'double' ) {
-                return 'Must have a numeric value';
-            }
-            return 'Must have a value.';
-        }
-    }
+    console.log("Value = " + val);
 
+    //FIXME
     if( g.filepattern ) {
+        console.log("Filepattern " + g.filepattern);
         var re = new RegExp(g.filepattern, 'i');
         if( !val.match(re) ) {
             return "Filename must match " + g.label;
@@ -102,24 +102,22 @@ function run_guards(g, val) {
     }
 
     if( g.type == 'integer' ) {
+        console.log("Type = integer");
         if( ! is_integer(val) ) {
             return "Must be an integer.";
         }
     }
 
     if( g.type == 'double' ) {
+        console.log("Type = double");
         if( ! is_double(val) ) {
             return "Must be a number.";
         }
     }
 
-    // inclusions and exclusions are based on two inputs: the value of
-    // a pull-down list applies rules to a field param.  I'm going to
-    // only display the error against the field param, so if this
-    // param is the list, we call apply_guard on those fields that it
-    // affects.
 
     if( g.inclusions ) {
+        console.log("Inclusions");
         if( g.inclusions[val] ) {
             for( var i in g.inclusions[val] ) {
                 apply_guards($("#field_" + g.inclusions[val][i])[0]);
@@ -128,36 +126,15 @@ function run_guards(g, val) {
     }
 
     if( g.exclusions ) {
+        console.log("Exclusions");
         if( g.exclusions[val] ) {
             for( var i in g.exclusions[val] ) {
-                var p1 = g.exclusions[val][i];
                 apply_guards($("#field_" + g.exclusions[val][i])[0]);
             }
         }
     }
 
 
-    if( g.included ) {
-        for( var control in g.included ) {
-            var cval = $("input[name=" + control + "]").val();
-            if( g.included[control][cval] ) {
-                if( val == "" ) {
-                    return "Must have a value when " + control + "=" + cval;
-                }
-            }
-        }
-    }
-
-    if( g.excluded ) {
-        for( var control in g.excluded ) {
-            var cval = $("input[name=" + control + "]").val();
-            if( g.excluded[control][cval] ) {
-                if( val != "" ) {
-                    return "Must be empty if " + control + "=" + cval;
-                }
-            }
-        }
-    }
     return "";
 }
 
@@ -180,6 +157,9 @@ function is_double(v) {
     }
     return 0;
 }
+
+
+
 
 
 

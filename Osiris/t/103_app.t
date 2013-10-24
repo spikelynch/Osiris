@@ -15,7 +15,7 @@ my $APPTOC = 'applicationTOC.xml';
 my $APPCATS = 'applicationCategories.xml';
 my $HTMLDIR = '/home/mike/workspace/DC18C Osiris/test/html/';
 
-my $ONE_APP = 'cam2map';
+my $ONE_APP = 'isis2std'; # undef; # 'cam2map';
 
 opendir(my $dh, $APPDIR) || die("Couldn't open appdir");
 
@@ -28,7 +28,9 @@ plan tests => $napps * 4;
 open(my $fh, ">output.txt") || die;
 
 for my $appfile ( @appfiles ) {
-	next unless $appfile =~ /^([a-zA-Z0-2]+)\.xml$/;
+
+	diag("appfile = $appfile");
+    next unless $appfile =~ /^([a-zA-Z0-2]+)\.xml$/;
 	my $appname = $1;
 	next if $appfile eq $APPTOC || $appfile eq $APPCATS;
 	
@@ -39,7 +41,7 @@ for my $appfile ( @appfiles ) {
 		app => $appname
 	);
 	
-	my $api = $app->parse_api;
+	my $api = $app->read_form;
 	
 	ok($api, "Parsed app XML $appname");
 

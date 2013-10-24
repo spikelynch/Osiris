@@ -53,6 +53,22 @@
 
 setup_help_transitions();
 
+<% FOR p IN guards.keys %>
+bind_guards("<% p %>", <% guards.$p %>);
+<% END %>
+
+var touched = 0;
+
+$(':input').focus(function(event) { touched = 1; });
+
+$('#<% formid %>').submit(function(event) {
+    event.preventDefault();
+    if( apply_all_guards(this) ) {
+        this.submit();
+    } else {
+        return false;
+    }
+} );
 
 <% IF cancel.substr(0, 1) == '#' %>
 

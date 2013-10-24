@@ -573,6 +573,8 @@ post '/app/:name' => sub {
         }
     }
 
+    warn("Job params: " . Dumper($params));
+
     if( !$job->add_parameters(parameters => $params) ) {
         # invalid parameters: 
     }
@@ -651,17 +653,24 @@ sub input_files {
     my $p = {};
     my $parents = {};
 
-    for my $u ( $app->input_params ) {
+    warn("Input params:");
+
+    PARAM: for my $u ( $app->input_params ) {
         my $existing_file = param($u . '_alt');
         my $upload = upload($u);
+
+        warn("Input param $u");
+        warn("upload = $upload existing = $existing_file\n");
+
         if( !$upload && !$existing_file ) {
-            return undef;
+            warn("Neither are defined, returning undef\n");
+            next PARAM;
         }
         if( $existing_file && !$upload ) {
-            debug("$u: using existing file $existing_file");
+            warn("$u: using existing file $existing_file\n");
             my ( $type, $job, $file ) = split('/', $existing_file);
             $p->{$u} = '../' . $job . '/' . $file;
-            debug("Result $type, $job, $file, = $p->{$u}");
+            warn("Setting input parameter $u: $p->{$u}\n");
             if( $type eq 'output' ) {
                 $parents->{$u} = $job;
             }
@@ -676,9 +685,9 @@ sub input_files {
                     error => "Couldn't create Osiris::Job"
                 };
             } else {
-                debug("Copied to $to_file");
-                debug("Setting input parameter as $filename");
+                warn("Copied to $to_file\n");
                 $p->{$u} = $filename;
+                warn("Setting input parameter $u: $p->{$u}\n");
             }
         }
     }
