@@ -328,11 +328,9 @@ get '/job/:id' => sub {
 
         if( $extra_form ) {
             $vars->{extras} = $extra_form->groups;
-            debug("Filling in extra fields ");
             for my $group ( @{$vars->{extras}} ) {
                 for my $param ( @{$group->{parameters}} ) {
                     my $name = $param->{name};
-                    debug("Field = $name = $job->{extras}{$name}");
                     $param->{default} = $job->{extras}{$name};
                 }
             }
@@ -379,22 +377,21 @@ get '/files' => sub {
 
 
 
-# Ajax handler for browsing a user's working directory.  Returns a 
-# JSON object with files broken down by input, output and other.
+# Ajax handler which returns a list of all files matching
+# an extension pattern, as a JSON data structure like:
+#
+# { jobid => { inputs => [ files, ... ], outputs => [ files, ... ] } }
 
-ajax '/jobs' => sub {
+
+ajax '/jobs' => sub { 
+    my $list = brower_files();
+    to_json($list);
+};
     
-    my $ajobs = {};
-
-    for my $id ( keys %$jobshash ) {
-        $ajobs->{$id} = {
-            id => $id,
-            appname => $jobshash->{$id}->{appname},
-            label => $jobshash->{$id}->label
-        }
-    }
-
-    to_json($ajobs);
+ajax '/jobs/:ext' => sub {
+    my $ext = param('ext');
+    my $list = browser_files($ext);
+    to_json($list);
 };
 
 
@@ -479,37 +476,47 @@ get '/app/:app' => sub {
 			brief => $toc->{$appname}
 		);
 
-        my @p = $app->params;
-        
-        if( !@p ) {
+        if( !$app ) {
             template 'error' => {
                 title => 'Error',
                 user => $user->{name},
                 jobs => $jobs,
-                error => "The app '$appname' can't be operated via the web."
+                error => "System error: couldn't initialise app form for $appname."
             };
         } else {
-
-            my $guards = $app->guards;
-            for my $p ( keys %$guards ) {
-                $guards->{$p} = encode_json($guards->{$p});
+            
+            my @p = $app->params;
+        
+            if( !@p ) {
+                template 'error' => {
+                    title => 'Error',
+                    user => $user->{name},
+                    jobs => $jobs,
+                    error => "The app '$appname' can't be operated via the web."
+                };
+            } else {
+                
+                my $guards = $app->guards;
+                for my $p ( keys %$guards ) {
+                    $guards->{$p} = encode_json($guards->{$p});
+                }
+                
+                # NOTE: took uri_for out of url and back_url
+                
+                template 'app' => {
+                    title => $appname,
+                    user => $user->{name},
+                    url => kludge_uri_for('/app/' . $app->name),
+                    back_url => kludge_uri_for('/'),
+                    jobs => $jobs,
+                    javascripts => [ 'app', 'guards', 'files' ],
+                    app => $app->name,
+                    brief => $app->brief,
+                    form => $app->form,
+                    guards => $guards,
+                    description => $app->description
+                };
             }
-
-            # NOTE: took uri_for out of url and back_url
-
-            template 'app' => {
-                title => $appname,
-                user => $user->{name},
-                url => kludge_uri_for('/app/' . $app->name),
-                back_url => kludge_uri_for('/'),
-                jobs => $jobs,
-                javascripts => [ 'app', 'guards', 'files' ],
-                app => $app->name,
-                brief => $app->brief,
-                form => $app->form,
-                guards => $guards,
-                description => $app->description
-            };
         }
     } else {
         forward('/');
@@ -573,7 +580,15 @@ post '/app/:name' => sub {
         }
     }
 
-    warn("Job params: " . Dumper($params));
+    # Check for extra extension fields for output parameters
+
+    for my $p ( $app->output_params ) {
+        my $p_ext = $p . '_ext';
+        if( my $ext = param($p_ext) ) {
+            $params->{$p_ext} = $ext;
+        }
+    }
+
 
     if( !$job->add_parameters(parameters => $params) ) {
         # invalid parameters: 
@@ -653,24 +668,20 @@ sub input_files {
     my $p = {};
     my $parents = {};
 
-    warn("Input params:");
-
     PARAM: for my $u ( $app->input_params ) {
         my $existing_file = param($u . '_alt');
         my $upload = upload($u);
-
-        warn("Input param $u");
-        warn("upload = $upload existing = $existing_file\n");
+        my $bands = param($u . '_bands');
 
         if( !$upload && !$existing_file ) {
             warn("Neither are defined, returning undef\n");
             next PARAM;
         }
         if( $existing_file && !$upload ) {
-            warn("$u: using existing file $existing_file\n");
+            debug("$u: using existing file $existing_file\n");
             my ( $type, $job, $file ) = split('/', $existing_file);
             $p->{$u} = '../' . $job . '/' . $file;
-            warn("Setting input parameter $u: $p->{$u}\n");
+            debug("Setting input parameter $u: $p->{$u}\n");
             if( $type eq 'output' ) {
                 $parents->{$u} = $job;
             }
@@ -685,10 +696,14 @@ sub input_files {
                     error => "Couldn't create Osiris::Job"
                 };
             } else {
-                warn("Copied to $to_file\n");
+                debug("Copied to $to_file\n");
                 $p->{$u} = $filename;
-                warn("Setting input parameter $u: $p->{$u}\n");
+                debug("Setting input parameter $u: $p->{$u}\n");
             }
+        }
+        
+        if( $bands ) {
+            $p->{$u} .= '+' . $bands;
         }
     }
 
@@ -841,6 +856,59 @@ sub kludge_uri_for {
 
     return $uri;
 }
+
+
+=item browser_files(ext)
+
+Backend for the ajax jobs/ method.  ext is a file extension to filter
+the jobs by.  If ext is empty, returns all input and output files
+
+=cut
+
+
+
+sub browser_files {
+    my ( $ext ) = @_;
+
+    my $ajobs = {};
+    
+    my $exts_re = undef;
+
+    if( $ext ) {
+        $exts_re = qr/\.$ext$/io;
+    }
+
+    for my $id ( sort { $b <=> $a } keys %$jobshash ) {
+        my $job = $jobshash->{id};
+        my $files = {};
+        my $any = 0;
+        for my $c ( 'from', 'to' ) {
+            for my $file ( split(/ /, $job->{$c}) ) {
+                if( !$exts_re || $file =~ /$exts_re/ ) {
+                    push @{$files->{$c}}, $file;
+                    $any = 1;
+                }
+            }
+        }
+        if( $any ) {
+            $ajobs->{$id} = {
+                id => $id,
+                appname => $jobshash->{$id}->{appname},
+                label => $jobshash->{$id}->label,
+            };
+            if( $files->{from} ) {
+                $ajobs->{$id}{inputs} = $files->{from};
+            }
+            if( $files->{to} ) {
+                $ajobs->{$id}{outputs} = $files->{to};
+            }
+        }
+    }
+
+    debug(Dumper({ajobs => $ajobs}));
+    return $ajobs;
+}
+
 
 
 true;

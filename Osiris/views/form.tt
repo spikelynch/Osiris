@@ -115,11 +115,30 @@ $('#button_cancel').click(function(event) {
     <input type="hidden" id="field_<% param.name %>_alt" name="<% param.name %>_alt" value="" />
 or <span class="browseropen" id="browserctrl_<% param.name %>">use a file from a previous job</span>
     <div id="browser<% param.name %>"></div>
-    <script>filebrowser_init("browser<% param.name %>", "browserctrl_<% param.name %>", function(job, file, type) { appfile_select("<% param.name %>", job, file, type) })</script>
+    
+    <script>filebrowser_init("browser<% param.name %>", "browserctrl_<% param.name %>", "<% param.filter %>", function(job, file, type) { appfile_select("<% param.name %>", job, file, type) })</script>
+
+    <% IF param.bands %>
+        Bands <input type="text" id="field_<% param.name %>_bands" name="<% param.name %>_bands" size="5" />
+    <% END %>
+
+
 <% END %>
 
 
 
 <% BLOCK output_file_field %>
-	<input type="text" id="field_<% param.name %>" name="<% param.name %>" size="40" /> <% param.extension %>
+	<input type="text" id="field_<% param.name %>" name="<% param.name %>" size="40" /> 
+    <% IF param.extensions.defined %>
+       <%IF param.extensions.size == 1 %>
+           .<% param.extensions.0 %>
+           <input type="hidden" id id="field_<% param.name %>_ext" name="<% param.name %>_ext" value="<% param.extensions.0 %>" />
+       <% ELSE %>
+           .<select id="field_<% param.name %>_ext" name="<% param.name %>_ext">
+           <% FOR ext IN param.extensions %>
+               <option value="<% ext %>"><% ext %></option>
+           <% END %>
+           </select>
+       <% END %>
+    <% END %>
 <% END %>

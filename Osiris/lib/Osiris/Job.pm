@@ -376,11 +376,15 @@ sub add_parameters {
 
         my $app_p = $self->{app}->param(param => $p);
 
-        if( $app_p->{filter} && $app_p->{field_type} eq 'output_file_field' ) {
-            if( $app_p->{filter} =~ /^\*(\..*)$/ ) {
-                $self->{parameters}{$p} .= $1;
+        if( $app_p->{field_type} eq 'output_file_field' && $app_p->{filter} ) {
+            $self->{log}->debug("Looking for extension ${p}_ext");
+        
+            my $ext = $phash->{$p . '_ext'};
+            if( $ext ) {
+                $self->{parameters}{$p} .= '.' . $ext;
+                $self->{log}->info("Added extension $ext to $p: $self->{parameters}{$p}");
             } else {
-                $self->{log}->warn("Strange file filter on $p: '$app_p->{filter}'");
+                $self->{log}->warn("No _ext field found for $p");
             }
         }
         

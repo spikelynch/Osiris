@@ -276,8 +276,10 @@ sub xml_group {
 	
 	for my $pelt ( $elt->children('parameter') ) {
 		my $param = $self->xml_parameter($pelt);
+
 		push @{$group->{parameters}}, $param;
         push @{$self->{param_fields}}, $param->{name};
+
         $self->{paramshash}{$param->{name}} = $param;
 		if( $param->{field_type} eq 'input_file_field' ) {
 			push @{$self->{input_fields}}, $param->{name};
@@ -356,10 +358,21 @@ sub xml_parameter {
 		$parameter->{is_file} = $parameter->{fileMode};
 		if( $parameter->{fileMode} eq 'input' ) {
 			$parameter->{field_type} = 'input_file_field';
+
+            # Isis cube files need an extra field where the
+            # user can specify the band.  Different programs
+            # have different requirements here but it's not
+            # captured in the XML api.
+
+            if( $parameter->{filter} =~ /cub/i ) {
+                $parameter->{bands} = 1;
+            }
 		} else {
 			$parameter->{field_type} = 'output_file_field';
-            $parameter->{extension} = substr($parameter->{filter}, 1);
-		}
+            $parameter->{extensions} = $self->_split_extensions_filter(
+                filter => $parameter->{filter}
+                );
+        }   
 
 	} elsif( $parameter->{is_list} ) {
 		$parameter->{field_type} = 'list_field';
@@ -507,11 +520,11 @@ sub make_guard {
     if( $p->{field_type} eq 'input_file_field' ) {
         $guards->{input_file} = 1;
         if( $p->{filter} ) {
-            $guards->{filepattern} = $self->_make_filter(
+            $guards->{filepattern} = $self->_make_input_filter_re(
                 filter => $p->{filter}
                 );
             $guards->{label} = $p->{filter};
-        }
+        }   
     } elsif( $p->{type} =~ /integer|double|string/ ) {
         $guards->{type} = $p->{type};
         if( $p->{type} ne 'string' ) {
@@ -552,7 +565,7 @@ sub make_guard {
 }
 
 
-=item _make_filter(filter => '*.cub')
+=item _make_input_filter_re(filter => '*.cub')
 
 Turns the content of a <filter> tag in the XML API and converts it
 to a Javascript regexp, for eg:
@@ -561,29 +574,76 @@ to a Javascript regexp, for eg:
 
     \.(cub|QUB)$
 
+
 =cut
 
 
-sub _make_filter {
+sub _make_input_filter_re {
     my ( $self, %params ) = @_;
 
     my $filter = $params{filter};
 
-    my @globs = split(/\s+/, $filter);
+    if( my @exts = $self->_filter_to_exts(filter => $filter) ) {
+
+        my $re = '\.(' . join('|', @exts) . ')$';
+
+        $self->{log}->debug("Converted input filter '$filter' to re /$re/");
+
+        return $re;
+    } else {
+        return undef;
+    }
+}
+
+=item _split_extensions_filter
+
+Splits a filter value like "*.cub *.qub" and returns an arrayref normalised
+for case (so *.txt and *.TXT get merged)
+
+=cut
+
+
+sub _split_extensions_filter {
+    my ( $self, %params ) = @_;
+
+    my $filter = $params{filter};
+
+    if( my @exts = $self->_filter_to_exts(filter => $filter) ) {
+        return \@exts;
+    } else {
+        $self->{log}->error("Empty file filter list");
+        return undef;
+    }
+}
+    
+
+=item _filter_to_exts(filter => $filter)
+
+Takes a filter value like '*.txt *.TXT *.prt' and returns a case-normalised
+array of extensions like [ 'prt', 'txt' ]
+
+=cut
+
+sub _filter_to_exts {
+    my ( $self, %params ) = @_;
+
+    my $filter = $params{filter};
+    my @list = split(/\s+/, $filter);
+    
+    my %h =  map { lc($_) => 1 } @list;
 
     my @exts = ();
 
-    for my $glob ( @globs ) {
+    for my $glob ( sort keys %h ) {
         if( $glob =~ /\*\.(.*)$/ ) {
             push @exts, $1;
         } else {
-            $self->{log}->error("Couldn't parse filter: $filter");
+            $self->{log}->error("Bad filter glob: $glob");
         }
     }
 
-    my $re = '\.(' . join('|', @exts) . ')$';
-
-    return $re;
+    return @exts;
 }
+
 
 1;

@@ -35,9 +35,10 @@ sub new {
 
     if( $self->read_form ) {
         return $self;
+        
+    } 
     
-    }
-
+    $self->{log}->error("Couldn't create Osiris::Form object for $self->{app}");
     return undef
 
 }
@@ -59,9 +60,15 @@ sub read_form {
 
         $self->{form} = Osiris::Form->new(
             xml => $xml_file
-            ) || return undef;
+            ) || do {
+                $self->{log}->error("Init form failed");
+                return undef;
+        };
 
-        $self->{form}->parse || return undef;
+        $self->{form}->parse || do {
+                $self->{log}->error("Form parse failed");
+                return undef;
+        };
     }
 
     return $self->{form};
