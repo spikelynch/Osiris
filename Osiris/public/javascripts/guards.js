@@ -92,7 +92,6 @@ function run_guards(g, val) {
 
     console.log("Value = " + val);
 
-    //FIXME
     if( g.filepattern ) {
         console.log("Filepattern " + g.filepattern);
         var re = new RegExp(g.filepattern, 'i');

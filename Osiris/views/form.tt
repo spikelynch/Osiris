@@ -111,17 +111,27 @@ $('#button_cancel').click(function(event) {
 
 
 <% BLOCK input_file_field %>
+
 	<input type="file" id="field_<% param.name %>" name="<% param.name %>" size="40" />
     <input type="hidden" id="field_<% param.name %>_alt" name="<% param.name %>_alt" value="" />
 or <span class="browseropen" id="browserctrl_<% param.name %>">use a file from a previous job</span>
+
+   <% IF param.extensions %>
+
+   <br />File types: 
+   <% FOR ext IN param.extensions %>
+   *.<% ext %> 
+   <% END %>
+   <br />
+   <% END %>
+    
     <div id="browser<% param.name %>"></div>
     
-    <script>filebrowser_init("browser<% param.name %>", "browserctrl_<% param.name %>", "<% param.filter %>", function(job, file, type) { appfile_select("<% param.name %>", job, file, type) })</script>
+    <script>filebrowser_init("browser<% param.name %>", "browserctrl_<% param.name %>", "<% param.extensions.join(';') %>", function(job, file, type) { appfile_select("<% param.name %>", job, file, type) })</script>
 
     <% IF param.bands %>
         Bands <input type="text" id="field_<% param.name %>_bands" name="<% param.name %>_bands" size="5" />
     <% END %>
-
 
 <% END %>
 

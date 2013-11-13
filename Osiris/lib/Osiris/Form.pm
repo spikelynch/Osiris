@@ -356,6 +356,9 @@ sub xml_parameter {
 
 	if( exists $parameter->{fileMode} ) {
 		$parameter->{is_file} = $parameter->{fileMode};
+        $parameter->{extensions} = $self->_split_extensions_filter(
+            filter => $parameter->{filter}
+            );
 		if( $parameter->{fileMode} eq 'input' ) {
 			$parameter->{field_type} = 'input_file_field';
 
@@ -369,9 +372,6 @@ sub xml_parameter {
             }
 		} else {
 			$parameter->{field_type} = 'output_file_field';
-            $parameter->{extensions} = $self->_split_extensions_filter(
-                filter => $parameter->{filter}
-                );
         }   
 
 	} elsif( $parameter->{is_list} ) {

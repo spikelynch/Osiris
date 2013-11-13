@@ -469,6 +469,7 @@ get '/browse/:by/:class' => sub {
 get '/app/:app' => sub {
     
 	my $appname = param('app');
+
 	if( $toc->{$appname} ) {
 		my $app = Osiris::App->new(
 			dir => $conf->{isisdir},
@@ -858,10 +859,10 @@ sub kludge_uri_for {
 }
 
 
-=item browser_files(ext)
+=item browser_files(exts)
 
-Backend for the ajax jobs/ method.  ext is a file extension to filter
-the jobs by.  If ext is empty, returns all input and output files
+Backend for the ajax jobs/ method.  ext is a semicolon-delimited set
+of extensions.  If ext is empty, returns all input and output files
 
 =cut
 
@@ -875,18 +876,21 @@ sub browser_files {
     my $exts_re = undef;
 
     if( $ext ) {
-        $exts_re = qr/\.$ext$/io;
+        my $exts = join('|', split(';', $ext));
+        $exts_re = qr/\.($exts)$/io;
     }
 
     for my $id ( sort { $b <=> $a } keys %$jobshash ) {
-        my $job = $jobshash->{id};
+        my $job = $jobshash->{$id};
         my $files = {};
         my $any = 0;
         for my $c ( 'from', 'to' ) {
-            for my $file ( split(/ /, $job->{$c}) ) {
-                if( !$exts_re || $file =~ /$exts_re/ ) {
-                    push @{$files->{$c}}, $file;
-                    $any = 1;
+            if( $job->{$c} ) {
+                for my $file ( split(/ /, $job->{$c}) ) {
+                    if( !$exts_re || $file =~ /$exts_re/ ) {
+                        push @{$files->{$c}}, $file;
+                        $any = 1;
+                    }
                 }
             }
         }
@@ -905,7 +909,6 @@ sub browser_files {
         }
     }
 
-    debug(Dumper({ajobs => $ajobs}));
     return $ajobs;
 }
 
