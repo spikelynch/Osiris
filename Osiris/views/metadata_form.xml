@@ -29,6 +29,17 @@
         </description>
       </parameter>
 
+      <parameter name="creator">
+        <type>string</type>
+        <brief>
+          Your NLA id
+        </brief>
+        <description>
+          If you don't have an NLA ID, contact eResearch-it@uts.edu.au
+        </description>
+      </parameter>
+
+
       <parameter name="project">
         <type>string</type>
         <brief>
