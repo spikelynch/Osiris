@@ -16,15 +16,15 @@ use Osiris::AAF;
 
 
 
-=head NAME
+=head1 NAME
 
 Osiris
 
-=head DESCRIPTION
+=head1 DESCRIPTION
 
 Dancer interface to the Isis planetary imaging toolkit
 
-=head VARIABLES
+=head1 VARIABLES
 
 =over 4
 
@@ -63,7 +63,7 @@ if( $conf->{extras} ) {
 
 my ( $user, $jobshash, $jobs );
 
-=head HOOKS
+=head1 HOOKS
 
 =over 4
 
@@ -113,7 +113,24 @@ hook 'before' => sub {
     }
 };
 
+=back
 
+=head1 ROUTES
+
+Dancer routes, defined by a method ('get', 'post' or 'ajax') and a path.
+
+=head2 Authentication
+
+=over 4
+
+=item get /auth/login
+
+Authentication page. If the config variable 'aafmode' is set to 'test',
+will automatically authenticate with a fake account.
+
+Template: login.tt
+
+=cut
 
 get '/auth/login' => sub {
 
@@ -132,15 +149,23 @@ get '/auth/login' => sub {
 };
 
 
-# AAF JWT code adapted from https://gist.github.com/bradleybeddoes/6154072
-#
-# See https://rapid.aaf.edu.au/developers for full details.
-#
-# This is the callback endpoint: after users authenticate via AAF, an
-# encrypted JSON web token is POSTed to this URL.
-#
-# the 'is_fake' param is used to test this with a fake JSON we generated
-# ourselves.,
+
+=item post /auth/aaf
+
+The endpoint for AAF RapidConnect authentication. 
+
+Adapted from https://gist.github.com/bradleybeddoes/6154072
+
+See https://rapid.aaf.edu.au/developers for full details.
+
+This is the callback endpoint: after users authenticate via AAF, an
+encrypted JSON web token is POSTed to this URL.
+
+The 'is_fake' param is used to test this with a fake JSON we generated
+ourselves.
+
+=cut
+
 
 post '/auth/aaf' => sub {
     my $jwt = params->{assertion};
@@ -193,11 +218,13 @@ post '/auth/aaf' => sub {
 };
 
 
-# this is a URL for preliminary testing of AAF, before we send 
-# our endpoint for registration.  It encodes a JWT from the config
-# values, which will definitely match when it gets to the auth
-# endpoint.
+=item get /auth/fakeaff
 
+This is a URL for preliminary testing of AAF, before we send our
+endpoint for registration.  It encodes a JWT from the config values,
+which will definitely match when it gets to the auth endpoint.
+
+=cut
 
 get '/auth/fakeaaf' => sub {
 
@@ -228,7 +255,10 @@ get '/auth/fakeaaf' => sub {
     }
 };
 
-=item get /auth/showaaf
+
+=item get /auth/showaff
+
+Show the fake AAF details.
 
 =cut
 
@@ -242,21 +272,12 @@ get '/auth/showaaf' => sub {
 };
 
 
-# this is the old authentication
 
-# post '/login' => sub {
-    
-#     Validate the username and password they supplied
-#     if (params->{user} eq $fakeuser && params->{pass} eq $fakeuser ) {
-#         debug("Logged in as $fakeuser");
-#         session user => params->{user};
-#         redirect params->{path} || '/';
-#     } else {
-#         redirect '/login?failed=1';
-#     }
-# };
+=item get /auth/logout
 
+Destroy the current session and redirect to the login page
 
+=cut
 
 
 get '/auth/logout' => sub {
@@ -267,15 +288,18 @@ get '/auth/logout' => sub {
 
 
 
+=back
 
+=head2 Jobs
 
+=over 4
 
+=item get /
 
+The home page.  Shows a list of the user's jobs, or a 'getting started'
+message if they have not yet created any.
 
-###### Routes for starting jobs, looking at the job list and 
-#      accessing results
-
-# Default page: current user's job list
+=cut
 
 get '/' => sub {
 
@@ -295,8 +319,11 @@ get '/' => sub {
 };
 
 
+=item get job/$id
 
-# job/$id - view job details
+Display details of job $id
+
+=cut
 
 get '/job/:id' => sub {
     
@@ -344,7 +371,13 @@ get '/job/:id' => sub {
 };
 
 
-# job/$id/files/$file - pass through a link to a file
+=item get job/$id/files/$file 
+
+Passes through the specified file from a job.  Note: this should probably
+be implemented differently, as pushing big files through Dancer isn't the
+best way to do this.
+
+=cut
 
 get '/job/:id/files/:file' => sub {
 
@@ -365,6 +398,14 @@ get '/job/:id/files/:file' => sub {
 };
     
 
+
+=item get /files
+
+Returns a list of files
+
+=cut
+
+
 get '/files' => sub {
 
     template 'files' => {
@@ -375,26 +416,35 @@ get '/files' => sub {
 };
 
 
+=item ajax /jobs/:ext
 
+Ajax handler which returns a list of all files matching an extension
+pattern, as a JSON data structure like:
 
-# Ajax handler which returns a list of all files matching
-# an extension pattern, as a JSON data structure like:
-#
-# { jobid => { inputs => [ files, ... ], outputs => [ files, ... ] } }
+    { jobid => { inputs => [ files, ... ], outputs => [ files, ... ] } }
 
+The extensions should be passed in as a list delimited by semicolons,
+for eg 'cub;qub' matches *.cub and *.qub files (with case folding)
+
+=cut
 
 ajax '/jobs' => sub { 
-    my $list = brower_files();
+    my $list = browser_files();
     to_json($list);
 };
-    
+
+
 ajax '/jobs/:ext' => sub {
     my $ext = param('ext');
     my $list = browser_files($ext);
     to_json($list);
 };
 
+=item ajax /files/:id
 
+Returns a JSON object with all the files for a given job
+
+=cut
 
 ajax '/files/:id' => sub {
 
@@ -414,10 +464,19 @@ ajax '/files/:id' => sub {
     }
 };
 
+=back
 
+=head2 Browsing and Searching
 
-###### Routes for browsing/searching apps
-#
+=over 4
+
+=item get /browse/:by
+
+Top-level browsing route.  'by' can either be 'category' or 'mission'.
+
+Displays a page with all the categories or missions.
+
+=cut
 
 get '/browse/:by' => sub {
 
@@ -436,10 +495,11 @@ get '/browse/:by' => sub {
 };
 
 
+=item get /browse/:by/:class
 
+List all the programs in a specific category or mission
 
-
-# /browse -  a list of applications for a category or mission
+=cut
 
 get '/browse/:by/:class' => sub {
 
@@ -460,11 +520,42 @@ get '/browse/:by/:class' => sub {
 };
 
 
-# /app - the web form for an app
-# URLs can be of the form app/[mission or category]/app
-#                      or app/$app
+=item get /search?q=$query
+
+Search for an app (in app names and descriptions) and return a list.
+
+=cut
+
+get '/search' => sub {
+
+    my $search = param('q');
+
+    if( $search ) {
+        my $results = search_toc(search => $search);
+        template 'search' => {
+            user => $user->{name},
+            title => 'Search results',
+            jobs => $jobs,
+            search => $search,
+            results => $results,
+        };
+    } else {
+        forward('/');
+    }
+};
 
 
+=back
+
+=head2 Starting and viewing jobs
+
+=over 4
+
+=item get /app/:app
+
+Displays the web form for the app.
+
+=cut
 
 get '/app/:app' => sub {
     
@@ -525,29 +616,12 @@ get '/app/:app' => sub {
 };
 
 
+=item /post/:app
 
-get '/search' => sub {
+Starts a job: takes the parameters posted and creates a job file with them
 
-    my $search = param('q');
+=cut
 
-    if( $search ) {
-        my $results = search_toc(search => $search);
-        template 'search' => {
-            user => $user->{name},
-            title => 'Search results',
-            jobs => $jobs,
-            search => $search,
-            results => $results,
-        };
-    } else {
-        forward('/');
-    }
-};
-
-
-
-
-# post /app - start a job.
 
 post '/app/:name' => sub {
 
@@ -611,11 +685,16 @@ post '/app/:name' => sub {
 };
 
 
-# post to job/n -> accept the extra form fields and write them 
-# into the job file.  In this version, this is the publication
-# metadata
+=item post /job/:id
 
+Accept the extra form fields and write them into the job file.  This
+is how the system accepts publication metadata.
 
+The contents of the extra form fields is controlled by
+views/metadata_form.xml, which is in the same format as the Isis
+application XML files.
+
+=cut
 
 post '/job/:id' => sub {
 
@@ -652,10 +731,38 @@ post '/job/:id' => sub {
         
 };
 
+=back
 
+=head1 METHODS
 
-# input_files - does the juggling around file uploads v existing
-# files on the system
+=over 4
+
+=item input_files(%params)
+
+This method takes the parameters submitted when creating a job and processes
+each of the input file parameters.
+
+=over 4
+
+=item job
+
+=item app
+
+=item user
+
+=item params
+
+=back
+
+If the user has submitted a file to upload, it copies it into the working
+directory for the job.
+
+Otherwise, if they have selected a file from a previous job, it builds a
+path to that file.
+
+If neither of these works, logs an error and returns the error template.
+
+=cut
 
 
 sub input_files {
@@ -716,6 +823,14 @@ sub input_files {
 }
 
 
+=item get_app(name =&gt; $name);
+
+Looks up the table of contents by app name and returns an Osiris::App
+object
+
+=cut
+
+
 sub get_app {
     my %params = @_;
 
@@ -733,6 +848,12 @@ sub get_app {
     }
 }
 
+
+=item load_toc(isisdir =&gt; $id, isistoc =&gt; $it)
+
+Loads and parses the applicationTOC.xml file, builds the table of contents.
+
+=cut
 
 
 sub load_toc {
@@ -776,8 +897,15 @@ sub load_toc {
 }
 
 
-# search the table of contents.  Returns a list of results as
-# { app => $app, description => $desc } hashes. Alphabetical order.
+=item search_toc(search =&gt; $search);
+
+Search the table of contents.  Returns a list of results as
+   
+  { app => $app, description => $desc }
+
+hashes in alphabetical order.
+
+=cut
 
 sub search_toc {
     my %params = @_;
@@ -811,9 +939,13 @@ sub search_toc {
 
 }
 
-# load the 'extras' form, which we're using to collect metadata
-# to push out to the RDC
 
+=item load_extras($xml)
+
+load the 'extras' form, which we're using to collect metadata to push
+out to the RDC
+
+=cut
 
 sub load_extras {
     my ( $xml ) = @_;
@@ -845,6 +977,16 @@ sub load_extras {
 }
 
 
+=item kludge_uri_for($path)
+
+Hack to get around a bug in the deployment layer which was defaulting
+the protocol to http:// when we want it to be https://
+
+If the config variable 'forceprotocol', it forces it.
+
+=cut
+
+
 
 sub kludge_uri_for {
     my ( $path ) = @_;
@@ -859,14 +1001,12 @@ sub kludge_uri_for {
 }
 
 
-=item browser_files(exts)
+=item browser_files($exts)
 
-Backend for the ajax jobs/ method.  ext is a semicolon-delimited set
-of extensions.  If ext is empty, returns all input and output files
+Backend for the ajax jobs/ method.  $exts is a semicolon-delimited set
+of extensions.  If $exts is empty, returns all input and output files
 
 =cut
-
-
 
 sub browser_files {
     my ( $ext ) = @_;
@@ -913,5 +1053,10 @@ sub browser_files {
 }
 
 
-
 true;
+
+
+=back
+
+=cut
+
