@@ -9,29 +9,67 @@ use Log::Log4perl;
 
 use Osiris::Job;
 
-=head NAME
+=head1 NAME
 
 Osiris::User
 
-=head DESCRIPTION
+
+=head1 SYNOPSIS
+
+    $user = Osiris::User->new(
+        id => session('user'),
+        name => $atts->{cn},
+        atts => $atts,
+        isisdir => $conf->{isisdir},
+        basedir => $conf->{workingdir}
+    );
+    
+    if( !$user ) {
+        error("Couldn't create Osiris::User object");
+        session->destroy;
+        redirect '/auth/login';
+    }
+    
+    my $jobshash = $user->jobs(reload => 1);
+
+
+=head1 DESCRIPTION
 
 A class representing a user.  It maintains the user's working
-directory and list of jobs and their status, and contains their
-login attributes
+directory and list of jobs and their status, and contains their login
+attributes.
+
+It's also used to create new jobs.
 
 =cut
 
 our $JOBLISTFILE = 'joblist.xml';
 
 
-=head METHODS
+=head1 METHODS
 
 =over 4
 
-=item new(id => $id, basedir => $home)
+=item new(%params)
 
-"home" is the base working directory: each user has a subdirectory
-under this directory
+Create a new user object. Parameters as follows:
+
+=over 4
+
+=item id - the user's identifier (a hashed AAF digest, in this case)
+
+=item basedir - the main working dir, containing all of the user dirs
+
+=item isisdir - the root directory of the Isis install
+
+=item mail - the user's email
+
+=item name - the user's screen name
+
+=back
+
+Returns undef if something goes wrong reading or creating the user's
+joblist.
 
 =cut
 
@@ -59,7 +97,7 @@ sub new {
 }
 
 
-=item working_dir 
+=item working_dir()
 
 Return this user's working dir (basedir/user_id)
 
@@ -79,7 +117,7 @@ doesn't.  If the directory exists or was created successfully, returns
 
 =cut
 
-sub _ensure_working_dir {
+sub _ensure_working_dir() {
     my ( $self ) = @_;
 
     if( -d $self->{dir} ) {
@@ -96,7 +134,7 @@ sub _ensure_working_dir {
 }
     
 
-=item jobs
+=item jobs([ reload => 1 ])
 
 Returns the job list as a hashref of Osiris::Job objects keyed by ID.
 The jobs will only know their status and id - to parse their XML file,
@@ -123,6 +161,8 @@ Method used by the Dancer app to create a new job for this user.
 Used to also take the uploads and parameters, but these are now added 
 separately by calling add_parameters and add_input_files on the
 Job.
+
+Returns the Osiris::Job object if successful, undef if not.
 
 =cut
 
@@ -151,6 +191,13 @@ sub create_job {
 }
 
 
+=item write_job(job => $job)
+
+How the joblist and job files are updated.  Takes an Osiris::Job, calls its
+write method, and then updates the job list and tries to write that.  Returns
+the job if successful, undef if not.
+
+=cut
 
 
 sub write_job {
@@ -169,10 +216,7 @@ sub write_job {
 }
 
 
-        
-
-
-=item _new_jobid
+=item _new_jobid()
 
 Returns a new, unique job ID
 
@@ -192,7 +236,7 @@ sub _new_jobid {
 
 
 
-=item _joblistfile
+=item _joblistfile()
 
 Full path to the joblist file.
 
@@ -205,9 +249,10 @@ sub _joblistfile {
 }
 
 
-=item _load_joblist
+=item _load_joblist()
 
-Load the user's job list, if it exists.
+Load the user's job list, if it exists.  Otherwise initialises the 
+{jobs} member variable to an empty hashref.
 
 =cut
 
@@ -236,7 +281,7 @@ sub _load_joblist {
 
 
 
-=item _load_job
+=item _load_job($elt)
 
 XML::Twig handler to read a single job element
 
@@ -263,9 +308,9 @@ sub _load_job {
 
 
 
-=item _save_joblist
+=item _save_joblist()
 
-Saves the storable job list, if it exists
+Saves the job list.
 
 =cut
 
@@ -299,7 +344,7 @@ EOXML
     return 1;
 }
 
-=item _save_job
+=item _save_job()
 
 Returns a job as an XML element for the joblist
 
@@ -314,9 +359,6 @@ sub _job_elt {
     
     return "<job $atts />";
 }
-
-
-    
 
 
 =item update_joblist( job => $job, status => $status )
@@ -373,7 +415,9 @@ sub update_joblist {
 }
 
 
+=back
 
+=cut
 
 
 1;

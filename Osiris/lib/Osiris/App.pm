@@ -7,14 +7,55 @@ use Data::Dumper;
 
 use Osiris::Form;
 
-=head NAME
+=head1 NAME
 
 Osiris::App
 
-=head DESCRIPTION
+=head1 SYNOPSIS
+
+   	my $app = Osiris::App->new(
+		dir => $conf->{isisdir},
+		app => $name,
+		brief => $toc->{$name}
+	);
+
+    my $form = $app->read_form;
+
+    my $params = $app->params;
+    
+    my $in_params = $app->input_params;
+
+    my $out_params = $app->output_params;
+
+
+
+=head1 DESCRIPTION
 
 A class representing an Isis app.  Uses Osiris::Form to parse the XML for
 the web form API.
+
+
+=head1 METHODS
+
+=over 4
+
+=item new(%params)
+
+=over 4
+
+=item app: the application's command name
+
+=item dir: the Isis base directory
+
+=item brief: the brief description from the TOC file
+
+=back
+
+Creates a new Osiris::App object, populating it with the command name (app)
+and the brief description.
+
+This is done at startup by the Dancer app in the method Osiris::load_toc,
+which parses the Isis table of contents XML file.
 
 =cut
 
@@ -47,7 +88,7 @@ sub new {
 =item read_form()
 
 Ensure that the form has been parsed, and return the Osiris::Form
-object. Undef if it fails.
+object. Returns undef if the parse fails.
 
 =cut
 
@@ -73,9 +114,6 @@ sub read_form {
 
     return $self->{form};
 }
-
-
-
 
 
 =item name()
@@ -122,8 +160,10 @@ sub description {
 
 =item form()
 
-Returns this app's form as a data structure which can be used to
-fill out the web form in views/app.tt. 
+Parses the form, and returns a data structure which can be used to fill 
+out the form.tt template. This is not the Osiris::Form object, but the
+return value of Osiris::Form->groups - see Osiris::Form for more details.
+
 =cut
 
 sub form {
@@ -175,20 +215,12 @@ sub param {
 }
 
 
-    
 =item guards()
 
-Returns all this form's guards as a hash-by-parameter name.  Used to
-JSON-encode it but that happens in the web app now.
+Returns all this form's guards as a hashref-by-parameter name which can
+be passed into the form templates and javascript guards.
 
-guards = {
-     file: '.cub',
-     text: 'int/double/string'
-     mandatory: t or f
-     range: { gt , gte , lt , lte }
-     inclusions: { opt1: [ p1, p2, p3 ], opt2: [ p5 ] },
-     exclusions: { opt4: [ p1, p2, p3 ] }
-}
+See Osiris::Form::guards for details.
 
 =cut
 

@@ -12,14 +12,29 @@ use Log::Log4perl;
 use Osiris::App;
 
 
-=head NAME
+=head1 NAME
 
 Osiris::Job
 
-=head DESCRIPTION
+=head1 SYNOPSIS
 
-A class representing a job - an Isis app, a set of parameters, including
-one or more input files, and an output filename, and a User.
+    my $job = Osiris::Job->new(
+        user => $user,
+        app => $app,
+        id => $id,
+    );
+
+    $job->set_status(status => $done);
+
+    $job->write;
+
+    my @files = $job->files;
+
+
+=head1 DESCRIPTION
+
+A class representing a job - an Isis app, a set of parameters,
+including one or more input files, and an output filename, and a User.
 
 This class is used by the Dancer app to create and monitor jobs, and
 by the daemon to run them.
@@ -47,20 +62,31 @@ All filenames are now relative to the working directory for this job.
 This includes filenames used from previous jobs, which will have relative
 paths like '../$OLD_JOB_ID/$FILENAME'
 
-=head METADATA
+=head1 METADATA
 
 Each job has the following metadata fields:
 
-    id
-    status
-    app
-    user
-    from 
-    to
-    created
-    started
-    finished
-    harvest
+=over
+
+=item id
+
+=item status
+
+=item app
+    
+=item user
+    
+=item from (list of input files)
+    
+=item to (list of output files)
+    
+=item created (timestamp)
+    
+=item started (timestamp)
+    
+=item finished (timestamp)
+
+=back
 
 =cut
 
@@ -72,15 +98,14 @@ my @METADATA_FIELDS = qw(
 
 my %METADATA_HASH = map { $_ => 1 } @METADATA_FIELDS;
 
-=head METHODS
+=head1 METHODS
 
 =over 4
 
-=item new(id, dir)
+=item new(id => $id, dir => $dir, status => $status)
 
-This is only used from Osiris::User, which maintains the user's
-job list.
-
+Job objects are created by Osiris::User - either when it scans the user's
+joblist, or adds a new job via the write_job method.
 
 =cut
 
@@ -106,11 +131,10 @@ sub new {
         }
         $self->{appname} = $s->{app};
     } else{
-        # job is being created via the web app (or a test script)
+        # job is being created via a test script
         $self->{app} = $params{app};
         $self->{appname} = $params{app}->{app};
         if( $self->{status} eq 'new' or !$self->{status} ) {
-            $self->{log}->warn("Starting new job");
             $self->{status} = 'new';
             $self->{created} = $self->timestamp;
         }
@@ -119,7 +143,7 @@ sub new {
 	return $self;
 }
 
-=item create_dir
+=item create_dir()
 
 Create this job's subdirectory in the user's working directory
 
@@ -148,7 +172,7 @@ sub create_dir {
 
 
 =item working_dir([file => $file])
-xd
+
 Returns the directory in which this job will be run.  If a file param is
 passed in, returns the complete path to a file in the directory.
 
@@ -170,7 +194,7 @@ sub working_dir {
 
 Given a filepath relative to this job's working directory, check that
 the file exists.  (Jobs can have input files from other jobs - this 
-method needs to work for those too.);
+method needs to work for those too.)
 
 =cut
 
@@ -295,7 +319,7 @@ EOXML
 }
 
 
-=item set_status
+=item set_status(status => $status)
 
 Writes this job's status to its user's job queue.  Note that this updates
 the status for this object, but refers to the job by ID when saving the
@@ -303,8 +327,8 @@ joblist - trying to cover all bases.
 
 It also sets timestamps as follows:
 
-'processing'             => sets the 'started' timestamp
-'done' and 'error'       => set the 'finished' timestamp
+  'processing'             => sets the 'started' timestamp
+  'done' and 'error'       => set the 'finished' timestamp
 
 
 When the status is set to 'done' it also scans the working dir for
@@ -347,7 +371,7 @@ sub set_status {
 
 }
 
-=item add_parameters
+=item add_parameters(parameters => \%params)
 
 Does any checking or conversion required on the parameters -
 this will include parameter value checking, and making sure that
@@ -435,7 +459,7 @@ sub add_extras {
 
 
 
-=item timestamp
+=item timestamp()
 
 Returns a nicely-formatted timestamp
 
@@ -448,11 +472,23 @@ sub timestamp {
 }
 
 
-=item summary 
+=item summary()
 
-Returns a list of ( id, created, status, app, from, to ) for this job.
-These are the fields stored in the joblist file.  They also get
-written as a metadata header into the job's file.
+Returns a hashref of this job's details, suitable for use in a job list:
+
+=over 4
+
+=item id
+=item created
+=item started
+=item finished
+=item status
+=item appname
+=item user
+=item from
+=item to
+
+=back
 
 TODO: parent and child jobs?
 
@@ -476,6 +512,12 @@ sub summary {
 }
 
 
+=item label()
+
+Returns a unique label for this job - id:appname
+
+=cut
+
 
 sub label {
     my ( $self ) = @_;
@@ -485,7 +527,7 @@ sub label {
 
 
 
-=item xml_file
+=item xml_file()
 
 Generates and returns the full path to the job's XML file
 
@@ -507,7 +549,7 @@ sub xml_file {
         
 
 
-=item xml
+=item xml()
 
 Return the XML representation of this job
 
@@ -520,7 +562,7 @@ sub xml {
 }
 
 
-=item read_xml
+=item read_xml()
 
 Reads a job from the XML file in the user's working directory.
 
@@ -582,7 +624,7 @@ sub load_xml {
 }
 
 
-=item load_app
+=item load_app()
 
 Load the job's App.
 
@@ -619,7 +661,7 @@ sub load_app {
         
 
 
-=item command
+=item command()
 
 Returns an arrayref of command-line arguments that Ptah (the processing
 daemon) can pass to exec.
@@ -651,18 +693,15 @@ sub command {
 }
 
 
-=item files
+=item files()
 
 Returns all the files associated with this job as a hashref:
 
-{
-    print => $PRINTCONTENTS,
-    inputs => [ { file => $filename, param => $param } ]
-    outputs => [ { file => $filename, [ param => $param ] } ]
-}  
-
-
-
+    {
+        print => $PRINTCONTENTS,
+        inputs => [ { file => $filename, param => $param } ]
+        outputs => [ { file => $filename, [ param => $param ] } ]
+    }  
 
 Note that there may be more than one file associated with a given
 output field (ie FILENAME.odd.cub and FILENAME.even.cub) - this routine
@@ -736,6 +775,13 @@ sub files {
 }
 
 
+=item _read_print_prt()
+
+Attempts to read the job's PRINT.PRT file
+
+=cut
+
+
 
 sub _read_print_prt {
     my ( $self ) = @_;
@@ -753,6 +799,8 @@ sub _read_print_prt {
 
     return $content;
 }
+
+
 
 =item _read_dir()
 
@@ -786,6 +834,10 @@ sub _read_dir {
         return undef;
     }
 }
-                
+
+
+=back
+
+=cut                
 
 1;

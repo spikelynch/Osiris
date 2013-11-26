@@ -18,36 +18,53 @@ my $CLUSIONED = {
     
 
 
-=head NAME
+=head1 NAME
 
 Osiris::Form
 
-=head DESCRIPTION
+=head1 SYNOPSIS
 
+    my $form = Osiris::Form->new(
+        xml => $xml_file
+    ) || do {
+        $log->error("Init form failed");
+        return undef;
+    };
+
+    $form->parse || do {
+        $log->error("Form parse failed");
+        return undef;
+    };
+
+    my $groups = $form->groups;
+    my $guards = $form->guards;
+
+=head1 DESCRIPTION
 
 Class for parsing ISIS forms - used both on the App and Job pages.
 
-=head API
+=head1 API
 
-Here is the structure of the form API:
+Here is how the Isis application XML for a program is represented as
+a Perl data structure in an Osiris::Form object:
 
-form = ARRAYREF of groups:
-    { 
-        name => GROUPNAME
-        parameters => ARRAYREF of parameters:
-            [
-                {
-                    name => NAME
-                    field_type => FIELD_TYPE
-                    type => DATA_TYPE
-                    description => DESCRIPTION
-                    default => DEFAULT
-                    ... (more) ...
-                },                  
-                ...
-            ]
-    }
-    ...
+    form = ARRAYREF of groups:
+        { 
+            name => GROUPNAME
+            parameters => ARRAYREF of parameters:
+                [
+                    {
+                        name        => NAME
+                        field_type  => FIELD_TYPE
+                        type        => DATA_TYPE
+                        description => DESCRIPTION
+                        default     => DEFAULT
+                        ... (more) ...
+                    },                  
+                    ...
+                ]
+        }
+        ...
 
 FIELD_TYPE is one of text_field
                      textarea_field
@@ -60,6 +77,14 @@ TYPE is one of string/integer/double/boolean
 
 Note that textarea_fields are not in the Isis XML but I've added them
 to support textareas in the additional metadata fields.
+
+=head1 METHODS
+
+=over 4
+
+=item new(xml => $xml)
+
+Create an Osiris::Form.  If the xml file is missing, returns undef.
 
 =cut
 
@@ -86,13 +111,24 @@ sub new {
     return $self;
 }
 
-# a bunch of accessor functions 
+=item description()
+
+Returns the program description
+
+=cut
 
 sub description {
     my ( $self ) = @_;
 
     return $self->{api}{description}
 }
+
+=item groups()
+
+Returns an arrayref of parameter groups.  This is the way the Dancer
+code gets the form definition which is rendered in the form.tt view.
+
+=cut
 
 sub groups {
     my ( $self ) = @_;
@@ -101,11 +137,24 @@ sub groups {
 }
 
 
+=item params()
+
+Returns an array of the names of all of the form parameters.
+
+=cut
+
 sub params {
     my ( $self ) = @_;
     
     return $self->_aref('param_fields');
 }
+
+=item input_params()
+
+Returns an array of the names of all of the file input parameters.
+
+=cut
+
 
 sub input_params {
     my ( $self ) = @_;
@@ -113,11 +162,26 @@ sub input_params {
     return $self->_aref('input_fields');
 }
 
+=item output_params()
+
+Returns an array of the names of all of the file output parameters.
+
+=cut
+
+
 sub output_params {
     my ( $self ) = @_;
     
     return $self->_aref('output_fields');
 }
+
+
+=item _aref()
+
+Utility method to de-reference arrayrefs and return arrays. 
+
+=cut
+
 
 sub _aref {
     my ( $self, $field ) = @_;
@@ -130,6 +194,12 @@ sub _aref {
 }
 
 
+=item param(param => $paramnane)
+
+Return a parameter as a data structure (see API above)
+
+=cut
+
 
 sub param {
     my ( $self, %params ) = @_;
@@ -140,6 +210,29 @@ sub param {
 }
     
 
+=item guards()
+
+Returns the form's guards as a hashref.  The guards are a set of value
+constraints on each parameter, as follows
+
+=over 4
+
+=item file - one or more filename filters (*.ext)
+
+=item text - constraints on text fields: int|double|string
+
+=item mandatory - Perltruthy, is this field mandatory
+
+=item range - constrain numeric values
+
+=item inclusions - make other fields mandatory based on values in this field
+
+=item exclusions - make other fields forbidden based on values in this field
+
+=back
+
+=cut
+
 sub guards {
     my ( $self ) = @_;
 
@@ -149,8 +242,20 @@ sub guards {
 
 =item parse()
 
-Parses the XML file and returns an API structure which can 
-be passed to the HTML templates
+Parses the XML file.  On success, returns the entire form API as a hashref
+with the following members:
+
+=over 4
+
+=item groups - arrayref of parameter groups
+
+=item files - hashref of file fields
+
+=item guards - hashref of parameter guards
+
+=back
+
+The hashref is also stored internally as {api}.
 
 =cut
 
@@ -501,8 +606,6 @@ for this as a Perl data structure.
 
 To fetch an app's guards as a hash by parameter, call $app->guards().
 
-To apply the guards to an job, call $job->assert_guards() (NOT YET)
-
 Conversion to JSON used to be done here but now it's left to the
 Dancer framework
 
@@ -645,5 +748,8 @@ sub _filter_to_exts {
     return @exts;
 }
 
+=back
+
+=cut
 
 1;

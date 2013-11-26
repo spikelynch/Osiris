@@ -9,24 +9,66 @@ use Digest::SHA qw(sha256_hex);
 use Fcntl qw(:flock SEEK_END);
 
 
-=head NAME
+=head1 NAME
 
 Osiris::AAF
 
-=head DESCRIPTION
+=head1 SYNOPSIS
+
+    my $oaaf = Osiris::AAF->new( config => $aafcf );
+    
+    my $claims = $oaaf->decode(jwt => $jwt);
+
+    if( $claims ) {
+        if( my $attributes = $oaaf->verify(claims => $claims) ) {
+            if( my $user_id = $oaaf->user_id(attributes => $attributes) ) {
+                 # ... Let them in ...
+            } else {
+                template 'error' => {
+                    title => 'Error',
+                    error => 'Authentication failed.'
+                };
+            }
+        } else {
+            warn("AAF JWT authentication failed");
+            send_error(403, "Not allowed");
+        }
+    } else {
+        warn("AAF JWT decryption failed");
+        send_error(403, "Not allowed");
+    }
+
+=head1 DESCRIPTION
 
 Simple Perl implementation of AAF's Rapid Connect JWT platform.
 
 See https://rapid.aaf.edu.au/developers for details.
 
-=head METHODS
+=head1 METHODS
 
 =over 4
 
 =item new(config => { ... config ... }, file => $file)
 
-Create a new Osiris::AAF object with the given config.
+Create a new Osiris::AAF object with the given configuration parameters
 
+=over 4
+
+=item url: this app's AAF URL
+
+=item iss: either the test or live AAF url
+
+=item aud: the URL of your application
+
+=item jtistore: a file used to store jti values to prevent replay attacks
+
+=item secret: the secret key shared with AAF
+
+=item attributes: the attributes key
+
+=back
+
+Returns the new object if successful, otherwise undef.
 
 =cut
 
@@ -63,11 +105,24 @@ sub new {
 	return $self;
 }
 
-=item encode(claims => { ... claim1 => value ... })
+=item encode(claims => $claimshash )
 
 Encode a claims set passed in as a hashref.  This is used to create
-web tokens locally to test this library and the Osiris endpoint before
-registration with the AAF.
+web tokens locally for testing this library and the Osiris endpoint
+before registration with the AAF. See get /auth/fakeaff in Osiris.pm.
+
+The claims hashref is of the form:
+
+    {
+        iss => 
+        aud => 
+        nbf => $not_before,
+        exp => $expiry,
+        jti => $jti_timestamp,
+        $test_conf->{attributes} => $hash_of_test_atts.
+    }
+
+Returns a JSON web token.
 
 =cut
 
@@ -92,10 +147,11 @@ sub encode {
 
 
 
-=item decode(jwt => $assertion)
+=item decode(jwt => $jwt)
 
 Attempt to decode a JWT assertion with the secret key.  If successful,
-returns the claims as a hashref
+returns the claims as a hashref.  This is called on returning from the 
+AAF, which passes the jwt to a POST method.
 
 =cut
 
@@ -211,6 +267,8 @@ sub user_id {
 =item store_jti(jti => $jti) 
 
 Single method for looking up and/or storing the jti unique identifier.
+These are a requirement of the AAF - we need to keep a record of timestamps
+for each authentication so that we can rule out replay attacks.
 
 Tries to get a lock on the jti file, and when it does, looks up the jti.
 
@@ -280,7 +338,9 @@ sub store_jti {
     return 1;
 }
 
+=back
 
+=cut
 
 
 1;

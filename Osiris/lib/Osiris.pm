@@ -670,7 +670,7 @@ post '/app/:name' => sub {
     }
 
     if( $user->write_job(job => $job) ) {
-        debug("Forwarding to /job/$job->{id}");
+
         forward "/job/$job->{id}", {}, { method => 'GET' };
     } else {
         error("Couldn't write job");
@@ -823,7 +823,7 @@ sub input_files {
 }
 
 
-=item get_app(name =&gt; $name);
+=item get_app(name => $name);
 
 Looks up the table of contents by app name and returns an Osiris::App
 object
@@ -849,7 +849,7 @@ sub get_app {
 }
 
 
-=item load_toc(isisdir =&gt; $id, isistoc =&gt; $it)
+=item load_toc(isisdir => $id, isistoc => $it)
 
 Loads and parses the applicationTOC.xml file, builds the table of contents.
 
@@ -897,7 +897,7 @@ sub load_toc {
 }
 
 
-=item search_toc(search =&gt; $search);
+=item search_toc(search => $search);
 
 Search the table of contents.  Returns a list of results as
    
