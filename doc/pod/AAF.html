@@ -1,0 +1,149 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>../Osiris/lib/Osiris/AAF.pm</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+<p><a name="__index__"></a></p>
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#methods">METHODS</a></li>
+</ul>
+
+<hr name="index" />
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>Osiris::AAF</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<pre>
+    my $oaaf = Osiris::AAF-&gt;new( config =&gt; $aafcf );
+    
+    my $claims = $oaaf-&gt;decode(jwt =&gt; $jwt);</pre>
+<pre>
+    if( $claims ) {
+        if( my $attributes = $oaaf-&gt;verify(claims =&gt; $claims) ) {
+            if( my $user_id = $oaaf-&gt;user_id(attributes =&gt; $attributes) ) {
+                 # ... Let them in ...
+            } else {
+                template 'error' =&gt; {
+                    title =&gt; 'Error',
+                    error =&gt; 'Authentication failed.'
+                };
+            }
+        } else {
+            warn(&quot;AAF JWT authentication failed&quot;);
+            send_error(403, &quot;Not allowed&quot;);
+        }
+    } else {
+        warn(&quot;AAF JWT decryption failed&quot;);
+        send_error(403, &quot;Not allowed&quot;);
+    }</pre>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>Simple Perl implementation of AAF's Rapid Connect JWT platform.</p>
+<p>See <a href="https://rapid.aaf.edu.au/developers">https://rapid.aaf.edu.au/developers</a> for details.</p>
+<p>
+</p>
+<hr />
+<h1><a name="methods">METHODS</a></h1>
+<dl>
+<dt><strong><a name="new" class="item">new(config =&gt; { ... config ... }, file =&gt; $file)</a></strong></dt>
+
+<dd>
+<p>Create a new Osiris::AAF object with the given configuration parameters</p>
+<dl>
+<dt><strong><a name="url_this_app_s_aaf_url" class="item">url: this app's AAF URL</a></strong></dt>
+
+<dt><strong><a name="iss_either_the_test_or_live_aaf_url" class="item">iss: either the test or live AAF url</a></strong></dt>
+
+<dt><strong><a name="aud_the_url_of_your_application" class="item">aud: the URL of your application</a></strong></dt>
+
+<dt><strong><a name="jtistore_a_file_used_to_store_jti_values_to_prevent_replay_attacks" class="item">jtistore: a file used to store jti values to prevent replay attacks</a></strong></dt>
+
+<dt><strong><a name="secret_the_secret_key_shared_with_aaf" class="item">secret: the secret key shared with AAF</a></strong></dt>
+
+<dt><strong><a name="attributes_the_attributes_key" class="item">attributes: the attributes key</a></strong></dt>
+
+</dl>
+<p>Returns the new object if successful, otherwise undef.</p>
+</dd>
+<dt><strong><a name="encode" class="item">encode(claims =&gt; $claimshash )</a></strong></dt>
+
+<dd>
+<p>Encode a claims set passed in as a hashref.  This is used to create
+web tokens locally for testing this library and the Osiris endpoint
+before registration with the AAF. See get /auth/fakeaff in Osiris.pm.</p>
+<p>The claims hashref is of the form:</p>
+<pre>
+    {
+        iss =&gt; 
+        aud =&gt; 
+        nbf =&gt; $not_before,
+        exp =&gt; $expiry,
+        jti =&gt; $jti_timestamp,
+        $test_conf-&gt;{attributes} =&gt; $hash_of_test_atts.
+    }</pre>
+<p>Returns a JSON web token.</p>
+</dd>
+<dt><strong><a name="decode" class="item">decode(jwt =&gt; $jwt)</a></strong></dt>
+
+<dd>
+<p>Attempt to decode a JWT assertion with the secret key.  If successful,
+returns the claims as a hashref.  This is called on returning from the 
+AAF, which passes the jwt to a POST method.</p>
+</dd>
+<dt><strong><a name="verify" class="item">verify(claims =&gt; $claims)</a></strong></dt>
+
+<dd>
+<p>Verify the claims hashref against the config values, the current time
+and the jti store.  Writes errors into the logs for any mismatches.</p>
+<p>The AAF attributes (cn, mail, displayname etc) are returned as a claim
+called 'https://aaf.edu.au/attributes' - the URL to use for looking this
+up is configured as aaf.attributes.</p>
+</dd>
+<dt><strong><a name="user_id" class="item">user_id(attributes =&gt; $atts)</a></strong></dt>
+
+<dd>
+<p>Takes a set of user attributes and returns a unique string that can
+be used as a user ID (and to create working directories).</p>
+<p>On AAF's recommendation, we're using a SHA-256 hex digest of the complete
+EduPersonTargetedID string.</p>
+</dd>
+<dt><strong><a name="store_jti" class="item">store_jti(jti =&gt; $jti)</a></strong></dt>
+
+<dd>
+<p>Single method for looking up and/or storing the jti unique identifier.
+These are a requirement of the AAF - we need to keep a record of timestamps
+for each authentication so that we can rule out replay attacks.</p>
+<p>Tries to get a lock on the jti file, and when it does, looks up the jti.</p>
+<p>If the jti is found, release the file and return undef (because this
+is evidence of a replay attack).</p>
+<p>If it's not found, add it to the store and write and release the file,
+return true.</p>
+</dd>
+</dl>
+
+</body>
+
+</html>
