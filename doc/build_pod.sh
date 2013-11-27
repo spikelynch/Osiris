@@ -1,9 +1,9 @@
 #!/bin/bash
 
-pod2html ../Osiris/lib/Osiris.pm      > ./pod/Osiris.html
-pod2html ../Osiris/lib/Osiris/AAF.pm  > ./pod/AAF.html
-pod2html ../Osiris/lib/Osiris/App.pm  > ./pod/App.html
-pod2html ../Osiris/lib/Osiris/Form.pm > ./pod/Form.html
-pod2html ../Osiris/lib/Osiris/Job.pm  > ./pod/Job.html
-pod2html ../Osiris/lib/Osiris/Test.pm > ./pod/Test.html
-pod2html ../Osiris/lib/Osiris/User.pm > ./pod/User.html
+pod2markdown ../Osiris/lib/Osiris.pm      > ./pod/Osiris.md
+pod2markdown ../Osiris/lib/Osiris/AAF.pm  > ./pod/AAF.md
+pod2markdown ../Osiris/lib/Osiris/App.pm  > ./pod/App.md
+pod2markdown ../Osiris/lib/Osiris/Form.pm > ./pod/Form.md
+pod2markdown ../Osiris/lib/Osiris/Job.pm  > ./pod/Job.md
+pod2markdown ../Osiris/lib/Osiris/Test.pm > ./pod/Test.md
+pod2markdown ../Osiris/lib/Osiris/User.pm > ./pod/User.md
