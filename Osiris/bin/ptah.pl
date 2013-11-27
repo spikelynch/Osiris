@@ -3,6 +3,39 @@
 use warnings;
 use strict;
 
+=head1 NAME
+
+ptah.pl
+
+=head1 SYNOPSIS
+
+    ptah.pl
+
+=head1 DESCRIPTION
+
+A simple daemon built with POE::Wheel::Run which monitors the Osiris users'
+working directories for incoming jobs, starts Isis processes with the 
+commands and parameters stored in the jobs, and updates the status of the
+jobs when the commands are completed.
+
+=head1 CONFIGURATION
+
+Requires the following environment variables:
+
+=over 4
+
+=item OSIRIS_LIB - location of the Osiris modules
+
+=item OSIRIS_PTAHLOG - a Log::Log4perl configuration file
+
+=item OSIRIS_WORKING - location of the Osiris working directory
+
+=item ISISROOT - base directory of the Isis installation
+
+=back
+
+=cut
+
 
 sub POE::Kernel::ASSERT_DEFAULT () { 1 };
 use POE qw(Wheel::Run);
@@ -10,7 +43,6 @@ use POE qw(Wheel::Run);
 my @ENVARS = qw(OSIRIS_LIB
                 OSIRIS_PTAHLOG
                 OSIRIS_WORKING
-                OSIRIS_MAXTASKS
                 ISISROOT);
 
 
@@ -45,26 +77,32 @@ use Osiris::Job;
 
 my $MAX_TASKS = $ENV{OSIRIS_MAXTASKS} || 10;
 
+=head1 OVERVIEW
 
-# Previous attempts to write ptah.pl keep getting a weird bug where
-# child processes don't report back via either closeEvent or SIG_CHLD.
+Ptah maintains two queues:
 
-# This is an attempt to build ptah.pl from a working example 
-# of a POE process controller step by step, so that I can identify
-# where sig_childs stop working.
+=over 4
 
-# Principle: make all the methods as short and simple as possible.
-# Instead of loops, use heap variables as queues:
+=item $heap->{users} - list of users
 
-# $heap->{users}  - list of user IDs
+=item $heap->{jobs} - list of new jobs
 
-# $heap->{jobs} - list of new jobs
+=back
 
-# main loop pulls jobs off {jobs} until it's empty.
+The primary state handlers are as follows:
 
-# then pull a {user} off and repopulate {jobs}
+=over 4
 
-# if {user} is empty, rescan the working dir and start again.
+=item scan_users: build a list of users
+
+=item scan_jobs: scan each user's joblist and build a queue of new jobs
+
+=item run_jobs: pull jobs off the queue and start them
+
+=back
+
+=cut
+
 
 my $WORKING_DIR = $ENV{OSIRIS_WORKING};
 
@@ -90,6 +128,16 @@ POE::Session->create(
   }
 );
 
+=head1 HANDLERS
+
+=over 4
+
+
+=item initialise($kernel, $heap)
+
+Sets the job and user queues to empty, calls scan_users.
+
+=cut
 
 
 sub initialise {
@@ -104,13 +152,17 @@ sub initialise {
 
 
 
-# scan_users
+=item scan_users($kernel, $heap, $state, $sender, @caller)
 
-# Event handler called when the job queue and user queues are both empty.
-# Scans the working directory for user dirs and initialises Osiris::User
-# objects for them.
+Event handler called when the job queue and user queues are both
+empty.  Scans the working directory for user dirs and initialises
+Osiris::User objects for them.
 
-# If it finds nothing, it calls itself on a delay.
+If it finds at least one job, calls scan_jobs.
+
+If it finds nothing, it calls itself on a delay.
+
+=cut
 
 
 sub scan_users {
@@ -150,12 +202,17 @@ sub scan_users {
         $kernel->yield('scan_jobs');
     }
 }
-    
 
-# Event handler called when the job queue is empty.  It shifts the next
-# user off the user queue and scans their job list for new jobs.
+=item scan_jobs($kernel, $heap, $state, $sender, @caller)
 
-# If there is no next user, it calls scan_users.
+Event handler called when the job queue is empty.  It shifts the next
+user off the user queue and scans their job list for new jobs.
+
+If it finds at least one job, calls run_jobs
+
+If there is no next user, it calls scan_users.
+
+=cut
 
 
 sub scan_jobs {
@@ -189,14 +246,21 @@ sub scan_jobs {
 }
 
 
-# run_jobs
+=item run_jobs($kernel, $heap, $state, $sender, @caller)
 
-# Pulls items off the job queue until either
-#
-# (a) $MAX_TASKS is reached, in which case it does nothing
-#    (when a running job is finished it will call run_jobs again)
-# (b) there are no more jobs, in which case it calls scan_jobs to get more
-#    jobs from the next user.
+Pulls items off the job queue until either
+
+=over 4
+
+=item (a) $MAX_TASKS is reached, in which case it does nothing (when a
+running job is finished it will call run_jobs again); or
+
+=item (b) there are no more jobs, in which case it calls scan_jobs to
+ get more jobs from the next user.
+
+=back
+
+=cut
 
 sub run_jobs {
     my ( $kernel, $heap, $state, $sender, @caller ) = 
@@ -255,6 +319,14 @@ sub run_jobs {
 }
 
 
+=item fatal($kernel, $heap, $state, $sender, @caller)
+
+Called in the event of a fatal error - the working directory can't be
+scanned or something like that.
+
+=cut
+
+
 sub fatal {
     my ( $kernel, $heap, $state, $sender, @caller ) = 
         @_[KERNEL, HEAP, STATE, SENDER, CALLER_FILE, CALLER_LINE, CALLER_STATE];
@@ -267,6 +339,13 @@ sub fatal {
     $log->error("Fatal error: $heap->{error}");
 }
 
+
+=item stop_ptah($kernel, $heap, $state, $sender)
+
+Stop state
+
+=cut
+
 sub stop_ptah {
     my ( $kernel, $heap, $state, $sender ) = 
         @_[KERNEL, HEAP, STATE, SENDER];
@@ -278,30 +357,37 @@ sub stop_ptah {
 }
 
 
+=item handle_task_result($output, $wid)
 
+Handle information returned from the task.  Since we're using
+POE::Filter::Reference, the $result is however it was created in the
+child process.  In this sample, it's a hash reference.
 
-
-
-
-# Handle information returned from the task.  Since we're using
-# POE::Filter::Reference, the $result is however it was created in the
-# child process.  In this sample, it's a hash reference.
+=cut
 
 sub handle_task_result {
     my ( $output, $wid ) = @_[ARG0, ARG1];
     print ">>>stdout $wid>>> $output\n";
 }
 
-# Catch and display information from the child's STDERR.  This was
-# useful for debugging since the child's warnings and errors were not
-# being displayed otherwise.
+=item handle_task_debug($output, $wid)
+
+Catch and display information from the child's STDERR.  This was
+useful for debugging since the child's warnings and errors were not
+being displayed otherwise.
+
+=cut
 
 sub handle_task_debug {
     my ( $output, $wid ) = @_[ARG0, ARG1];
     print "stdout $wid $output\n";
 }
 
-# Mark the job 
+=item handle_task_done($kernel, $heap, $task_id)
+
+When a task is finished, call scan_jobs
+
+=cut
 
 sub handle_task_done {
   my ($kernel, $heap, $task_id) = @_[KERNEL, HEAP, ARG0];
@@ -310,7 +396,14 @@ sub handle_task_done {
   $kernel->yield("scan_jobs");
 }
 
-# Detect the CHLD signal as each of our children exits.
+
+=item sig_child($heap, $sig, $pid, $exit_val)
+
+Detect the CHLD signal as each of our children exits.
+
+
+=cut
+
 sub sig_child {
     my ($heap, $sig, $pid, $exit_val) = @_[HEAP, ARG0, ARG1, ARG2];
 
@@ -339,7 +432,9 @@ sub sig_child {
 }
 
 
+=back
 
+=cut 
 
 $poe_kernel->run();
 exit 0;
