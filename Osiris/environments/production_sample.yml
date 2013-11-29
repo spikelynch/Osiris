@@ -20,8 +20,8 @@ route_cache: 1
 isisdir: 	 /path/to/your/isis/bin/xml
 isistoc: 	 applicationTOC.xml
 isiscats: 	 applicationCategories.xml
-workingdir:      /where/the/user/files/are
-extrafields: 	 /home/mike/Isis/extras/extra.xml
+workingdir:  /where/the/user/files/are
+extras: 	 /home/mike/Isis/extras/extra.xml
 
 # AAF Rapid config
 
