@@ -12,9 +12,11 @@ utilities and a POE event-driven daemon to mangage Isis processes.
 Osiris was developed at the University of Technology, Sydney by Mike
 Lynch.
 
-http://www.uts.edu.au/
 
-The development of Osiris was funded by ANDS - the Australian Research
-Data Service - as part of the data capture project DC18.
+Development was funded by [ANDS, the Australian
+National Data Service](http://www.ands.org.au/), as part of the UTS Data Capture project DC18.
 
-http://www.ands.org.au/
+This is an open source project governed by the [Gnu GPL v3.](http://www.gnu.org/licenses/gpl.html)
+
+For detailed documentation, refer to the [Project Wiki.](https://github.com/spikelynch/Osiris/wiki)
+
