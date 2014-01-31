@@ -1,4 +1,6 @@
 
 <h2>System error</h2>
 
+<p>Sorry, a system error occurred.</p>
+
 <p><% error %></p>

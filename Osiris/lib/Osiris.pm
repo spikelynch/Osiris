@@ -287,6 +287,20 @@ get '/auth/logout' => sub {
 
 
 
+=item get /auth/access
+
+Access policy page
+
+=cut
+
+
+get '/auth/access' => sub {
+    template 'access' => {
+        user => $user->{name}
+    };
+};
+
+
 
 =back
 
